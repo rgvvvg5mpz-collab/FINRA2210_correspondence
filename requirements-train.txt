@@ -1,0 +1,8 @@
+# fine-tuning / evaluation (student = microsoft/Phi-4-mini-instruct)
+# Use a Python 3.11 or 3.12 venv for this file; torch wheels lag the newest CPython.
+torch>=2.4
+transformers>=4.51
+peft>=0.14
+trl>=0.19
+datasets>=3.0
+accelerate>=1.0
