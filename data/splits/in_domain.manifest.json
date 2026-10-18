@@ -1,0 +1,31 @@
+{
+  "train": 10710,
+  "test": 1186,
+  "test_frac": 0.1,
+  "seed": 42,
+  "train_difficulty": {
+    "easy": 3168,
+    "hard": 3235,
+    "medium": 4307
+  },
+  "test_difficulty": {
+    "medium": 479,
+    "easy": 351,
+    "hard": 356
+  },
+  "train_compliant": {
+    "True": 4754,
+    "False": 5956
+  },
+  "test_compliant": {
+    "True": 529,
+    "False": 657
+  },
+  "strata": 147,
+  "keep_test": "data/splits_r1_ids/test.ids",
+  "keep_train": "data/splits_r1_ids/train.ids",
+  "kept_test": 1158,
+  "kept_train": 10402,
+  "new_test": 28,
+  "new_train": 308
+}

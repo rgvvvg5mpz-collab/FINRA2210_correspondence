@@ -1,0 +1,80 @@
+{
+  "accepted": 11896,
+  "rejected": 0,
+  "request_errors": {},
+  "reject_reasons": {},
+  "difficulty": {
+    "hard": 3591,
+    "medium": 4786,
+    "easy": 3519
+  },
+  "compliant": {
+    "True": 5283,
+    "False": 6613
+  },
+  "communication_type": {
+    "correspondence": 5870,
+    "institutional_communication": 1459,
+    "retail_communication": 4567
+  },
+  "severity": {
+    "none": 5283,
+    "medium": 3363,
+    "high": 2905,
+    "low": 345
+  },
+  "channel": {
+    "email": 4246,
+    "letter": 1112,
+    "sms_text": 1074,
+    "instant_message": 896,
+    "mass_email_campaign": 843,
+    "social_media_post": 687,
+    "website_page": 626,
+    "client_newsletter": 445,
+    "blog_article": 340,
+    "seminar_invitation": 322,
+    "seminar_deck_or_script": 306,
+    "form_letter": 284,
+    "text_message_blast": 261,
+    "radio_or_podcast_script": 208,
+    "print_ad": 141,
+    "video_script": 102,
+    "mass_email_template": 3
+  },
+  "violation_categories": {
+    "performance_projection": 1336,
+    "not_fair_and_balanced": 1324,
+    "promissory_or_guarantee": 1040,
+    "exaggerated_or_unwarranted_claim": 871,
+    "false_or_misleading_statement": 749,
+    "fund_performance_disclosure": 595,
+    "misleading_in_context": 542,
+    "member_name_missing": 379,
+    "testimonial_disclosure": 348,
+    "finra_endorsement_implied": 345,
+    "tax_claim_incomplete": 334,
+    "buried_disclosure": 321,
+    "unsupported_comparison": 243,
+    "hypothetical_or_backtest_misuse": 207,
+    "past_recommendations_reference": 187,
+    "recommendation_disclosure": 172,
+    "unapproved_retail_communication": 155,
+    "institutional_forwarding": 131,
+    "brokercheck_link_missing": 107,
+    "product_specific_omission": 102,
+    "fund_ranking_disclosure": 80
+  },
+  "violations_per_sample": {
+    "0": 5283,
+    "1": 4175,
+    "2": 1922,
+    "3": 515,
+    "4": 1
+  },
+  "avg_chars": 1006,
+  "teacher": {
+    "claude-fable-5-1": 380,
+    "claude-opus-5-5": 11516
+  }
+}

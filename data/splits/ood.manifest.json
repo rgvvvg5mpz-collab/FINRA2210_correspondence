@@ -1,0 +1,12 @@
+{
+  "n": 5800,
+  "difficulty": {
+    "medium": 2341,
+    "easy": 1721,
+    "hard": 1738
+  },
+  "compliant": {
+    "True": 2632,
+    "False": 3168
+  }
+}

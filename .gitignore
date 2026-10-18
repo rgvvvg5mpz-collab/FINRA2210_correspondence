@@ -1,7 +1,36 @@
+# environments and caches
 .venv/
-data/
-runs/
-__pycache__/
-*.pyc
 .venv-mlx/
 .venv-cuda/
+__pycache__/
+*.pyc
+
+# training runs: adapters, checkpoints, logs, predictions (published results are in results/,
+# adapters on the GitHub release)
+runs/
+
+# outputs of the retraining stages on real data (the sample outputs are tracked)
+retraining/*/out/
+retraining/02_audit/tasks/
+retraining/02_audit/verdicts/
+
+# data/: only the final dataset, its README and the curation sources are tracked.
+# Working folders of the generation run (scenario chunks, raw agent output, scratch files,
+# snapshots, mlx files) stay local; the frozen snapshot is on the GitHub release.
+data/*
+!data/README.md
+!data/splits/
+!data/clean/
+!data/splits_r1_ids/
+!data/raw_finra/
+!data/chunks/
+data/chunks/*
+!data/chunks/BRIEF.md
+!data/chunks_r1/
+data/chunks_r1/*
+!data/chunks_r1/BRIEF.md
+!data/chunks_r1/AGENT_INSTRUCTIONS.md
+!data/chunks_topup/
+data/chunks_topup/*
+!data/chunks_topup/BRIEF.md
+!data/chunks_topup/AGENT_INSTRUCTIONS.md

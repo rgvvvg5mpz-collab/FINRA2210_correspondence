@@ -1,0 +1,102 @@
+{
+  "accepted": 5800,
+  "rejected": 0,
+  "request_errors": {},
+  "reject_reasons": {},
+  "difficulty": {
+    "medium": 2341,
+    "easy": 1721,
+    "hard": 1738
+  },
+  "compliant": {
+    "True": 2632,
+    "False": 3168
+  },
+  "communication_type": {
+    "institutional_communication": 969,
+    "correspondence": 2710,
+    "retail_communication": 2121
+  },
+  "severity": {
+    "none": 2632,
+    "high": 1485,
+    "medium": 1599,
+    "low": 84
+  },
+  "channel": {
+    "email": 1093,
+    "sms_text": 301,
+    "letter": 265,
+    "handwritten note scanned (OCR artifacts)": 252,
+    "multi-turn email thread (3-6 replies)": 236,
+    "WhatsApp message": 235,
+    "voicemail transcript": 232,
+    "Zelle/Venmo-style payment memo field": 231,
+    "mass_email_campaign": 231,
+    "LinkedIn direct message": 230,
+    "webinar follow-up with attached slide text": 226,
+    "instant_message": 223,
+    "Slack/Teams message to a client": 222,
+    "Reddit/forum reply by a registered person": 221,
+    "video-call auto-generated summary sent to client": 215,
+    "X/Twitter DM": 206,
+    "firm chatbot transcript (bot speaking to a retail user)": 205,
+    "social_media_post": 182,
+    "website_page": 140,
+    "client_newsletter": 118,
+    "seminar_invitation": 106,
+    "blog_article": 85,
+    "text_message_blast": 81,
+    "form_letter": 81,
+    "seminar_deck_or_script": 70,
+    "radio_or_podcast_script": 48,
+    "print_ad": 40,
+    "video_script": 21,
+    "mass_email_template": 4
+  },
+  "violation_categories": {
+    "performance_projection": 610,
+    "not_fair_and_balanced": 599,
+    "promissory_or_guarantee": 429,
+    "exaggerated_or_unwarranted_claim": 423,
+    "false_or_misleading_statement": 378,
+    "product_specific_omission": 307,
+    "misleading_in_context": 239,
+    "fund_performance_disclosure": 230,
+    "institutional_forwarding": 181,
+    "finra_endorsement_implied": 147,
+    "member_name_missing": 146,
+    "tax_claim_incomplete": 144,
+    "testimonial_disclosure": 137,
+    "buried_disclosure": 137,
+    "hypothetical_or_backtest_misuse": 113,
+    "unsupported_comparison": 107,
+    "third_party_content_adoption": 79,
+    "past_recommendations_reference": 78,
+    "recommendation_disclosure": 72,
+    "unapproved_retail_communication": 60,
+    "fund_ranking_disclosure": 30,
+    "options_communication": 16,
+    "brokercheck_link_missing": 3
+  },
+  "violations_per_sample": {
+    "0": 2632,
+    "1": 1908,
+    "2": 1025,
+    "3": 233,
+    "4": 2
+  },
+  "avg_chars": 1135,
+  "teacher": {
+    "claude-fable-5-1": 40,
+    "claude-opus-5-5": 5760
+  },
+  "ood_axes": {
+    "product": 2716,
+    "channel": 2711,
+    "style": 1516,
+    "audience": 1229,
+    "regulatory_twist": 1035,
+    "firm_type": 910
+  }
+}
