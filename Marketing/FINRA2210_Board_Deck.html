@@ -1,0 +1,879 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>FINRA 2210 Reviewer Briefing</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a 1600x900 slide stage scaled to the window; a control bar below; an index panel on the
+   left and a detail panel on the right that slide over the stage. One deliberate boardroom look:
+   cool paper slides set in ink navy, with amber reserved for compliance flags. */
+:root {
+  color-scheme: light;
+  --ink: #14233a;        /* headings, navy slides */
+  --ink-2: #22385a;      /* navy surfaces */
+  --paper: #f4f5f2;      /* slide ground */
+  --sheet: #fbfbf9;      /* cards on paper */
+  --slate: #4a5870;      /* body text on paper */
+  --mist: #c9d3df;       /* body text on navy */
+  --rule: #d9dde3;       /* hairlines */
+  --flag: #b8650f;       /* compliance flags, emphasis (text-safe on paper) */
+  --flag-soft: #f3e3cc;
+  --pass: #1f6a83;       /* model / pass series */
+  --pass-soft: #d6e8ee;
+  --base: #a7b0bc;       /* zero-shot base series */
+  --window: #e9ecef;     /* app chrome around the stage */
+  --serif: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --sans: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
+  --mono: "IBM Plex Mono", "SFMono-Regular", Menlo, Consolas, monospace;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body { margin: 0; background: var(--window); color: var(--ink); font-family: var(--sans); overflow: hidden; }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 3px solid var(--flag); outline-offset: 3px; }
+
+.app { position: fixed; inset: 0; display: flex; flex-direction: column; padding: calc(12px + env(safe-area-inset-top, 0px)) 16px calc(10px + env(safe-area-inset-bottom, 0px)); gap: 10px; }
+.viewport { position: relative; flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; }
+.stage { position: absolute; left: 50%; top: 50%; width: 1600px; height: 900px; transform-origin: 0 0; box-shadow: 0 18px 60px rgba(20,35,58,.18), 0 2px 6px rgba(20,35,58,.08); border-radius: 6px; overflow: hidden; background: var(--paper); }
+
+/* control bar */
+.bar { display: flex; align-items: center; gap: 12px; justify-content: space-between; flex-wrap: wrap; }
+.bar .group { display: flex; align-items: center; gap: 8px; }
+.btn { border: 1px solid #c2c9d2; background: #fff; border-radius: 999px; padding: 7px 14px; cursor: pointer; font-size: 14px; line-height: 1; display: inline-flex; gap: 6px; align-items: center; }
+.btn:hover { border-color: var(--ink); }
+.btn[disabled] { opacity: .4; cursor: default; }
+.count { font-family: var(--mono); font-size: 13px; color: var(--slate); min-width: 64px; text-align: center; font-variant-numeric: tabular-nums; }
+.hint { font-size: 12.5px; color: var(--slate); }
+.progress { height: 3px; background: #d4d9df; border-radius: 3px; overflow: hidden; flex-basis: 100%; }
+.progress i { display: block; height: 100%; background: var(--ink); width: 10%; transition: width .3s; }
+
+/* slides */
+.slide { position: absolute; inset: 0; padding: 64px 80px 72px; display: none; flex-direction: column; background: var(--paper); color: var(--ink); }
+.slide.on { display: flex; }
+@media (prefers-reduced-motion: no-preference) { .slide.on { animation: enter .35s ease-out; } }
+@keyframes enter { from { opacity: .4; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.slide.navy { background: var(--ink); color: #f2f4f7; }
+.eyebrow { font-family: var(--mono); font-size: 17px; letter-spacing: .12em; text-transform: uppercase; color: var(--flag); margin: 0 0 14px; }
+.navy .eyebrow { color: #e3a65a; }
+.slide h2 { font-family: var(--serif); font-weight: 600; font-size: 52px; line-height: 1.1; margin: 0; letter-spacing: -.01em; text-wrap: balance; max-width: 1240px; }
+.lede { font-size: 23px; line-height: 1.45; color: var(--slate); margin: 14px 0 0; max-width: 1180px; }
+.navy .lede { color: var(--mist); }
+.foot { position: absolute; left: 80px; right: 80px; bottom: 26px; display: flex; justify-content: space-between; font-family: var(--mono); font-size: 14px; color: #7b8799; letter-spacing: .04em; }
+.navy .foot { color: #8fa1b8; }
+.foot .sec { text-transform: uppercase; }
+.body { flex: 1; min-height: 0; display: flex; gap: 28px; margin-top: 30px; }
+.col { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.cite { font-family: var(--mono); font-size: .92em; color: var(--flag); white-space: nowrap; }
+.navy .cite { color: #e3a65a; }
+.label { font-family: var(--mono); font-size: 15px; letter-spacing: .1em; text-transform: uppercase; color: #7b8799; }
+
+/* clickable detail triggers */
+.tap { position: relative; cursor: pointer; text-align: left; border: 1px solid var(--rule); background: var(--sheet); border-radius: 10px; padding: 20px 22px; transition: border-color .15s, box-shadow .15s, transform .15s; }
+.tap:hover { border-color: var(--ink); box-shadow: 0 6px 20px rgba(20,35,58,.10); }
+@media (prefers-reduced-motion: no-preference) { .tap:hover { transform: translateY(-2px); } }
+.tap::after { content: "Detail +"; position: absolute; right: 14px; top: 12px; font-family: var(--mono); font-size: 14px; letter-spacing: .06em; color: var(--pass); opacity: .75; }
+.tap:hover::after { opacity: 1; }
+.navy .tap { background: var(--ink-2); border-color: #34507a; color: #f2f4f7; }
+.navy .tap:hover { border-color: #e3a65a; }
+.navy .tap::after, .verdict.tap::after { color: #e3a65a; }
+
+/* slide 1 */
+.s1 h1 { font-family: var(--serif); font-weight: 600; font-size: 64px; line-height: 1.05; margin: 0; letter-spacing: -.015em; max-width: 1220px; text-wrap: balance; }
+.s1 .lede { font-size: 23px; max-width: 1100px; margin-top: 22px; }
+.kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; margin-top: auto; }
+.kpi { padding: 24px 24px 22px; }
+.kpi b { display: block; font-family: var(--serif); font-weight: 600; font-size: 60px; line-height: 1; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+.kpi span { display: block; margin-top: 12px; font-size: 19px; line-height: 1.4; color: var(--mist); }
+.io { display: grid; grid-template-columns: 1fr 44px 1fr 44px 1fr; align-items: stretch; margin-top: 44px; }
+.io-box { border-top: 1.5px solid #3c5578; padding: 16px 4px 0 0; }
+.io-box p { margin: 10px 0 0; font-size: 20px; line-height: 1.45; color: var(--mist); max-width: 420px; }
+.io-box .label { color: #8fa1b8; }
+.io-model { border-top-color: #e3a65a; }
+.io-arrow { display: flex; align-items: center; justify-content: center; font-size: 26px; color: #8fa1b8; padding-top: 14px; }
+.stamp { position: absolute; right: 80px; top: 64px; font-family: var(--mono); font-size: 14px; color: #e3a65a; border: 1.5px solid #e3a65a; border-radius: 6px; padding: 8px 12px; transform: rotate(-3deg); letter-spacing: .08em; }
+
+/* slide 2: message + verdict */
+.msg { background: var(--sheet); border: 1px solid var(--rule); border-radius: 12px; padding: 22px 24px; }
+.msg .meta { font-family: var(--mono); font-size: 16px; color: #7b8799; line-height: 1.6; }
+.bubble { margin-top: 18px; background: #e7ecf1; border-radius: 20px 20px 20px 4px; padding: 20px 24px; font-size: 27px; line-height: 1.4; max-width: 600px; }
+.bubble mark { background: var(--flag-soft); color: var(--ink); padding: 1px 3px; border-radius: 3px; border-bottom: 2px solid var(--flag); }
+.verdict { border-radius: 12px; background: var(--ink); color: #f2f4f7; padding: 22px 26px; display: flex; flex-direction: column; gap: 12px; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { font-family: var(--mono); font-size: 17px; padding: 6px 11px; border-radius: 999px; border: 1px solid #4b6588; color: #dfe6ee; }
+.chip.flag { background: #e3a65a; border-color: #e3a65a; color: var(--ink); font-weight: 500; }
+.verdict p { margin: 0; font-size: 21px; line-height: 1.45; color: var(--mist); }
+.verdict q { font-family: var(--serif); font-style: italic; color: #fff; }
+.steps3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+.steps3 h3, .card h3 { font-family: var(--serif); font-size: 31px; font-weight: 600; margin: 0 0 12px; }
+.steps3 p, .card p { margin: 0; font-size: 21px; line-height: 1.45; color: var(--slate); }
+.ask { margin-top: auto !important; padding-top: 18px; border-top: 1px solid var(--rule); font-size: 19px !important; }
+.card.tap { display: flex; flex-direction: column; }
+.s3 .list li { font-size: 19.5px; }
+.s3 .list { gap: 10px; }
+.s3 .card h3 { font-size: 28px; margin-bottom: 10px; }
+.s3 .card { padding: 22px 26px; }
+.s10 .list li { font-size: 19.5px; }
+.s10 .list { gap: 10px; }
+.s10 .card h3 { font-size: 28px; }
+.miss { font-size: 21px; line-height: 1.45; color: var(--slate); border-left: 3px solid var(--flag); padding: 2px 0 2px 14px; }
+
+/* bars */
+.score { display: flex; flex-direction: column; gap: 26px; margin-top: 10px; }
+.score .row { display: grid; grid-template-columns: 1fr; gap: 8px; }
+.score .name { font-size: 20px; line-height: 1.3; color: var(--ink); }
+.bars { display: flex; flex-direction: column; gap: 5px; }
+.bar-line { display: flex; align-items: center; gap: 10px; }
+.bar-line i { display: block; height: 24px; border-radius: 3px; }
+.bar-line .v { font-family: var(--mono); font-size: 17px; font-variant-numeric: tabular-nums; color: var(--ink); }
+.legend { display: flex; gap: 22px; font-size: 17px; color: var(--slate); align-items: center; }
+.legend i { display: inline-block; width: 14px; height: 14px; border-radius: 3px; margin-right: 6px; vertical-align: -2px; }
+.list { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 14px; }
+.list li { font-size: 21px; line-height: 1.4; color: var(--slate); padding-left: 18px; position: relative; }
+.list li::before { content: ""; position: absolute; left: 0; top: .6em; width: 7px; height: 7px; border-radius: 50%; background: var(--pass); }
+.list.flags li::before { background: var(--flag); }
+.card { padding: 26px 28px; }
+.col > .card { flex: 1; }
+
+/* slide 4: architecture */
+.lane { display: flex; flex-direction: column; gap: 10px; }
+.lane-title { display: flex; justify-content: space-between; align-items: baseline; }
+.flow { display: flex; align-items: stretch; gap: 0; }
+.node { flex: 1; min-width: 0; padding: 20px 18px 18px; border-radius: 10px; }
+.node .k { font-family: var(--mono); font-size: 14px; color: var(--flag); letter-spacing: .06em; }
+.node h4 { font-family: var(--serif); font-size: 25px; margin: 8px 0 8px; font-weight: 600; line-height: 1.15; }
+.node p { margin: 0; font-size: 18px; line-height: 1.4; color: var(--slate); }
+.node.tap::after { content: "+"; font-size: 15px; top: 10px; right: 12px; }
+.arrow { width: 26px; flex: none; display: flex; align-items: center; justify-content: center; color: #8b97a8; font-size: 20px; }
+.node.model { background: #eaf1f4; border-color: #bcd3dc; }
+.node.gate { background: var(--flag-soft); border-color: #e5c79f; }
+.facts { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0; margin-top: auto; border-top: 1.5px solid var(--ink); }
+.facts div { padding: 16px 18px 0 0; }
+.facts b { display: block; font-family: var(--serif); font-size: 38px; font-weight: 600; line-height: 1; font-variant-numeric: tabular-nums; }
+.facts span { display: block; margin-top: 8px; font-size: 17px; line-height: 1.35; color: var(--slate); }
+.handoff { font-family: var(--mono); font-size: 16px; color: var(--slate); display: flex; align-items: center; gap: 10px; }
+.handoff::before, .handoff::after { content: ""; flex: 1; height: 1px; background: var(--rule); }
+
+/* slide 5: data */
+.bignum { font-family: var(--serif); font-size: 72px; font-weight: 600; line-height: 1; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+.stack { display: flex; height: 40px; border-radius: 5px; overflow: hidden; }
+.stack i { display: flex; align-items: center; justify-content: center; font-style: normal; font-family: var(--mono); font-size: 16px; color: #fff; white-space: nowrap; overflow: hidden; }
+.kv { display: grid; grid-template-columns: 1fr auto; gap: 12px 18px; font-size: 19.5px; color: var(--slate); }
+.kv b { font-family: var(--mono); font-weight: 500; color: var(--ink); font-variant-numeric: tabular-nums; text-align: right; }
+
+/* slide 6: taxonomy */
+.groups { display: grid; grid-template-columns: 1.55fr 1.45fr 1fr; grid-template-rows: auto auto auto; gap: 14px; flex: 1; }
+.grp { display: flex; flex-direction: column; gap: 10px; }
+.grp .g-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+.grp h3 { font-family: var(--serif); font-size: 27px; margin: 0; font-weight: 600; line-height: 1.15; }
+.grp .rule { font-family: var(--mono); font-size: 16px; color: var(--flag); white-space: nowrap; }
+.grp .tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.grp .tags span { font-family: var(--mono); font-size: 15px; background: #edf0f3; border-radius: 4px; padding: 3px 7px; color: var(--ink); }
+.grp .stats { display: flex; flex-wrap: wrap; gap: 6px 22px; margin-top: auto; font-size: 17px; color: var(--slate); }
+.grp .stats b { font-family: var(--mono); font-weight: 500; color: var(--ink); }
+.grp.big { grid-row: span 3; }
+.catrows { display: flex; flex-direction: column; gap: 7px; margin-top: 4px; }
+.catrow { display: grid; grid-template-columns: 1fr 96px 46px; gap: 12px; align-items: center; min-height: 34px; }
+.catrow .nm { font-family: var(--mono); font-size: 15px; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.catrow .nm small { display: block; font-size: 13.5px; color: var(--flag); }
+.catrow .track { height: 10px; background: #e4e8ec; border-radius: 5px; overflow: hidden; }
+.catrow .track i { display: block; height: 100%; background: var(--pass); }
+.catrow .track i.lo { background: var(--flag); }
+.catrow .f { font-family: var(--mono); font-size: 15.5px; text-align: right; color: var(--ink); }
+
+/* tables */
+.tbl { width: 100%; border-collapse: collapse; font-size: 20px; font-variant-numeric: tabular-nums; }
+.tbl th { text-align: right; font-weight: 500; font-size: 15px; color: #7b8799; letter-spacing: .05em; text-transform: uppercase; padding: 8px 10px; border-bottom: 1.5px solid var(--ink); }
+.tbl th:first-child, .tbl td:first-child { text-align: left; }
+.tbl td { padding: 12px 10px; border-bottom: 1px solid var(--rule); text-align: right; font-family: var(--mono); font-size: 19px; color: var(--ink); }
+.tbl td:first-child { font-family: var(--sans); font-size: 20px; color: var(--slate); }
+.tbl td.hi { font-weight: 600; color: var(--pass); }
+.tbl td.lo { color: var(--flag); font-weight: 500; }
+
+svg text { font-family: var(--mono); }
+
+/* panels */
+.scrim { position: fixed; inset: 0; background: rgba(20,35,58,.28); opacity: 0; pointer-events: none; transition: opacity .2s; z-index: 5; }
+.scrim.on { opacity: 1; pointer-events: auto; }
+.panel { position: fixed; top: 0; bottom: 0; width: min(560px, 100vw); background: #fbfbf9; z-index: 6; display: flex; flex-direction: column; box-shadow: 0 0 40px rgba(20,35,58,.25); transition: transform .28s ease; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+.panel.right { right: 0; transform: translateX(105%); }
+.panel.left { left: 0; width: min(380px, 100vw); transform: translateX(-105%); }
+.panel.on { transform: none; }
+.panel header { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; padding: 22px 24px 14px; border-bottom: 1px solid var(--rule); }
+.panel header h3 { font-family: var(--serif); font-size: 26px; margin: 4px 0 0; line-height: 1.15; font-weight: 600; text-wrap: balance; }
+.panel .x { flex: none; width: 36px; height: 36px; border-radius: 50%; border: 1px solid #c2c9d2; background: #fff; cursor: pointer; font-size: 18px; line-height: 1; }
+.panel .content { overflow-y: auto; padding: 18px 24px 32px; font-size: 15.5px; line-height: 1.55; color: var(--slate); }
+.panel .content p { margin: 0 0 12px; max-width: 62ch; }
+.panel .content h4 { font-family: var(--sans); font-size: 13px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink); margin: 20px 0 8px; }
+.panel .content ul { margin: 0 0 12px; padding-left: 18px; }
+.panel .content li { margin: 0 0 6px; }
+.panel .content code, .panel .content .cite { font-family: var(--mono); font-size: 13.5px; }
+.panel .content code { background: #edf0f3; padding: 1px 5px; border-radius: 4px; color: var(--ink); overflow-wrap: anywhere; }
+.panel .content .tbl { font-size: 14px; margin: 6px 0 14px; }
+.panel .content .tbl td { font-size: 13.5px; padding: 6px 8px; }
+.panel .content .tbl td:first-child { font-size: 14px; }
+.panel .content .tbl th { font-size: 12px; padding: 6px 8px; }
+.tblwrap { overflow-x: auto; }
+.idx { list-style: none; margin: 0; padding: 8px 12px 24px; overflow-y: auto; }
+.idx .grp-l { font-family: var(--mono); font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: #7b8799; padding: 16px 12px 6px; }
+.idx button { width: 100%; text-align: left; border: 0; background: none; padding: 10px 12px; border-radius: 8px; cursor: pointer; display: flex; gap: 12px; font-size: 15px; line-height: 1.35; }
+.idx button span { font-family: var(--mono); color: #7b8799; min-width: 22px; }
+.idx button:hover, .idx button.cur { background: #edf0f3; }
+.idx button.cur { font-weight: 600; }
+.note-mini { font-size: 12.5px; color: #7b8799; padding: 0 24px 16px; }
+
+@media (max-width: 720px) {
+  .hint { display: none; }
+  .btn { padding: 7px 11px; }
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <div class="viewport" id="viewport">
+    <div class="stage" id="stage">
+
+<!-- ============ 1 · EXECUTIVE ============ -->
+<section class="slide navy s1" data-title="A first-pass reviewer for Rule 2210" data-sec="Executive summary">
+  <div class="stamp">FIRST-PASS REVIEW · v0.1.0</div>
+  <p class="eyebrow">Board briefing · Compliance technology</p>
+  <h1>A first-pass reviewer for FINRA Rule 2210 that runs on a laptop</h1>
+  <p class="lede">A fine-tuned 3.8-billion-parameter model reads a broker-dealer email, text, post or web page and returns what a principal needs first: the communication type, a compliant or not-compliant verdict, each violation with its rule and the exact words, the severity, and next steps.</p>
+  <div class="io">
+    <div class="io-box"><div class="label">In</div><p>One message as sent, plus who receives it: channel, sender, recipient type and the number of recipients in the last 30 days.</p></div>
+    <div class="io-arrow">→</div>
+    <div class="io-box io-model"><div class="label">Reviewer</div><p>Phi-4-mini-instruct 3.8B with a 185 MB LoRA adapter, on the firm’s own laptop.</p></div>
+    <div class="io-arrow">→</div>
+    <div class="io-box"><div class="label">Out</div><p><span class="cite">correspondence</span> · <span class="cite">not compliant</span> · <span class="cite">2210(d)(1)(B)</span> with the quoted words, severity and next steps.</p></div>
+  </div>
+  <div class="kpis">
+    <div role="button" tabindex="0" class="tap kpi" data-detail="kpi-test"><b>96.5%</b><span>verdicts correct on 1,186 held-out messages</span></div>
+    <div role="button" tabindex="0" class="tap kpi" data-detail="kpi-ood"><b>95.3%</b><span>verdicts correct on 5,800 deliberately unfamiliar messages</span></div>
+    <div role="button" tabindex="0" class="tap kpi" data-detail="kpi-type"><b>99.8%</b><span>correct correspondence / retail / institutional call</span></div>
+    <div role="button" tabindex="0" class="tap kpi" data-detail="kpi-local"><b>~9 s</b><span>per message on an Apple M5 Pro laptop, fully local</span></div>
+  </div>
+  <div class="foot"><span class="sec">Executive summary</span><span>FINRA Rule 2210 reviewer · v0.1.0</span></div>
+</section>
+
+<!-- ============ 2 · EXECUTIVE ============ -->
+<section class="slide" data-title="What it does for a compliance desk" data-sec="Executive summary">
+  <p class="eyebrow">What it does</p>
+  <h2>Every message gets a classification, a verdict and a cited reason in seconds</h2>
+  <div class="body" style="flex-direction:column; gap:22px;">
+    <div style="display:grid; grid-template-columns: 1fr 1.25fr; gap:26px;">
+      <div class="msg">
+        <div class="meta">TEXT MESSAGE · registered rep, Harbor Point Securities LLC<br>To: 3 retail clients · trailing 30 days: 3</div>
+        <div class="bubble">Hi all, <mark>the Atlas Income Fund is a can’t-lose 7% a year.</mark> Want in? – Dana</div>
+      </div>
+      <div role="button" tabindex="0" class="tap verdict" data-detail="verdict">
+        <div class="label" style="color:#8fa1b8;">Model verdict (actual output)</div>
+        <div class="chips"><span class="chip">correspondence</span><span class="chip flag">not compliant</span><span class="chip flag">severity: high</span></div>
+        <div class="chips"><span class="chip">promissory_or_guarantee · 2210(d)(1)(B)</span></div>
+        <p>Excerpt: <q>the Atlas Income Fund is a can’t-lose 7% a year</q>. A fixed annual return for a mutual fund is a promissory claim. Next: escalate to the supervising principal; send a corrective text to all three recipients.</p>
+      </div>
+    </div>
+    <div class="steps3">
+      <div role="button" tabindex="0" class="tap card" data-detail="classify"><h3>Classify</h3><p>Correspondence, retail or institutional, from who receives it: 25 or fewer retail recipients in 30 days is correspondence.</p></div>
+      <div role="button" tabindex="0" class="tap card" data-detail="flag"><h3>Flag and cite</h3><p>Any of 23 violation types in 5 groups, each tied to one rule paragraph, with the offending words quoted verbatim.</p></div>
+      <div role="button" tabindex="0" class="tap card" data-detail="route"><h3>Route</h3><p>Severity from none to high and one to three concrete next steps, so the principal starts from a draft review, not a blank page.</p></div>
+    </div>
+    <p class="miss">The principal still adds one finding: no member firm name, <span class="cite">2210(d)(3)</span>. Absent items are the model’s weakest spot.</p>
+  </div>
+  <div class="foot"><span class="sec">Executive summary</span><span>2 / 10</span></div>
+</section>
+
+<!-- ============ 3 · EXECUTIVE ============ -->
+<section class="slide s3" data-title="Where it stands and what comes next" data-sec="Executive summary">
+  <p class="eyebrow">Where it stands</p>
+  <h2>Reliable on the verdict today; the next round targets naming the exact violation</h2>
+  <div class="body">
+    <div class="col" style="flex:1.15;">
+      <div class="lane-title"><span class="label">Fine-tuned vs untrained, held-out test</span></div>
+      <div class="score" id="score"></div>
+      <div class="legend"><span><i style="background:var(--pass)"></i>Fine-tuned</span><span><i style="background:var(--base)"></i>Untrained base</span></div>
+    </div>
+    <div class="col" style="flex:1;">
+      <div role="button" tabindex="0" class="tap card" data-detail="strengths"><h3>Strong</h3><ul class="list">
+        <li>95.3% verdicts on WhatsApp, voicemail, options, crypto and Spanish messages it never saw.</li>
+        <li>99.8% right on the communication type.</li>
+        <li>Right group of problem: F1 0.92.</li></ul></div>
+      <div role="button" tabindex="0" class="tap card" data-detail="limits"><h3>Not yet</h3><ul class="list flags">
+        <li>Exact category: F1 0.80 (test), 0.69 (unfamiliar).</li>
+        <li>Misses absent items, such as the firm name.</li>
+        <li>Labels not yet reviewed by a compliance expert.</li></ul></div>
+    </div>
+    <div class="col" style="flex:1;">
+      <div role="button" tabindex="0" class="tap card" data-detail="next" style="flex:1;"><h3>Proposed next steps</h3><ul class="list">
+        <li><b>Expert label review</b> on a sample, starting with the disagreements.</li>
+        <li><b>v0.2 data round:</b> 2,400 chat messages and targeted examples for weak categories.</li>
+        <li><b>Supervised pilot</b> with principals, logging every accept, edit and reject.</li>
+        <li><b>Release gate:</b> no version ships unless it beats the last one.</li></ul>
+        <p class="ask"><b>Decisions needed:</b> pilot scope, who reviews the labels, repository access and licensing.</p></div>
+    </div>
+  </div>
+  <div class="foot"><span class="sec">Executive summary</span><span>3 / 10</span></div>
+</section>
+
+<!-- ============ 4 · ARCHITECTURE ============ -->
+<section class="slide" data-title="System architecture" data-sec="Architecture and implementation">
+  <p class="eyebrow">Architecture</p>
+  <h2>A data factory with checks at every step, feeding a small model and a release gate</h2>
+  <div class="body" style="flex-direction:column; gap:22px; margin-top:28px;">
+    <div class="lane">
+      <div class="lane-title"><span class="label">Data factory · written by Claude, checked by code</span><span class="label">17,696 labeled messages</span></div>
+      <div class="flow">
+        <div role="button" tabindex="0" class="tap node" data-detail="n-sources"><div class="k">01</div><h4>FINRA sources</h4><p>Rule 2210, related rules, 8 Regulatory Notices, FAQ</p></div>
+        <div class="arrow">→</div>
+        <div role="button" tabindex="0" class="tap node" data-detail="n-taxonomy"><div class="k">02</div><h4>Rule digest and taxonomy</h4><p>23 categories, each pinned to one cite</p></div>
+        <div class="arrow">→</div>
+        <div role="button" tabindex="0" class="tap node" data-detail="n-sampler"><div class="k">03</div><h4>Scenario sampler</h4><p>Specs fixed in code before any text</p></div>
+        <div class="arrow">→</div>
+        <div role="button" tabindex="0" class="tap node" data-detail="n-agents"><div class="k">04</div><h4>20 parallel agents</h4><p>Claude Opus 5.5 writes each message and label</p></div>
+        <div class="arrow">→</div>
+        <div role="button" tabindex="0" class="tap node gate" data-detail="n-checker"><div class="k">05</div><h4>Checker loop</h4><p>Verbatim excerpts, cites, type rules</p></div>
+        <div class="arrow">→</div>
+        <div role="button" tabindex="0" class="tap node" data-detail="n-clean"><div class="k">06</div><h4>Validate, de-duplicate, split</h4><p>Frozen snapshot; fixed test and OOD sets</p></div>
+      </div>
+    </div>
+    <div class="handoff">train.jsonl · 10,710 chat conversations &nbsp;→&nbsp; model</div>
+    <div class="lane">
+      <div class="lane-title"><span class="label">Model · runs and trains on one laptop</span><span class="label">Phi-4-mini-instruct 3.8B + LoRA</span></div>
+      <div class="flow">
+        <div role="button" tabindex="0" class="tap node model" data-detail="n-train"><div class="k">07</div><h4>LoRA fine-tune</h4><p>mlx-lm, 2 epochs, 13 h on an M5 Pro</p></div>
+        <div class="arrow">→</div>
+        <div role="button" tabindex="0" class="tap node model" data-detail="n-eval"><div class="k">08</div><h4>Evaluation</h4><p>1,186 test + 5,800 OOD, vs the untrained base</p></div>
+        <div class="arrow">→</div>
+        <div role="button" tabindex="0" class="tap node gate" data-detail="n-gate"><div class="k">09</div><h4>Release gate</h4><p>44 checks against the current version</p></div>
+        <div class="arrow">→</div>
+        <div role="button" tabindex="0" class="tap node model" data-detail="n-serve"><div class="k">10</div><h4>Review on demand</h4><p>One command per message, local</p></div>
+        <div class="arrow">↺</div>
+        <div role="button" tabindex="0" class="tap node" data-detail="n-loop"><div class="k">11</div><h4>Feedback loop</h4><p>Reviewer decisions and audits feed the next round</p></div>
+      </div>
+    </div>
+    <div class="facts">
+      <div><b>0 / 0</b><span>validation rejects / near-duplicates</span></div>
+      <div><b>~13 h</b><span>training on one 24 GB laptop</span></div>
+      <div><b>6,986</b><span>evaluation messages per model</span></div>
+      <div><b>44</b><span>release-gate checks per version</span></div>
+      <div><b>No API</b><span>at review time; data stays local</span></div>
+    </div>
+  </div>
+  <div class="foot"><span class="sec">Architecture and implementation</span><span>4 / 10</span></div>
+</section>
+
+<!-- ============ 5 · DATA ============ -->
+<section class="slide" data-title="The dataset" data-sec="Architecture and implementation">
+  <p class="eyebrow">Data</p>
+  <h2>17,696 synthetic messages, balanced by design and checked line by line</h2>
+  <div class="body">
+    <div class="col" style="flex:1;">
+      <div role="button" tabindex="0" class="tap card" data-detail="d-indomain">
+        <div class="label">In-domain</div>
+        <div class="bignum" style="margin-top:8px;">11,896</div>
+        <p style="margin-top:6px;">10,710 train · 1,186 held-out test, stratified by difficulty × type × category</p>
+        <div style="margin-top:18px;" class="label">Communication type · correspondence / retail / institutional</div>
+        <div class="stack" style="margin-top:8px;"><i style="flex:5870;background:var(--ink)">correspondence 49%</i><i style="flex:4567;background:var(--pass)">retail 38%</i><i style="flex:1459;background:#7c8ea6">12%</i></div>
+        <div style="margin-top:14px;" class="label">Difficulty</div>
+        <div class="stack" style="margin-top:8px;"><i style="flex:3519;background:#8fb3c2;color:var(--ink)">easy 30%</i><i style="flex:4786;background:var(--pass)">medium 40%</i><i style="flex:3591;background:var(--ink)">hard 30%</i></div>
+        <p style="margin-top:14px;">44% compliant, so “mentions returns” never means “violation”.</p>
+      </div>
+    </div>
+    <div class="col" style="flex:1;">
+      <div role="button" tabindex="0" class="tap card" data-detail="d-ood">
+        <div class="label">Out-of-distribution · eval only</div>
+        <div class="bignum" style="margin-top:8px;">5,800</div>
+        <p style="margin-top:6px;">Each message shifted on 1–3 axes it never trained on</p>
+        <div class="kv" style="margin-top:16px;">
+          <span>Product: options, crypto ETFs, Reg D, structured notes</span><b>2,716</b>
+          <span>Channel: WhatsApp, LinkedIn, voicemail, chatbots</span><b>2,711</b>
+          <span>Style: slang, emoji, all caps, non-native English</span><b>1,516</b>
+          <span>Audience: forwarding institutions, Spanish speakers</span><b>1,229</b>
+          <span>Regulatory twist: 2210(f), Reg BI, AI-written text</span><b>1,035</b>
+          <span>Firm type: bank, insurer, robo-hybrid, new member</span><b>910</b>
+        </div>
+      </div>
+    </div>
+    <div class="col" style="flex:.9;">
+      <div role="button" tabindex="0" class="tap card" data-detail="d-quality" style="flex:1;">
+        <div class="label">Quality controls</div>
+        <div class="kv" style="margin-top:14px;">
+          <span>Rejected by validation</span><b>0</b>
+          <span>Near-duplicates removed</span><b>0</b>
+          <span>Largest 6-word overlap, any pair</span><b>~0.38</b>
+          <span>Gold answers that parse back to label</span><b>100%</b>
+          <span>Written by Claude Opus 5.5</span><b>98%</b>
+          <span>Channels covered</span><b>17</b>
+          <span>Chat share (SMS, IM, text blast)</span><b>18.8%</b>
+        </div>
+        <p style="margin-top:16px;">Grounded in the archived text of Rule 2210, related rules and 8 Regulatory Notices.</p>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span class="sec">Architecture and implementation</span><span>5 / 10</span></div>
+</section>
+
+<!-- ============ 6 · TAXONOMY ============ -->
+<section class="slide" data-title="What it looks for" data-sec="Architecture and implementation">
+  <p class="eyebrow">Taxonomy</p>
+  <h2>23 violation types in 5 groups, each pinned to one rule paragraph</h2>
+  <div class="body" style="margin-top:20px;"><div class="groups" id="groups"></div></div>
+  <div class="foot"><span class="sec">Architecture and implementation</span><span>6 / 10</span></div>
+</section>
+
+<!-- ============ 7 · MODEL & TRAINING ============ -->
+<section class="slide" data-title="Model and training" data-sec="Architecture and implementation">
+  <p class="eyebrow">Model and training</p>
+  <h2>A 3.8B model adapted with LoRA: 2 epochs, 13 hours, no overfitting</h2>
+  <div class="body">
+    <div class="col" style="flex:1;">
+      <div role="button" tabindex="0" class="tap card" data-detail="t-recipe">
+        <div class="label">Recipe</div>
+        <table class="tbl" style="margin-top:8px;">
+          <tr><td>Base model</td><td>Phi-4-mini-instruct, 4-bit</td></tr>
+          <tr><td>Adapter</td><td>LoRA rank 32, alpha 64</td></tr>
+          <tr><td>Where</td><td>all 32 blocks, attn + MLP</td></tr>
+          <tr><td>Optimizer</td><td>AdamW 2e-4, cosine</td></tr>
+          <tr><td>Batch</td><td>16 effective</td></tr>
+          <tr><td>Loss on</td><td>reviewer turns only</td></tr>
+          <tr><td>Examples</td><td>13,271 train · 705 val</td></tr>
+          <tr><td>Hardware</td><td>Apple M5 Pro, 24 GB</td></tr>
+          <tr><td>Training time</td><td>~13 h, 6,636 iterations</td></tr>
+          <tr><td>Adapter size</td><td>185 MB</td></tr>
+        </table>
+      </div>
+    </div>
+    <div class="col" style="flex:1.45;">
+      <div role="button" tabindex="0" class="tap card" data-detail="t-loss" style="flex:1;">
+        <div class="label">Validation loss, every 400 iterations</div>
+        <div id="losschart" style="margin-top:10px;"></div>
+        <p>2.185 → <b style="color:var(--ink)">0.287</b>; still at its minimum at the last of 6,636 iterations; train–validation gap +0.039.</p>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span class="sec">Architecture and implementation</span><span>7 / 10</span></div>
+</section>
+
+<!-- ============ 8 · EVALUATION ============ -->
+<section class="slide" data-title="Evaluation results" data-sec="Architecture and implementation">
+  <p class="eyebrow">Evaluation</p>
+  <h2>Fine-tuning turns an unusable base model into a dependable first reader</h2>
+  <div class="body">
+    <div class="col" style="flex:1.15;">
+      <div role="button" tabindex="0" class="tap card" data-detail="e-table">
+        <table class="tbl" id="evaltable"></table>
+      </div>
+    </div>
+    <div class="col" style="flex:1;">
+      <div role="button" tabindex="0" class="tap card" data-detail="e-levels" style="flex:1;">
+        <div class="label">Category F1 by how strictly a match is counted</div>
+        <div id="levelchart" style="margin-top:10px;"></div>
+        <p>Most misses land on a neighbouring category with the same or a related rule.</p>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span class="sec">Architecture and implementation</span><span>8 / 10</span></div>
+</section>
+
+<!-- ============ 9 · ROBUSTNESS ============ -->
+<section class="slide" data-title="Robustness and failure modes" data-sec="Architecture and implementation">
+  <p class="eyebrow">Robustness</p>
+  <h2>The verdict survives unfamiliar inputs; specific categories need work</h2>
+  <div class="body">
+    <div class="col" style="flex:1.1;">
+      <div role="button" tabindex="0" class="tap card" data-detail="r-axes" style="flex:1;">
+        <div class="label">Unfamiliar messages, by what was changed</div>
+        <div id="axischart" style="margin-top:10px;"></div>
+      </div>
+    </div>
+    <div class="col" style="flex:1;">
+      <div role="button" tabindex="0" class="tap card" data-detail="r-weak">
+        <div class="label">Weakest categories (F1, test / unfamiliar)</div>
+        <table class="tbl" style="margin-top:6px;">
+          <tr><td>member_name_missing</td><td class="lo">0.13</td><td class="lo">0.06</td></tr>
+          <tr><td>product_specific_omission</td><td class="lo">0.00</td><td class="lo">0.01</td></tr>
+          <tr><td>misleading_in_context</td><td class="lo">0.36</td><td class="lo">0.37</td></tr>
+        </table>
+      </div>
+      <div role="button" tabindex="0" class="tap card" data-detail="r-unseen">
+        <div class="label">Two categories it never saw</div>
+        <p style="margin-top:8px;">Never named, yet still flagged not compliant: <b style="color:var(--ink)">16 of 16</b> options messages and <b style="color:var(--ink)">78 of 79</b> forwarded third-party content.</p>
+      </div>
+      <div role="button" tabindex="0" class="tap card" data-detail="r-chat">
+        <div class="label">Chat</div>
+        <p style="margin-top:8px;">Verdict correct on <b style="color:var(--ink)">97.4%</b> of 229 test texts and IMs, and <b style="color:var(--ink)">96.0%</b> of 893 messages from chat apps it never saw.</p>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span class="sec">Architecture and implementation</span><span>9 / 10</span></div>
+</section>
+
+<!-- ============ 10 · IMPROVEMENT & GOVERNANCE ============ -->
+<section class="slide s10" data-title="Improvement loop and governance" data-sec="Architecture and implementation">
+  <p class="eyebrow">Improvement and governance</p>
+  <h2>Every new version earns its release against a fixed yardstick</h2>
+  <div class="body" style="flex-direction:column; gap:22px;">
+    <div class="flow">
+      <div role="button" tabindex="0" class="tap node" data-detail="g-feedback"><div class="k">STAGE 1</div><h4>Reviewer feedback</h4><p>Accept, edit, reject logged with the model version</p></div>
+      <div class="arrow">→</div>
+      <div role="button" tabindex="0" class="tap node" data-detail="g-audit"><div class="k">STAGE 2</div><h4>Label audit</h4><p>Claude Opus rules on model-vs-label disagreements</p></div>
+      <div class="arrow">→</div>
+      <div role="button" tabindex="0" class="tap node model" data-detail="g-sft"><div class="k">STAGE 3</div><h4>Supervised round</h4><p>Retrain from base on corrected data</p></div>
+      <div class="arrow">→</div>
+      <div role="button" tabindex="0" class="tap node model" data-detail="g-dpo"><div class="k">STAGE 4</div><h4>Preference training</h4><p>DPO on the model’s own mistakes</p></div>
+      <div class="arrow">→</div>
+      <div role="button" tabindex="0" class="tap node model" data-detail="g-grpo"><div class="k">STAGE 5</div><h4>Reinforcement</h4><p>GRPO with a reward computed from labels</p></div>
+      <div class="arrow">→</div>
+      <div role="button" tabindex="0" class="tap node gate" data-detail="g-gate"><div class="k">STAGE 6</div><h4>Release gate</h4><p>Ship only if no check gets worse</p></div>
+    </div>
+    <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:18px; flex:1;">
+      <div role="button" tabindex="0" class="tap card" data-detail="g-controls"><h3>Controls</h3><ul class="list">
+        <li>A registered principal makes every decision.</li>
+        <li>Each review records the model version.</li>
+        <li>Test and OOD sets never enter training.</li>
+        <li>Review runs locally; messages stay on firm hardware.</li></ul></div>
+      <div role="button" tabindex="0" class="tap card" data-detail="g-roadmap"><h3>Roadmap</h3><ul class="list">
+        <li><b>v0.2</b> audited labels, chat top-up, targeted examples</li>
+        <li><b>v0.3</b> preference training on v0.2’s errors</li>
+        <li><b>v0.4</b> reinforcement, if the gate shows a need</li>
+        <li><b>Ongoing</b> pilot feedback feeds every round</li></ul></div>
+      <div role="button" tabindex="0" class="tap card" data-detail="g-risks"><h3>Open risks</h3><ul class="list flags">
+        <li>Labels are synthetic until experts review them.</li>
+        <li>Rules change; the digest reflects October 2026.</li>
+        <li>Scope is the text: no filing deadlines or workflow.</li>
+        <li>Exact-category naming is the main accuracy gap.</li></ul></div>
+    </div>
+  </div>
+  <div class="foot"><span class="sec">Architecture and implementation</span><span>10 / 10</span></div>
+</section>
+
+    </div>
+  </div>
+  <div class="bar">
+    <div class="group">
+      <button class="btn" id="idxbtn" aria-controls="idxpanel" aria-expanded="false">☰ Slides</button>
+      <span class="hint">Click any card for detail · ← → to move · Esc to close</span>
+    </div>
+    <div class="group">
+      <button class="btn" id="prev" aria-label="Previous slide">←</button>
+      <span class="count" id="count" aria-live="polite">1 / 10</span>
+      <button class="btn" id="next" aria-label="Next slide">→</button>
+    </div>
+    <div class="progress"><i id="prog"></i></div>
+  </div>
+</div>
+
+<div class="scrim" id="scrim"></div>
+<aside class="panel left" id="idxpanel" aria-label="Slide index">
+  <header><div><div class="label">FINRA Rule 2210 reviewer</div><h3>Slides</h3></div><button class="x" data-close aria-label="Close">×</button></header>
+  <ol class="idx" id="idx"></ol>
+  <p class="note-mini">Slides 1–3 are the executive summary; 4–10 cover architecture and implementation.</p>
+</aside>
+<aside class="panel right" id="detail" aria-label="Detail" role="dialog" aria-modal="true">
+  <header><div><div class="label" id="dlabel">Detail</div><h3 id="dtitle"></h3></div><button class="x" data-close aria-label="Close">×</button></header>
+  <div class="content" id="dbody"></div>
+</aside>
+
+<!-- ============ DETAIL CONTENT ============ -->
+<div hidden id="details">
+<template data-key="kpi-test" data-title="96.5% on the held-out test set"><p>The test set is 1,186 messages the model never saw in training: a 10% split stratified by difficulty, communication type and primary violation, held fixed across versions.</p><h4>Verdict outcomes</h4><div class="tblwrap"><table class="tbl"><tr><th>Actual</th><th>Said violation</th><th>Said compliant</th><th>No answer</th></tr><tr><td>Violation (657)</td><td>639</td><td>17</td><td>1</td></tr><tr><td>Compliant (529)</td><td>22</td><td>506</td><td>1</td></tr></table></div><p>Violation detection: precision 0.967, recall 0.973. The model is slightly more likely to raise a false alarm (22) than to pass a violation (17), which is the safer direction for a first-pass reviewer.</p><p>By difficulty: easy 96.6%, medium 97.1%, hard 95.8%.</p></template>
+<template data-key="kpi-ood" data-title="95.3% on unfamiliar messages"><p>The out-of-distribution (OOD) set has 5,800 messages built to be unlike the training data. Each one changes 1–3 things: the channel (WhatsApp, LinkedIn, voicemail transcripts, OCR’d handwriting, chatbot transcripts), the product (options, crypto ETFs, Reg D, structured notes, leveraged ETFs), the audience, the writing style, the firm type, or a regulatory twist such as 2210(f) public appearances, Reg BI or AI-written text under Regulatory Notice 24-09.</p><h4>Verdict outcomes</h4><div class="tblwrap"><table class="tbl"><tr><th>Actual</th><th>Said violation</th><th>Said compliant</th><th>No answer</th></tr><tr><td>Violation (3,168)</td><td>3,083</td><td>71</td><td>14</td></tr><tr><td>Compliant (2,632)</td><td>187</td><td>2,444</td><td>1</td></tr></table></div><p>Recall on violations stays at 97.3%; false alarms rise to 7% of compliant messages. The OOD set is never trained on.</p></template>
+<template data-key="kpi-type" data-title="Communication type"><p>Under Rule 2210 the type decides the process: <b>correspondence</b> (25 or fewer retail investors in 30 days) needs supervisory review but no pre-approval; a <b>retail communication</b> (more than 25) needs a principal’s approval before use and may need filing; an <b>institutional communication</b> goes only to institutional investors.</p><p>Accuracy: 99.8% on test (3 errors in 1,186) and 98.6% on OOD. Most OOD errors call correspondence institutional (44 of 5,800).</p></template>
+<template data-key="kpi-local" data-title="Runs locally"><p>The reviewer is Microsoft’s Phi-4-mini-instruct (3.8 billion parameters, 4-bit, about 2.2 GB) with a 185 MB LoRA adapter. It runs on an Apple M5 Pro laptop with MLX: about 9 seconds for one message after the first load, or about 1.4 seconds per message in batches of 16.</p><p>No message leaves the machine: there is no API call at review time. The base model is MIT-licensed and downloads once from Hugging Face.</p><p>The same recipe trains on NVIDIA GPUs with PyTorch and TRL.</p></template>
+<template data-key="verdict" data-title="The full verdict"><p>The model writes a short review in prose and ends with a machine-readable verdict:</p><div class="tblwrap"><table class="tbl"><tr><td>communication_type</td><td>correspondence</td></tr><tr><td>compliant</td><td>false</td></tr><tr><td>violation</td><td>promissory_or_guarantee · 2210(d)(1)(B)</td></tr><tr><td>excerpt</td><td>the Atlas Income Fund is a can’t-lose 7% a year</td></tr><tr><td>severity</td><td>high</td></tr><tr><td>next steps</td><td>escalate to the supervising principal under Rule 3110(b); send a corrective text withdrawing the claim</td></tr></table></div><p>Every excerpt must be a verbatim quote, so a reviewer can find it in the message at once. 99.8% of answers on test produce a valid verdict.</p><p>This is a real output of v0.1.0 on an invented message. The model missed the absent firm name (2210(d)(3)); a principal would add it.</p></template>
+<template data-key="classify" data-title="Classification rules"><ul><li><b>Correspondence:</b> written communication to 25 or fewer retail investors within any 30 calendar days. Reviewed under Rule 3110(b); no pre-approval or filing.</li><li><b>Retail communication:</b> more than 25 retail investors, or public (web pages, social posts, seminars, mass email). A registered principal approves it before use; some must be filed with FINRA.</li><li><b>Institutional communication:</b> only institutional investors. Not institutional if the firm has reason to believe it will be forwarded to retail investors.</li></ul><p>The model reads the recipient count and type from the message metadata, as a reviewer would from the distribution list.</p></template>
+<template data-key="flag" data-title="Flag and cite"><p>The model chooses from 23 categories, each tied to one rule paragraph, grouped into five families: misleading content (2210(d)(1)), missing required disclosures ((d)(2)–(d)(8), Rule 2212), approval and audience ((a), (b)), implied FINRA endorsement ((e)) and options rules (2220).</p><p>Each finding carries the category, the rule, a verbatim excerpt of up to 200 characters and a one-sentence explanation. The full taxonomy is on slide 6.</p></template>
+<template data-key="route" data-title="Severity and next steps"><ul><li><b>None:</b> compliant.</li><li><b>Low:</b> a technical or disclosure gap with little investor harm.</li><li><b>Medium:</b> misleading content a reviewer would send back.</li><li><b>High:</b> a promise, guarantee, projection or fraud-adjacent claim, or one likely to be referred to Enforcement.</li></ul><p>Severity is right 89.5% of the time on test. Most errors are one step off (medium vs high).</p></template>
+<template data-key="strengths" data-title="Where it is strong"><ul><li>Verdict accuracy: 96.5% on test, 95.3% on OOD, and at least 94% on every OOD shift axis.</li><li>Violation recall: 97.3% on both test and OOD.</li><li>Communication type: 99.8% on test, 98.6% on OOD.</li><li>Broad-group F1: 0.92 on test, 0.88 on OOD.</li><li>Valid verdicts: 99.8% of answers.</li><li>Promises, projections, testimonials, tax claims and FINRA-endorsement claims are each found with F1 above 0.89 on test.</li></ul></template>
+<template data-key="limits" data-title="What it does not do yet"><ul><li><b>Exact category:</b> F1 0.80 on test and 0.69 on OOD. Neighbouring categories under the same rule are confused, for example product-specific omissions labeled as generally unbalanced.</li><li><b>Absent items:</b> a missing firm name is caught in only 8% of cases on test.</li><li><b>Labels:</b> written by Claude models acting as a FINRA examiner and checked by code, but not yet reviewed by a compliance professional.</li><li><b>Scope:</b> the text and its distribution metadata only. It does not track filing deadlines, records or supervisory workflow, and covers Rules 2210, 2212 and 2220.</li></ul></template>
+<template data-key="next" data-title="Proposed next steps"><ul><li><b>Expert label review.</b> A compliance professional spot-checks a sample, starting with the cases where model and label disagree. Claude Opus pre-sorts them.</li><li><b>v0.2 data round.</b> The planned 2,400 chat messages (SMS, IM, text blasts), paired examples that differ only in whether the firm is named, and relabeling so each message lists every category that applies.</li><li><b>Supervised pilot.</b> Principals use the reviewer on real traffic; every accept, edit and reject is logged with the model version and becomes training data.</li><li><b>Release gate.</b> A new version ships only if it is no worse on test, OOD, chat, every broad group and every difficulty level.</li></ul><p>Decisions needed: pilot scope, who reviews labels, and repository access and licensing.</p></template>
+<template data-key="n-sources" data-title="FINRA sources"><p>Archived verbatim on 14 October 2026 from finra.org and eCFR:</p><ul><li>Rule 2210 and related rules 2010, 2020, 2111, 2211–2216, 2220, 2241, 2330, 3110, 3240, 4511, 4512</li><li>Regulatory Notices 12-29, 15-50, 16-41, 17-18, 19-31, 19-32, 20-21, 24-09</li><li>The Rule 2210 FAQ and the communications section of the 2025 Annual Regulatory Oversight Report</li><li>SEC Rules 482 and 34b-1</li></ul></template>
+<template data-key="n-taxonomy" data-title="Rule digest and taxonomy"><p>The sources were distilled into a working digest of Rule 2210 and a table of 23 violation categories, each pinned to one rule citation and to the communication types it can apply to. For example, (d)(3) to (d)(6) disclosures never apply to institutional communications. The digest also defines the difficulty tiers and the severity scale.</p></template>
+<template data-key="n-sampler" data-title="Scenario sampler"><p>Every message starts as a specification sampled in code: difficulty (30 / 40 / 30), compliance target (about 45% compliant), the exact violation categories, channel, product, sender, tone, length, and the recipient profile and count that determine the communication type. Out-of-distribution specs add 1–3 shift axes.</p><p>Compliant specs carry a “near miss”, such as fund returns quoted with full standardized performance, so the model cannot learn that mentioning returns means a violation.</p></template>
+<template data-key="n-agents" data-title="Writing with 20 parallel agents"><p>Claude Code subagents, acting as a senior FINRA Advertising Regulation examiner, wrote the messages in chunks of 24, up to 20 at a time, each following the same brief. Claude Opus 5.5 wrote 98% of the data; Claude Fable 5.1 wrote the pilot. No API key was needed.</p></template>
+<template data-key="n-checker" data-title="Checker loop"><p>Each agent ran the checker on its own output and fixed problems until none remained. The checker requires:</p><ul><li>every excerpt to be a verbatim substring of the message;</li><li>every rule citation to be the one its category requires;</li><li>no category on a communication type it cannot apply to;</li><li>the type to agree with the recipient metadata;</li><li>compliant, violations and severity to agree;</li><li>the message to match its specification.</li></ul></template>
+<template data-key="n-clean" data-title="Validate, de-duplicate, split"><ul><li>Validated output is frozen in a checksummed, append-only snapshot.</li><li>Everything is validated again and de-duplicated on 6-word sequences (more than 50% overlap is dropped); OOD is de-duplicated against in-domain. Result: 0 rejects, 0 duplicates.</li><li>The test split is incremental: when data is added, earlier items keep their side, so every version is measured on the same test set.</li><li>Each message becomes a chat conversation; 30% add a follow-up question such as who must approve it.</li></ul></template>
+<template data-key="n-train" data-title="LoRA fine-tune"><p>LoRA trains a small set of extra weights (185 MB) on top of the frozen 4-bit base, in all 32 transformer blocks. Two epochs over 13,271 training examples took 6,636 iterations and about 13 hours on a 24 GB M5 Pro. The loss counts only the reviewer’s turns.</p></template>
+<template data-key="n-eval" data-title="Evaluation"><p>Both the fine-tuned model and the untrained base are run on the full test (1,186) and OOD (5,800) sets with the same prompt and greedy decoding. Scores cover the verdict, type, severity, violation detection, and categories at four levels of strictness, broken down by difficulty, type, channel and OOD axis. Every prediction is published so any number can be re-scored.</p></template>
+<template data-key="n-gate" data-title="Release gate"><p>An automated comparison of a candidate with the version in production: 44 checks covering overall metrics with absolute floors (for example verdict accuracy at least 94%, valid answers at least 99%), the chat slice, each broad group and each difficulty level. Any check that gets worse beyond a small tolerance fails the release.</p></template>
+<template data-key="n-serve" data-title="Review on demand"><p>One command reviews a message: the text, the channel, the sender and the recipient count go in; the prose review and JSON verdict come out. It runs on the laptop that trained it, so client communications stay on firm hardware.</p></template>
+<template data-key="n-loop" data-title="Feedback loop"><p>Reviewer decisions and model-vs-label audits become corrected labels and preference pairs for the next training round. Slide 10 shows the six stages.</p></template>
+<template data-key="d-indomain" data-title="In-domain data"><div class="tblwrap"><table class="tbl"><tr><th>Item</th><th>Count</th></tr><tr><td>Train</td><td>10,710</td></tr><tr><td>Held-out test</td><td>1,186</td></tr><tr><td>Correspondence</td><td>5,870</td></tr><tr><td>Retail communication</td><td>4,567</td></tr><tr><td>Institutional</td><td>1,459</td></tr><tr><td>Compliant</td><td>5,283</td></tr><tr><td>One violation</td><td>4,175</td></tr><tr><td>Two violations</td><td>1,922</td></tr><tr><td>Three or four</td><td>516</td></tr></table></div><h4>Channels (17)</h4><p>Email 4,246 · letter 1,112 · SMS 1,074 · instant message 896 · mass email 843 · social post 687 · web page 626 · newsletter 445 · blog 340 · seminar invitation 322 · seminar script 306 · form letter 284 · text blast 261 · radio or podcast script 208 · print ad 141 · video script 102 · mass-email template 3.</p><p>336 extra messages topped up the three rarest categories (BrokerCheck link, institutional forwarding, unapproved retail use).</p></template>
+<template data-key="d-ood" data-title="Out-of-distribution set"><p>The OOD set exists to show how the model behaves on what it has not seen. Its messages come from a different sampler seed, shift 1–3 axes each, include two violation categories absent from training, and were de-duplicated against the training data.</p><p>Shift counts add to more than 5,800 because a message can shift several axes.</p></template>
+<template data-key="d-quality" data-title="Quality controls"><ul><li>Specifications are sampled before any text is written, so the balance of difficulty, type, compliance and category is set in code.</li><li>Every label passes the same checks twice: once in the writing loop and once before the split.</li><li>Every reference answer was parsed back to JSON and compared with its label: no mismatches.</li><li>The longest training conversation is 1,913 tokens, under the 2,048-token limit.</li></ul><p>Limit: the labels are model judgments checked for consistency, not for regulatory correctness by a human expert.</p></template>
+<template data-key="t-recipe" data-title="Training recipe"><div class="tblwrap"><table class="tbl"><tr><td>Base</td><td>mlx-community/Phi-4-mini-instruct-4bit</td></tr><tr><td>LoRA</td><td>rank 32, scale 2 (alpha 64), dropout 0.05</td></tr><tr><td>Targets</td><td>qkv_proj, o_proj, gate_up_proj, down_proj</td></tr><tr><td>Schedule</td><td>50 warmup steps, cosine 2e-4 → 2e-6</td></tr><tr><td>Batch</td><td>4 × gradient accumulation 4</td></tr><tr><td>Iterations</td><td>6,636 (2 epochs)</td></tr><tr><td>Max length</td><td>2,048 tokens</td></tr><tr><td>Validation</td><td>stratified 5% of train (539 conversations)</td></tr></table></div><p>An NVIDIA path (PyTorch + TRL, bf16 base) uses the same recipe; it is tested on CPU with a tiny model but not yet run on a GPU.</p></template>
+<template data-key="t-loss" data-title="Loss curve"><p>Validation loss fell fastest in the first 800 iterations (2.185 → 0.393) and kept improving slowly to 0.287 at the final iteration, which is also the best checkpoint. The train loss in the last reports averaged 0.248, a gap of +0.039 to validation, so the model is not memorizing the training set.</p><p>One brief loss spike at iteration 320 recovered within the next report.</p></template>
+<template data-key="e-table" data-title="All headline metrics"><div class="tblwrap"><table class="tbl" id="evalfull"></table></div><p>The untrained base gets the same system prompt. It writes labels in its own words (“Retail Communication”, “Moderate”), so exact-match type, severity and category scores are near zero; matched case-insensitively, its type accuracy is 32% on test.</p></template>
+<template data-key="e-levels" data-title="Four levels of category matching"><ul><li><b>Exact:</b> the category must match.</li><li><b>Rule level:</b> categories with the same rule paragraph count as a match.</li><li><b>(d)(1) family:</b> all general content standards count as one.</li><li><b>Broad group:</b> any category in the right one of the five groups.</li></ul><p>Most common swaps on OOD: product-specific omission read as not fair and balanced (178), misleading in context read as not fair and balanced (62) or as a false statement (50).</p></template>
+<template data-key="r-axes" data-title="OOD by shift axis"><div class="tblwrap"><table class="tbl"><tr><th>Axis</th><th>Items</th><th>Verdict</th><th>Cat. F1</th><th>Group F1</th></tr><tr><td>audience</td><td>1,229</td><td>96.3%</td><td>0.73</td><td>0.88</td></tr><tr><td>firm type</td><td>910</td><td>95.5%</td><td>0.72</td><td>0.89</td></tr><tr><td>channel</td><td>2,711</td><td>94.0%</td><td>0.70</td><td>0.87</td></tr><tr><td>style</td><td>1,516</td><td>94.4%</td><td>0.69</td><td>0.87</td></tr><tr><td>reg. twist</td><td>1,035</td><td>95.8%</td><td>0.67</td><td>0.85</td></tr><tr><td>product</td><td>2,716</td><td>96.0%</td><td>0.61</td><td>0.88</td></tr></table></div><p>Product shifts cost the most on naming the category: unfamiliar products bring product-specific omissions, the model’s weakest category.</p></template>
+<template data-key="r-weak" data-title="Per-category F1"><div class="tblwrap"><table class="tbl" id="catfull"></table></div><p>A dash means the category does not occur in that set.</p></template>
+<template data-key="r-unseen" data-title="Categories it never saw"><p><code>options_communication</code> (Rule 2220) and <code>third_party_content_adoption</code> (Regulatory Notice 17-18) appear only in the OOD set. The model never uses either label, but it still flags 16 of 16 and 78 of 79 of those messages as not compliant, usually under a general 2210(d)(1) category such as not fair and balanced or promissory.</p><p>So the verdict generalizes even where the vocabulary does not. Adding these categories to training is part of the roadmap.</p></template>
+<template data-key="r-chat" data-title="Chat performance"><div class="tblwrap"><table class="tbl"><tr><th>Slice</th><th>Items</th><th>Verdict</th><th>Cat. F1</th></tr><tr><td>Test: SMS, IM, text blast</td><td>229</td><td>97.4%</td><td>0.79</td></tr><tr><td>OOD: SMS, IM, text blast</td><td>605</td><td>96.4%</td><td>0.69</td></tr><tr><td>OOD: WhatsApp, LinkedIn, X, Slack/Teams</td><td>893</td><td>96.0%</td><td>0.72</td></tr></table></div><p>Chat is 18.8% of the training data; a 2,400-message chat top-up is planned for v0.2. The untrained base gets 38.4% on test chat.</p></template>
+<template data-key="g-feedback" data-title="Stage 1 · Reviewer feedback"><p>Each review logs the message, the model’s answer, the model version and the principal’s decision: accept, edit, reject or a thumbs signal. Accepted and corrected verdicts become labeled training examples; a correction next to the model’s answer becomes a preference pair. Every correction passes the same label checks as the dataset.</p></template>
+<template data-key="g-audit" data-title="Stage 2 · Label audit"><p>The current model runs over the training set; the disagreements with the labels are ranked by importance and given to audit agents, who decide whether the label, the model, neither or both are right. Fixes to training labels feed the next round; fixes to test or OOD labels create a new, published version of the evaluation set and never enter training.</p></template>
+<template data-key="g-sft" data-title="Stage 3 · Supervised round"><p>Label fixes and new examples (reviewer corrections, the chat top-up, paired examples) are checked, de-duplicated and added. The split keeps every earlier test item in test. The model is retrained from the base, not on top of the last adapter, so earlier skills are not lost.</p></template>
+<template data-key="g-dpo" data-title="Stage 4 · Preference training (DPO)"><p>The model is shown its own wrong answers next to the correct ones and learns to prefer the correct verdict, which targets specific confusions such as product-specific omission vs not fair and balanced. No reviewer data is needed to start, and a strength setting keeps it close to the supervised model.</p></template>
+<template data-key="g-grpo" data-title="Stage 5 · Reinforcement (GRPO)"><p>The model writes several answers per message and code scores each against the label: verdict 0.30, category 0.20, broad group 0.10, type 0.10, severity 0.10, grounded excerpts 0.15, correct cite 0.05, and a 0.50 penalty for calling a high-severity violation compliant. Because the verdict is structured, no learned reward model is needed.</p></template>
+<template data-key="g-gate" data-title="Stage 6 · Release gate"><p>44 checks on the fixed test and OOD sets: absolute floors for verdict accuracy, violation recall, type accuracy and valid answers, plus maximum allowed drops for every broad group, difficulty level and the chat slice. v0.1.0 passes all 44 against the untrained base; the reverse fails.</p></template>
+<template data-key="g-controls" data-title="Controls"><ul><li>The model drafts; a registered principal decides.</li><li>Every review records the model version, so outputs can be traced.</li><li>Test and OOD sets are frozen and never trained on, so versions are comparable.</li><li>Release requires passing the gate.</li><li>Inference is local: client communications stay on firm hardware.</li></ul></template>
+<template data-key="g-roadmap" data-title="Roadmap"><div class="tblwrap"><table class="tbl"><tr><th>Version</th><th>Change</th></tr><tr><td>v0.2</td><td>Audited labels; chat top-up; firm-name and product-omission pairs; retrain from base</td></tr><tr><td>v0.3</td><td>DPO on v0.2’s mistakes (trained on NVIDIA)</td></tr><tr><td>v0.4</td><td>GRPO with the label-based reward, if needed</td></tr><tr><td>Ongoing</td><td>Reviewer feedback from the pilot feeds each round</td></tr></table></div></template>
+<template data-key="g-risks" data-title="Open risks"><ul><li><b>Synthetic labels:</b> regulatory judgments by a model, checked for consistency, not yet by experts.</li><li><b>Rule changes:</b> FINRA amends 2210 and its guidance; the digest reflects rule text retrieved in October 2026.</li><li><b>Scope:</b> text and metadata only; filing deadlines (2210(c)), recordkeeping and supervisory workflow stay with people and existing systems.</li><li><b>Category naming:</b> exact-category accuracy is the main gap and the focus of v0.2.</li></ul></template>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  // ---- data (from results/metrics, v0.1.0) ----
+  var EVAL = {
+    rows: [
+      ["Valid JSON verdict", 0.9983, 0.9974, 0.6779, "pct"],
+      ["Verdict correct", 0.9654, 0.9529, 0.3921, "pct"],
+      ["Communication type", 0.9975, 0.9860, 0.0, "pct"],
+      ["Severity", 0.8954, 0.8640, 0.0118, "pct"],
+      ["Violation detection F1", 0.9697, 0.9578, 0.4375, "f"],
+      ["Category F1, exact", 0.7973, 0.6857, 0.0, "f"],
+      ["Category F1, broad group", 0.9209, 0.8761, 0.0, "f"],
+      ["Rule cite F1", 0.8220, 0.7421, 0.0, "f"]
+    ],
+    levels: [["Exact", 0.797, 0.686], ["Rule", 0.823, 0.742], ["(d)(1) family", 0.903, 0.864], ["Broad group", 0.921, 0.876]],
+    axes: [["Audience", 1229, 0.9626, 0.726], ["Firm type", 910, 0.9549, 0.716], ["Channel", 2711, 0.9399, 0.702], ["Style", 1516, 0.9439, 0.688], ["Regulatory twist", 1035, 0.9575, 0.668], ["Product", 2716, 0.9595, 0.613]],
+    loss: [[1, 2.185], [400, 0.563], [800, 0.393], [1200, 0.366], [1600, 0.345], [2000, 0.334], [2400, 0.327], [2800, 0.316], [3200, 0.313], [3600, 0.307], [4000, 0.302], [4400, 0.299], [4800, 0.294], [5200, 0.291], [5600, 0.290], [6000, 0.289], [6400, 0.288], [6636, 0.287]]
+  };
+  var GROUPS = [
+    { key: "misleading", title: "Misleading or unbalanced content", rule: "2210(d)(1)", n: [6492, 3314], f1: [0.957, 0.938], big: true,
+      cats: [["not_fair_and_balanced", "2210(d)(1)(A)", "Benefits without the matching risks", 1324, 599, 0.726, 0.568],
+             ["product_specific_omission", "2210(d)(1)(A)", "Leaves out a product’s key features (surrender charges, illiquidity, leverage reset)", 102, 307, 0.0, 0.007],
+             ["buried_disclosure", "2210(d)(1)(C)", "Material risk hidden in a footnote", 321, 137, 0.679, 0.457],
+             ["promissory_or_guarantee", "2210(d)(1)(B)", "“Can’t lose”, “guaranteed”, “risk-free”", 1040, 429, 0.897, 0.846],
+             ["exaggerated_or_unwarranted_claim", "2210(d)(1)(B)", "Unsupported superlatives", 871, 423, 0.899, 0.866],
+             ["false_or_misleading_statement", "2210(d)(1)(B)", "Materially untrue fact", 749, 378, 0.683, 0.619],
+             ["misleading_in_context", "2210(d)(1)(D)", "True statements that mislead together", 542, 239, 0.364, 0.368],
+             ["performance_projection", "2210(d)(1)(F)", "Predicts or projects returns", 1336, 610, 0.961, 0.920],
+             ["hypothetical_or_backtest_misuse", "2210(d)(1)(F)", "Backtests shown as achievable", 207, 113, 0.909, 0.866],
+             ["third_party_content_adoption", "2210(d)(1) / RN 17-18", "Adopted third-party content that misleads (OOD only)", 0, 79, null, 0.0]] },
+    { key: "disclosures", title: "Missing required disclosures", rule: "(d)(2)–(d)(8), 2212", n: [2445, 947], f1: [0.833, 0.725], big: true,
+      cats: [["member_name_missing", "2210(d)(3)", "Member firm not named", 379, 146, 0.130, 0.065],
+             ["brokercheck_link_missing", "2210(d)(8)", "Retail web page without a BrokerCheck link", 107, 3, 0.545, 0.0],
+             ["fund_performance_disclosure", "2210(d)(5)", "Fund returns without standardized performance and fees", 595, 230, 0.862, 0.816],
+             ["fund_ranking_disclosure", "2212", "Fund ranking without its required facts", 80, 30, 0.909, 0.814],
+             ["recommendation_disclosure", "2210(d)(7)", "Stock pick without conflicts disclosed", 172, 72, 0.757, 0.677],
+             ["past_recommendations_reference", "2210(d)(7)(C)", "Past winners without the full one-year list", 187, 78, 0.914, 0.808],
+             ["unsupported_comparison", "2210(d)(2)", "Comparison without the material differences", 243, 107, 0.735, 0.497],
+             ["tax_claim_incomplete", "2210(d)(4)", "“Tax-free” without saying which taxes", 334, 144, 0.938, 0.873],
+             ["testimonial_disclosure", "2210(d)(6)", "Testimonial without the required statements", 348, 137, 0.943, 0.924]] },
+    { key: "approval", title: "Approval and audience", rule: "2210(a), (b)", n: [286, 241], f1: [0.878, 0.704],
+      cats: [["unapproved_retail_communication", "2210(b)(1)", "Retail piece used without principal approval", 155, 60, 1.0, 0.525],
+             ["institutional_forwarding", "2210(a)(4) / (b)(3)", "“Institutional” piece that will reach retail", 131, 181, 0.737, 0.771]] },
+    { key: "endorsement", title: "FINRA / SIPC endorsement", rule: "2210(e)", n: [345, 147], f1: [0.958, 0.923],
+      cats: [["finra_endorsement_implied", "2210(e)", "Suggests FINRA or SIPC approved something", 345, 147, 0.958, 0.923]] },
+    { key: "options", title: "Options rules", rule: "2220", n: [0, 16], f1: [null, 0.0],
+      cats: [["options_communication", "2220 / 2210(d)(1)", "Options risk omitted or promoted before the ODD (OOD only)", 0, 16, null, 0.0]] }
+  ];
+
+  var NS = "http://www.w3.org/2000/svg";
+  function fmtPct(v) { return (v * 100).toFixed(1) + "%"; }
+  function fmtF(v) { return v == null ? "–" : v.toFixed(2); }
+  function el(tag, attrs, parent) { var e = document.createElementNS(NS, tag); for (var k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; }
+  function txt(parent, x, y, s, attrs) { var t = el("text", Object.assign({ x: x, y: y }, attrs || {}), parent); t.textContent = s; return t; }
+
+  // slide 3: scorecard bars
+  (function () {
+    var host = document.getElementById("score");
+    [["Verdict correct", 0.9654, 0.3921, "pct"], ["Communication type correct", 0.9975, 0.0, "pct"], ["Violation detection F1", 0.9697, 0.4375, "f"], ["Category F1, broad group", 0.9209, 0.0, "f"]].forEach(function (r) {
+      var row = document.createElement("div"); row.className = "row";
+      var f = r[3] === "pct" ? fmtPct : fmtF;
+      row.innerHTML = '<div class="name">' + r[0] + '</div><div class="bars">' +
+        '<div class="bar-line"><i style="width:' + Math.max(r[1] * 100, 0.6) * 3.6 + 'px;background:var(--pass)"></i><span class="v">' + f(r[1]) + '</span></div>' +
+        '<div class="bar-line"><i style="width:' + Math.max(r[2] * 100, 0.6) * 3.6 + 'px;background:var(--base)"></i><span class="v">' + f(r[2]) + '</span></div></div>';
+      host.appendChild(row);
+    });
+  })();
+
+  // slide 6: taxonomy groups
+  (function () {
+    var host = document.getElementById("groups");
+    GROUPS.forEach(function (g) {
+      var b = document.createElement("div");
+      b.setAttribute("role", "button"); b.tabIndex = 0;
+      b.className = "tap card grp" + (g.big ? " big" : "");
+      b.dataset.detail = "grp-" + g.key;
+      b.innerHTML = '<div class="g-head"><h3>' + g.title + '</h3><span class="rule">' + g.rule + '</span></div>' +
+        (g.big
+          ? '<div class="catrows">' + g.cats.map(function (c) {
+              var v = c[5] == null ? null : c[5];
+              return '<div class="catrow" title="' + c[1] + '"><div class="nm">' + c[0] + '</div><div class="track"><i class="' + (v != null && v < 0.5 ? "lo" : "") + '" style="width:' + (v == null ? 0 : v * 100) + '%"></i></div><div class="f">' + (v == null ? "OOD" : v.toFixed(2)) + '</div></div>';
+            }).join("") + '</div>'
+          : '<div class="tags">' + g.cats.map(function (c) { return "<span>" + c[0] + "</span>"; }).join("") + '</div>') +
+        (g.big ? '<div class="stats"><span><b>' + g.n[0].toLocaleString("en-US") + '</b> / <b>' + g.n[1].toLocaleString("en-US") + '</b> labels, train+test / OOD</span><span>bar = F1 on test; amber below 0.5</span></div>'
+               : '<div class="stats"><span>' + (g.f1[0] == null ? "OOD only · " + g.n[1] + " labels" : 'group F1 <b>' + fmtF(g.f1[0]) + '</b> · ' + g.n[0].toLocaleString("en-US") + ' labels') + '</span></div>');
+      host.appendChild(b);
+      var t = document.createElement("template");
+      t.dataset.key = "grp-" + g.key; t.dataset.title = g.title + " · " + g.rule;
+      t.innerHTML = '<p>' + g.cats.length + ' categor' + (g.cats.length > 1 ? "ies" : "y") + '. Group F1 (any category from this group counts): ' + fmtF(g.f1[0]) + ' on test, ' + fmtF(g.f1[1]) + ' on OOD.</p>' +
+        '<div class="tblwrap"><table class="tbl"><tr><th>Category · rule</th><th>Labels</th><th>F1 test</th><th>F1 OOD</th></tr>' +
+        g.cats.map(function (c) { return '<tr><td><code>' + c[0] + '</code><br><span class="cite">' + c[1] + '</span> · ' + c[2] + '</td><td>' + c[3].toLocaleString("en-US") + ' / ' + c[4].toLocaleString("en-US") + '</td><td>' + fmtF(c[5]) + '</td><td>' + fmtF(c[6]) + '</td></tr>'; }).join("") +
+        '</table></div><p>Labels: training + test / OOD. F1 is for the exact category.</p>';
+      document.getElementById("details").appendChild(t);
+    });
+  })();
+
+  // slide 7: loss chart
+  (function () {
+    var W = 860, H = 380, L = 64, R = 24, T = 18, B = 46;
+    var svg = el("svg", { viewBox: "0 0 " + W + " " + H, width: "100%", role: "img", "aria-label": "Validation loss falling from 2.185 to 0.287 over 6,636 iterations" }, document.getElementById("losschart"));
+    var xmax = 6636, ymax = 2.4;
+    function X(i) { return L + (W - L - R) * i / xmax; }
+    function Y(v) { return T + (H - T - B) * (1 - v / ymax); }
+    [0, 0.5, 1.0, 1.5, 2.0].forEach(function (v) { el("line", { x1: L, x2: W - R, y1: Y(v), y2: Y(v), stroke: "#d9dde3", "stroke-width": 1 }, svg); txt(svg, L - 10, Y(v) + 5, v.toFixed(1), { "text-anchor": "end", "font-size": 17, fill: "#4a5870" }); });
+    [0, 2000, 4000, 6000].forEach(function (i) { txt(svg, X(i), H - 18, i.toLocaleString("en-US"), { "text-anchor": "middle", "font-size": 17, fill: "#4a5870" }); });
+    el("line", { x1: X(3318), x2: X(3318), y1: T, y2: H - B, stroke: "#b8650f", "stroke-dasharray": "4 4", "stroke-width": 1.2 }, svg);
+    txt(svg, X(3318) + 8, T + 16, "epoch 2", { "font-size": 16, fill: "#b8650f" });
+    var d = EVAL.loss.map(function (p, i) { return (i ? "L" : "M") + X(p[0]).toFixed(1) + " " + Y(p[1]).toFixed(1); }).join(" ");
+    el("path", { d: d + " L" + X(6636) + " " + Y(0) + " L" + X(1) + " " + Y(0) + " Z", fill: "#d6e8ee", opacity: 0.7 }, svg);
+    el("path", { d: d, fill: "none", stroke: "#1f6a83", "stroke-width": 3, "stroke-linejoin": "round" }, svg);
+    EVAL.loss.forEach(function (p) { el("circle", { cx: X(p[0]), cy: Y(p[1]), r: 3.5, fill: "#1f6a83" }, svg); });
+    el("circle", { cx: X(6636), cy: Y(0.287), r: 7, fill: "#fbfbf9", stroke: "#14233a", "stroke-width": 2.5 }, svg);
+    txt(svg, X(6636) - 12, Y(0.287) - 16, "0.287", { "text-anchor": "end", "font-size": 19, fill: "#14233a", "font-weight": 600 });
+    txt(svg, X(1) + 14, Y(2.185) + 5, "2.185", { "font-size": 19, fill: "#14233a", "font-weight": 600 });
+    txt(svg, L, H - 2, "iteration", { "font-size": 16, fill: "#7b8799" });
+  })();
+
+  // slide 8: eval table + levels chart
+  (function () {
+    function table(id, full) {
+      var t = document.getElementById(id);
+      var h = '<tr><th>Metric</th><th>Test</th><th>OOD</th><th>Base, test</th></tr>';
+      EVAL.rows.filter(function (r, i) { return full || true; }).forEach(function (r) {
+        var f = r[4] === "pct" ? fmtPct : fmtF;
+        h += '<tr><td>' + r[0] + '</td><td class="hi">' + f(r[1]) + '</td><td>' + f(r[2]) + '</td><td>' + f(r[3]) + '</td></tr>';
+      });
+      t.innerHTML = h;
+    }
+    table("evaltable", false);
+    window.__fillEvalFull = function () { var t = document.getElementById("evalfull"); if (t && !t.innerHTML) { t.id = "evalfull"; table("evalfull", true); } };
+
+    var W = 700, H = 380, L = 54, R = 16, T = 30, B = 52;
+    var svg = el("svg", { viewBox: "0 0 " + W + " " + H, width: "100%", role: "img", "aria-label": "Category F1 at four levels: exact 0.80 test and 0.69 OOD rising to broad group 0.92 and 0.88" }, document.getElementById("levelchart"));
+    function Y(v) { return T + (H - T - B) * (1 - v); }
+    [0, 0.25, 0.5, 0.75, 1].forEach(function (v) { el("line", { x1: L, x2: W - R, y1: Y(v), y2: Y(v), stroke: "#d9dde3" }, svg); txt(svg, L - 8, Y(v) + 5, v.toFixed(2), { "text-anchor": "end", "font-size": 16, fill: "#4a5870" }); });
+    var gw = (W - L - R) / EVAL.levels.length, bw = 44;
+    EVAL.levels.forEach(function (lv, i) {
+      var cx = L + gw * i + gw / 2;
+      [[lv[1], "#1f6a83", -bw / 2 - 3], [lv[2], "#b8650f", bw / 2 + 3]].forEach(function (b) {
+        el("rect", { x: cx + b[2] - bw / 2, y: Y(b[0]), width: bw, height: Y(0) - Y(b[0]), fill: b[1], rx: 3 }, svg);
+        txt(svg, cx + b[2], Y(b[0]) - 7, b[0].toFixed(2), { "text-anchor": "middle", "font-size": 17, fill: "#14233a" });
+      });
+      txt(svg, cx, H - 24, lv[0], { "text-anchor": "middle", "font-size": 17, fill: "#4a5870" });
+    });
+    el("rect", { x: L, y: 2, width: 12, height: 12, fill: "#1f6a83", rx: 2 }, svg); txt(svg, L + 18, 13, "test", { "font-size": 16, fill: "#4a5870" });
+    el("rect", { x: L + 84, y: 2, width: 12, height: 12, fill: "#b8650f", rx: 2 }, svg); txt(svg, L + 102, 13, "unfamiliar (OOD)", { "font-size": 16, fill: "#4a5870" });
+  })();
+
+  // slide 9: axes chart
+  (function () {
+    var W = 760, H = 560, L = 196, R = 78, T = 40, B = 6;
+    var svg = el("svg", { viewBox: "0 0 " + W + " " + H, width: "100%", role: "img", "aria-label": "Verdict accuracy stays between 94 and 96 percent on every OOD axis while category F1 ranges from 0.61 to 0.73" }, document.getElementById("axischart"));
+    var rowH = (H - T - B) / EVAL.axes.length;
+    function X(v) { return L + (W - L - R) * v; }
+    el("rect", { x: L, y: 4, width: 12, height: 12, fill: "#1f6a83", rx: 2 }, svg); txt(svg, L + 18, 15, "verdict correct", { "font-size": 16, fill: "#4a5870" });
+    el("rect", { x: L + 190, y: 4, width: 12, height: 12, fill: "#b8650f", rx: 2 }, svg); txt(svg, L + 208, 15, "exact-category F1", { "font-size": 16, fill: "#4a5870" });
+    EVAL.axes.forEach(function (a, i) {
+      var y = T + rowH * i + 8;
+      txt(svg, L - 12, y + 22, a[0], { "text-anchor": "end", "font-size": 18, fill: "#14233a" });
+      txt(svg, L - 12, y + 40, a[1].toLocaleString("en-US") + " items", { "text-anchor": "end", "font-size": 15, fill: "#7b8799" });
+      el("rect", { x: L, y: y, width: X(a[2]) - L, height: 20, fill: "#1f6a83", rx: 2 }, svg);
+      txt(svg, X(a[2]) + 8, y + 15, fmtPct(a[2]), { "font-size": 16, fill: "#14233a" });
+      el("rect", { x: L, y: y + 24, width: X(a[3]) - L, height: 20, fill: "#b8650f", rx: 2 }, svg);
+      txt(svg, X(a[3]) + 8, y + 39, a[3].toFixed(2), { "font-size": 16, fill: "#14233a" });
+    });
+  })();
+
+  // per-category table for the detail panel
+  function fillCats() {
+    var t = document.getElementById("catfull"); if (!t || t.innerHTML) return;
+    var h = '<tr><th>Category</th><th>F1 test</th><th>F1 OOD</th></tr>';
+    GROUPS.forEach(function (g) { g.cats.forEach(function (c) {
+      var lo = function (v) { return v != null && v < 0.5 ? ' class="lo"' : ""; };
+      h += '<tr><td><code>' + c[0] + '</code></td><td' + lo(c[5]) + '>' + fmtF(c[5]) + '</td><td' + lo(c[6]) + '>' + fmtF(c[6]) + '</td></tr>';
+    }); });
+    t.innerHTML = h;
+  }
+
+  // ---- deck navigation ----
+  var slides = Array.prototype.slice.call(document.querySelectorAll(".slide"));
+  var cur = 0;
+  var stage = document.getElementById("stage"), viewport = document.getElementById("viewport");
+  function fit() {
+    var r = viewport.getBoundingClientRect();
+    var s = Math.min(r.width / 1600, r.height / 900);
+    stage.style.transform = "translate(-" + (800 * s) + "px, -" + (450 * s) + "px) scale(" + s + ")";
+  }
+  function show(i) {
+    cur = Math.max(0, Math.min(slides.length - 1, i));
+    slides.forEach(function (s, k) { s.classList.toggle("on", k === cur); s.setAttribute("aria-hidden", k === cur ? "false" : "true"); });
+    document.getElementById("count").textContent = (cur + 1) + " / " + slides.length;
+    document.getElementById("prev").disabled = cur === 0;
+    document.getElementById("next").disabled = cur === slides.length - 1;
+    document.getElementById("prog").style.width = ((cur + 1) / slides.length * 100) + "%";
+    Array.prototype.forEach.call(document.querySelectorAll("#idx button"), function (b, k) { b.classList.toggle("cur", k === cur); });
+    try { history.replaceState(null, "", "#s" + (cur + 1)); } catch (e) {}
+  }
+  // index
+  (function () {
+    var ol = document.getElementById("idx"), last = "";
+    slides.forEach(function (s, k) {
+      if (s.dataset.sec !== last) { last = s.dataset.sec; var li0 = document.createElement("li"); li0.className = "grp-l"; li0.textContent = last; ol.appendChild(li0); }
+      var li = document.createElement("li"), b = document.createElement("button");
+      b.innerHTML = "<span>" + (k + 1) + "</span>" + s.dataset.title;
+      b.addEventListener("click", function () { show(k); closeAll(); });
+      li.appendChild(b); ol.appendChild(li);
+    });
+  })();
+
+  var scrim = document.getElementById("scrim"), detail = document.getElementById("detail"), idxpanel = document.getElementById("idxpanel");
+  var lastFocus = null;
+  function openPanel(p) { closeAll(true); lastFocus = document.activeElement; p.classList.add("on"); scrim.classList.add("on"); var x = p.querySelector(".x"); if (x) x.focus(); if (p === idxpanel) document.getElementById("idxbtn").setAttribute("aria-expanded", "true"); }
+  function closeAll(keepFocus) { [detail, idxpanel].forEach(function (p) { p.classList.remove("on"); }); scrim.classList.remove("on"); document.getElementById("idxbtn").setAttribute("aria-expanded", "false"); if (!keepFocus && lastFocus && lastFocus.focus) lastFocus.focus(); }
+  function openDetail(key) {
+    var t = document.querySelector('#details template[data-key="' + key + '"]'); if (!t) return;
+    document.getElementById("dlabel").textContent = "Slide " + (cur + 1) + " · detail";
+    document.getElementById("dtitle").textContent = t.dataset.title;
+    var body = document.getElementById("dbody"); body.innerHTML = ""; body.appendChild(t.content.cloneNode(true)); body.scrollTop = 0;
+    if (key === "e-table") { var tb = body.querySelector("table"); tb.id = "evalfull"; window.__fillEvalFull(); }
+    if (key === "r-weak") fillCats();
+    openPanel(detail);
+  }
+  document.addEventListener("click", function (e) {
+    var t = e.target.closest("[data-detail]"); if (t) { openDetail(t.dataset.detail); return; }
+    if (e.target.closest("[data-close]") || e.target === scrim) closeAll();
+  });
+  document.getElementById("prev").addEventListener("click", function () { show(cur - 1); });
+  document.getElementById("next").addEventListener("click", function () { show(cur + 1); });
+  document.getElementById("idxbtn").addEventListener("click", function () { idxpanel.classList.contains("on") ? closeAll() : openPanel(idxpanel); });
+  document.addEventListener("keydown", function (e) {
+    var trig = e.target.closest && e.target.closest("[data-detail]");
+    if (trig && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); openDetail(trig.dataset.detail); return; }
+    var open = detail.classList.contains("on") || idxpanel.classList.contains("on");
+    if (e.key === "Escape") { if (open) closeAll(); return; }
+    if (open) return;
+    if (e.key === "ArrowRight" || e.key === "PageDown" || (e.key === " " && !e.target.closest("button,[role=button]"))) { e.preventDefault(); show(cur + 1); }
+    else if (e.key === "ArrowLeft" || e.key === "PageUp") { e.preventDefault(); show(cur - 1); }
+    else if (e.key === "Home") show(0);
+    else if (e.key === "End") show(slides.length - 1);
+  });
+  // swipe on touch screens
+  var sx = null;
+  viewport.addEventListener("touchstart", function (e) { sx = e.touches[0].clientX; }, { passive: true });
+  viewport.addEventListener("touchend", function (e) { if (sx == null) return; var dx = e.changedTouches[0].clientX - sx; if (Math.abs(dx) > 50) show(cur + (dx < 0 ? 1 : -1)); sx = null; });
+
+  window.addEventListener("resize", fit);
+  fit();
+  var m = /^#s(\d+)$/.exec(location.hash || "");
+  show(m ? parseInt(m[1], 10) - 1 : 0);
+})();
+</script>
+</body>
+</html>
