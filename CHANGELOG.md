@@ -21,6 +21,8 @@ clone it and use it:
   with sample data.
 - **Board deck:** `Marketing/FINRA2210_Board_Deck.html`, a 13-slide interactive briefing (executive summary,
   architecture, evaluation, deployment, governance) with click-through detail panels and a taxonomy explorer.
+- **Board video:** `Marketing/FINRA2210_Board_Intro.mp4`, a 2:56 narrated introduction (macOS Ava voice) built
+  from the deck's frames, with the script in `Marketing/video_script.md`; the deck gets a `?video=1` frame mode.
 - **Rule-change watch:** `retraining/00_rule_watch/` diffs the archived FINRA / SEC sources, drafts
   a change memo mapped to categories and brief lines, and marks stale items; `DIGEST_VERSION` is
   stamped on verdicts and eval reports.

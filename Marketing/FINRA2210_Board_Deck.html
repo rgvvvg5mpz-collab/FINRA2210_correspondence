@@ -264,6 +264,10 @@ svg text { font-family: var(--mono); }
 .idx button.cur { font-weight: 600; }
 .note-mini { font-size: 12.5px; color: #7b8799; padding: 0 24px 16px; }
 
+/* ?video=1 : frames for recording, stage only */
+body.video .bar, body.video .tap::after, body.video .tx-cat::after { display: none; }
+body.video .app { padding: 0; gap: 0; }
+body.video .stage { border-radius: 0; box-shadow: none; }
 @media (max-width: 720px) {
   .hint { display: none; }
   .btn { padding: 7px 11px; }
@@ -1074,6 +1078,7 @@ svg text { font-family: var(--mono); }
   viewport.addEventListener("touchstart", function (e) { sx = e.touches[0].clientX; }, { passive: true });
   viewport.addEventListener("touchend", function (e) { if (sx == null) return; var dx = e.changedTouches[0].clientX - sx; if (Math.abs(dx) > 50) show(cur + (dx < 0 ? 1 : -1)); sx = null; });
 
+  if (/[?&]video=1/.test(location.search)) document.body.classList.add("video");
   window.addEventListener("resize", fit);
   fit();
   var m = /^#s(\d+)$/.exec(location.hash || "");
