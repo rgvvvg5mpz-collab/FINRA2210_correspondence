@@ -12,6 +12,11 @@ from __future__ import annotations
 # Rule digest (shown verbatim to the teacher model as grounding)
 # ---------------------------------------------------------------------------
 
+# Date of the FINRA / SEC source text the digest, categories and labels were written against
+# (data/raw_finra/SOURCES.md). Bump it when the digest changes after a rule change; it is stamped on
+# every verdict and eval report so a decision can be traced to the rule text it was judged by.
+DIGEST_VERSION = "2026-10-14"
+
 RULE_DIGEST = """\
 FINRA RULE 2210 — COMMUNICATIONS WITH THE PUBLIC (working digest)
 

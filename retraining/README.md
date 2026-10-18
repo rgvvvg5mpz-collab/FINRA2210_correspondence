@@ -10,6 +10,7 @@ retraining/run_examples.sh
 
 | Stage | Folder | What it does | Runs on |
 |---|---|---|---|
+| 0 | [`00_rule_watch/`](00_rule_watch/) | detects changes to the archived FINRA / SEC sources, drafts a memo of the categories and brief lines they touch, and lists the dataset items to refresh | any machine (weekly cron) |
 | 1 | [`01_feedback/`](01_feedback/) | turns reviewer accept / edit / reject logs into corrected labels, preference pairs and thumbs-up/down examples | any machine |
 | 2 | [`02_audit/`](02_audit/) | picks the items where model and label disagree; audit agents (Claude Opus) decide who is right; fixes the labels | any machine + Claude Code |
 | 3 | [`03_sft/`](03_sft/) | builds the next supervised round: label fixes + new samples, de-duplicated, re-split without moving old items | any machine, then the usual training pipeline |
@@ -63,8 +64,11 @@ project venv (`.venv/bin/python ...`); the two training scripts need an NVIDIA G
 4. **Gate the release.** The new model must not get worse than the current one on the fixed test and
    OOD sets, on the chat-only slice, per broad group and per difficulty
    ([`06_release_gate/`](06_release_gate/)).
-5. **Repeat** on a schedule, and whenever FINRA changes the rules: update
-   `src/finra2210/taxonomy.py`, generate new scenarios for the affected categories, retrain.
+5. **Repeat** on a schedule, and whenever FINRA changes the rules. Stage 0 watches the archived
+   sources, maps a change to the categories it touches and marks the stale items; a human approves
+   the memo and edits the rule digest, then stages 3–6 regenerate, retrain and gate. The digest
+   version is stamped on every verdict and eval report, so decisions can be traced to the rule
+   text they were judged by.
 
 ## Training methods, in the order to use them
 

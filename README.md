@@ -336,8 +336,11 @@ Anthropic API (live or Batch) instead of Claude Code agents; it needs `ANTHROPIC
 How the reviewer gets better: reviewer feedback and Claude Opus audits become corrected labels and
 preference pairs; supervised rounds retrain from the base model on the corrected data; DPO and GRPO
 (with a reward computed from the labels) target specific confusions; a release gate blocks any
-model that is worse than the current one on test, OOD, chat or any broad group. Code, sample data
-and the full plan: **[retraining/README.md](retraining/README.md)**.
+model that is worse than the current one on test, OOD, chat or any broad group. A rule-change watch
+(`retraining/00_rule_watch/`) diffs the archived FINRA / SEC sources, maps a change to the categories
+it touches and lists the items to refresh; every verdict and eval report carries the rule-digest
+version (`DIGEST_VERSION`) it was judged by. Code, sample data and the full plan:
+**[retraining/README.md](retraining/README.md)**.
 
 ## Code map (`src/finra2210/`)
 

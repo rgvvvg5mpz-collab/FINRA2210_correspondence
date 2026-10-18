@@ -32,7 +32,7 @@ import re
 from collections import Counter, defaultdict
 from pathlib import Path
 
-from .taxonomy import BROAD_GROUP_OF, BROAD_GROUPS, VIOLATION_CATEGORIES
+from .taxonomy import BROAD_GROUP_OF, BROAD_GROUPS, DIGEST_VERSION, VIOLATION_CATEGORIES
 
 _FENCE_RE = re.compile(r"```json\s*(\{.*?\})\s*```", re.S)
 _JSON_RE = re.compile(r"\{.*\}", re.S)
@@ -334,6 +334,7 @@ def main() -> None:
     report = {
         "model": model_name,
         "data": args.data,
+        "digest_version": DIGEST_VERSION,
         "overall": overall.report(),
         "by_difficulty": {k: v.report() for k, v in sorted(by_diff.items())},
         "by_communication_type": {k: v.report() for k, v in sorted(by_ctype.items())},

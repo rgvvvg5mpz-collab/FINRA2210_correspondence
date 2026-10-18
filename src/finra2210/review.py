@@ -23,6 +23,7 @@ from pathlib import Path
 
 from .evaluate import _load_hf, _load_mlx, _parse
 from .prompts import STUDENT_SYSTEM, student_input
+from .taxonomy import DIGEST_VERSION
 
 
 def main() -> None:
@@ -56,10 +57,14 @@ def main() -> None:
     generate = (_load_mlx if args.backend == "mlx" else _load_hf)(args.model)
     answer = generate([messages], args.max_new_tokens)[0]
     verdict = _parse(answer)
+    if verdict is not None:
+        verdict["model"] = args.model
+        verdict["digest_version"] = DIGEST_VERSION  # the rule text this model's labels were written against
     if args.json:
         print(json.dumps(verdict, indent=2, ensure_ascii=False))
     else:
         print(answer)
+        print(f"\n[model {args.model} · rule digest {DIGEST_VERSION}]")
     if verdict is None:
         print("\n[no parsable JSON verdict in the answer]", file=sys.stderr)
         sys.exit(1)

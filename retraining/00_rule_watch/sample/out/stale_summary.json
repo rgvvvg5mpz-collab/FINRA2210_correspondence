@@ -1,0 +1,29 @@
+{
+  "approved": "retraining/00_rule_watch/sample/approved_change.sample.json",
+  "categories": [
+    "fund_performance_disclosure"
+  ],
+  "cites": [
+    "2210(d)(5)"
+  ],
+  "topics": [
+    "standardized performance",
+    "fund performance",
+    "quarter-end",
+    "standardized returns"
+  ],
+  "stale": 1269,
+  "by_split": {
+    "in_domain": 897,
+    "in_domain total": 11896,
+    "ood": 372,
+    "ood total": 5800
+  },
+  "by_reason": {
+    "compliant near-miss on affected topic": 443,
+    "violation category": 825,
+    "violation cite": 825,
+    "scenario category": 1
+  },
+  "relabeled": null
+}

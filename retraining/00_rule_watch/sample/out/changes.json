@@ -1,0 +1,341 @@
+{
+ "generated": "fixture run",
+ "mode": "fixtures",
+ "sources_md": "/Users/saxena/Desktop/ClaudeCode_GIT/FINRA2210_correspondence/data/raw_finra/SOURCES.md",
+ "archive_date": "2026-10-14",
+ "sources": [
+  {
+   "file": "rule_2010.md",
+   "title": "2010. STANDARDS OF COMMERCIAL HONOR AND PRINCIPLES OF TRADE | FINRA.org",
+   "url": "https://www.finra.org/rules-guidance/rulebooks/finra-rules/2010",
+   "retrieved": "2026-10-14",
+   "fetch": null,
+   "status": "no fixture"
+  },
+  {
+   "file": "rule_2020.md",
+   "title": "2020. Use of Manipulative, Deceptive or Other Fraudulent Devices | FINRA.org",
+   "url": "https://www.finra.org/rules-guidance/rulebooks/finra-rules/2020",
+   "retrieved": "2026-10-14",
+   "fetch": null,
+   "status": "no fixture"
+  },
+  {
+   "file": "rule_2111.md",
+   "title": "2111. Suitability | FINRA.org",
+   "url": "https://www.finra.org/rules-guidance/rulebooks/finra-rules/2111",
+   "retrieved": "2026-10-14",
+   "fetch": null,
+   "status": "no fixture"
+  },
+  {
+   "file": "rule_2210.md",
+   "title": "2210. Communications with the Public | FINRA.org",
+   "url": "https://www.finra.org/rules-guidance/rulebooks/finra-rules/2210",
+   "retrieved": "2026-10-14",
+   "fetch": "fixture",
+   "archived_sha": "569bf72da7711b8fc99398ac1940e1cadca4df880b28f127d4a2fe251fb7c92c",
+   "new_sha": "4ee1290439176a9469c3a7838ca35de63f558227bcac5587e66f2fce65d402bc",
+   "archived_lines": 221,
+   "new_lines": 221,
+   "compared": "text",
+   "status": "changed",
+   "diff": [
+    "--- archived 2026-10-14",
+    "+++ current fixture",
+    "@@ -134,3 +134,3 @@",
+    " (A) Retail communications and correspondence that present non-money market fund open-end management investment company performance data as permitted by Securities Act Rule 482 and Rule 34b-1 under the Investment Company Act must disclose:",
+    "-(i) the standardized performance information mandated by Securities Act Rule 482 and Rule 34b-1 under the Investment Company Act; and",
+    "+(i) the standardized performance information mandated by Securities Act Rule 482 and Rule 34b-1 under the Investment Company Act, current to the most recent month-end rather than calendar quarter-end; and",
+    " (ii) to the extent applicable:",
+    "@@ -138,3 +138,3 @@",
+    " b. the total annual fund operating expense ratio, gross of any fee waivers or expense reimbursements, as stated in the fee table of the investment company's prospectus described in paragraph (d)(5)(A)(ii)(a).",
+    "-(B) All of the information required by paragraph (d)(5)(A) must be set forth prominently, and in any print advertisement, in a prominent text box that contains only the required information and, at the member's option, comparative performance and fee data and disclosures required by Securities Act Rule 482 and Rule 34b-1 under the Investment Company Act.",
+    "+(B) All of the information required by paragraph (d)(5)(A) must be set forth prominently and updated within 10 business days of each month-end, and in any print advertisement, in a prominent text box that contains only the required information and, at the member's option, comparative performance and fee data and disclosures required by Securities Act Rule 482 and Rule 34b-1 under the Investment Company Act.",
+    " (6) Testimonials"
+   ],
+   "diff_truncated": false,
+   "added": [
+    "(i) the standardized performance information mandated by Securities Act Rule 482 and Rule 34b-1 under the Investment Company Act, current to the most recent month-end rather than calendar quarter-end; and",
+    "(B) All of the information required by paragraph (d)(5)(A) must be set forth prominently and updated within 10 business days of each month-end, and in any print advertisement, in a prominent text box that contains only the required information and, at the member's option, comparative performance and fee data and disclosures required by Securities Act Rule 482 and Rule 34b-1 under the Investment Company Act."
+   ],
+   "removed": [
+    "(i) the standardized performance information mandated by Securities Act Rule 482 and Rule 34b-1 under the Investment Company Act; and",
+    "(B) All of the information required by paragraph (d)(5)(A) must be set forth prominently, and in any print advertisement, in a prominent text box that contains only the required information and, at the member's option, comparative performance and fee data and disclosures required by Securities Act Rule 482 and Rule 34b-1 under the Investment Company Act."
+   ],
+   "archived_as": "retraining/00_rule_watch/sample/out/archive/rule_2210.fixture.md"
+  },
+  {
+   "file": "rule_2211.md",
+   "title": "2211. Communications with the Public About Variable Life Insurance and Variable Annuities | FINRA.org",
+   "url": "https://www.finra.org/rules-guidance/rulebooks/finra-rules/2211",
+   "retrieved": "2026-10-14",
+   "fetch": null,
+   "status": "no fixture"
+  },
+  {
+   "file": "rule_2212.md",
+   "title": "2212. Use of Investment Companies Rankings in Retail Communications | FINRA.org",
+   "url": "https://www.finra.org/rules-guidance/rulebooks/finra-rules/2212",
+   "retrieved": "2026-10-14",
+   "fetch": null,
+   "status": "no fixture"
+  },
+  {
+   "file": "rule_2213.md",
+   "title": "2213. Requirements for the Use of Bond Mutual Fund Volatility Ratings | FINRA.org",
+   "url": "https://www.finra.org/rules-guidance/rulebooks/finra-rules/2213",
+   "retrieved": "2026-10-14",
+   "fetch": null,
+   "status": "no fixture"
+  },
+  {
+   "file": "rule_2214.md",
+   "title": "2214. Requirements for the Use of Investment Analysis Tools | FINRA.org",
+   "url": "https://www.finra.org/rules-guidance/rulebooks/finra-rules/2214",
+   "retrieved": "2026-10-14",
+   "fetch": null,
+   "status": "no fixture"
+  },
+  {
+   "file": "rule_2215.md",
+   "title": "2215. Communications with the Public Regarding Security Futures | FINRA.org",
+   "url": "https://www.finra.org/rules-guidance/rulebooks/finra-rules/2215",
+   "retrieved": "2026-10-14",
+   "fetch": null,
+   "status": "no fixture"
+  },
+  {
+   "file": "rule_2216.md",
+   "title": "2216. Communications with the Public About Collateralized Mortgage Obligations (CMOs) | FINRA.org",
+   "url": "https://www.finra.org/rules-guidance/rulebooks/finra-rules/2216",
+   "retrieved": "2026-10-14",
+   "fetch": null,
+   "status": "no fixture"
+  },
+  {
+   "file": "rule_2220.md",
+   "title": "2220. Options Communications | FINRA.org",
+   "url": "https://www.finra.org/rules-guidance/rulebooks/finra-rules/2220",
+   "retrieved": "2026-10-14",
+   "fetch": null,
+   "status": "no fixture"
+  },
+  {
+   "file": "rule_2241.md",
+   "title": "2241. Research Analysts and Research Reports | FINRA.org",
+   "url": "https://www.finra.org/rules-guidance/rulebooks/finra-rules/2241",
+   "retrieved": "2026-10-14",
+   "fetch": null,
+   "status": "no fixture"
+  },
+  {
+   "file": "rule_2330.md",
+   "title": "2330. Members' Responsibilities Regarding Deferred Variable Annuities | FINRA.org",
+   "url": "https://www.finra.org/rules-guidance/rulebooks/finra-rules/2330",
+   "retrieved": "2026-10-14",
+   "fetch": null,
+   "status": "no fixture"
+  },
+  {
+   "file": "rule_3110.md",
+   "title": "3110. Supervision | FINRA.org",
+   "url": "https://www.finra.org/rules-guidance/rulebooks/finra-rules/3110",
+   "retrieved": "2026-10-14",
+   "fetch": null,
+   "status": "no fixture"
+  },
+  {
+   "file": "rule_3240.md",
+   "title": "3240. Prohibition on Borrowing From or Lending to Customers | FINRA.org",
+   "url": "https://www.finra.org/rules-guidance/rulebooks/finra-rules/3240",
+   "retrieved": "2026-10-14",
+   "fetch": null,
+   "status": "no fixture"
+  },
+  {
+   "file": "rule_4511.md",
+   "title": "4511. General Requirements | FINRA.org",
+   "url": "https://www.finra.org/rules-guidance/rulebooks/finra-rules/4511",
+   "retrieved": "2026-10-14",
+   "fetch": null,
+   "status": "no fixture"
+  },
+  {
+   "file": "rule_4512.md",
+   "title": "4512. Customer Account Information | FINRA.org",
+   "url": "https://www.finra.org/rules-guidance/rulebooks/finra-rules/4512",
+   "retrieved": "2026-10-14",
+   "fetch": null,
+   "status": "no fixture"
+  },
+  {
+   "file": "notice_12-29.md",
+   "title": "Regulatory Notice 12-29 | FINRA.org",
+   "url": "https://www.finra.org/rules-guidance/notices/12-29",
+   "retrieved": "2026-10-14",
+   "fetch": null,
+   "status": "no fixture"
+  },
+  {
+   "file": "notice_12-29.pdf",
+   "title": "Regulatory Notice 12-29 | FINRA.org (PDF)",
+   "url": "https://www.finra.org/sites/default/files/NoticeDocument/p127014.pdf",
+   "retrieved": "2026-10-14",
+   "fetch": null,
+   "status": "no fixture"
+  },
+  {
+   "file": "notice_15-50.md",
+   "title": "Regulatory Notice 15-50 | FINRA.org — SEC Approves Rule Requiring Members' Websites to Include a Readily Apparent Reference and Hyperlink to BrokerCheck",
+   "url": "https://www.finra.org/rules-guidance/notices/15-50",
+   "retrieved": "2026-10-14",
+   "fetch": null,
+   "status": "no fixture"
+  },
+  {
+   "file": "notice_15-50.pdf",
+   "title": "Regulatory Notice 15-50 | FINRA.org — SEC Approves Rule Requiring Members' Websites to Include a Readily Apparent Reference and Hyperlink to BrokerCheck (PDF)",
+   "url": "https://www.finra.org/sites/default/files/Notice_Regulatory_15-50.pdf",
+   "retrieved": "2026-10-14",
+   "fetch": null,
+   "status": "no fixture"
+  },
+  {
+   "file": "notice_16-41.md",
+   "title": "Regulatory Notice 16-41 | FINRA.org — SEC Approves Amendments to Rules Governing Communications With the Public",
+   "url": "https://www.finra.org/rules-guidance/notices/16-41",
+   "retrieved": "2026-10-14",
+   "fetch": null,
+   "status": "no fixture"
+  },
+  {
+   "file": "notice_16-41.pdf",
+   "title": "Regulatory Notice 16-41 | FINRA.org — SEC Approves Amendments to Rules Governing Communications With the Public (PDF)",
+   "url": "https://www.finra.org/sites/default/files/notice_doc_file_ref/Regulatory-Notice-16-41.pdf",
+   "retrieved": "2026-10-14",
+   "fetch": null,
+   "status": "no fixture"
+  },
+  {
+   "file": "notice_17-18.md",
+   "title": "Regulatory Notice 17-18 | FINRA.org — Guidance on Social Networking Websites and Business Communications",
+   "url": "https://www.finra.org/rules-guidance/notices/17-18",
+   "retrieved": "2026-10-14",
+   "fetch": null,
+   "status": "no fixture"
+  },
+  {
+   "file": "notice_17-18.pdf",
+   "title": "Regulatory Notice 17-18 | FINRA.org — Guidance on Social Networking Websites and Business Communications (PDF)",
+   "url": "https://www.finra.org/sites/default/files/notice_doc_file_ref/Regulatory-Notice-17-18.pdf",
+   "retrieved": "2026-10-14",
+   "fetch": null,
+   "status": "no fixture"
+  },
+  {
+   "file": "notice_19-31.md",
+   "title": "Regulatory Notice 19-31 | FINRA.org — Disclosure Innovations in Advertising and Other Communications with the Public",
+   "url": "https://www.finra.org/rules-guidance/notices/19-31",
+   "retrieved": "2026-10-14",
+   "fetch": null,
+   "status": "no fixture"
+  },
+  {
+   "file": "notice_19-31.pdf",
+   "title": "Regulatory Notice 19-31 | FINRA.org — Disclosure Innovations in Advertising and Other Communications with the Public (PDF)",
+   "url": "https://www.finra.org/sites/default/files/2019-09/Regulatory-Notice-19-31.pdf",
+   "retrieved": "2026-10-14",
+   "fetch": null,
+   "status": "no fixture"
+  },
+  {
+   "file": "notice_19-32.md",
+   "title": "Regulatory Notice 19-32 | FINRA.org — FINRA Amends Rules 2210 and 2241 to Conform to the Fair Access to Investment Research Act of 2017",
+   "url": "https://www.finra.org/rules-guidance/notices/19-32",
+   "retrieved": "2026-10-14",
+   "fetch": null,
+   "status": "no fixture"
+  },
+  {
+   "file": "notice_19-32.pdf",
+   "title": "Regulatory Notice 19-32 | FINRA.org — FINRA Amends Rules 2210 and 2241 to Conform to the Fair Access to Investment Research Act of 2017 (PDF)",
+   "url": "https://www.finra.org/sites/default/files/2019-09/Regulatory-Notice-19-32.pdf",
+   "retrieved": "2026-10-14",
+   "fetch": null,
+   "status": "no fixture"
+  },
+  {
+   "file": "notice_20-21.md",
+   "title": "Regulatory Notice 20-21 | FINRA.org — FINRA Provides Guidance on Retail Communications Concerning Private Placement Offerings",
+   "url": "https://www.finra.org/rules-guidance/notices/20-21",
+   "retrieved": "2026-10-14",
+   "fetch": null,
+   "status": "no fixture"
+  },
+  {
+   "file": "notice_20-21.pdf",
+   "title": "Regulatory Notice 20-21 | FINRA.org — FINRA Provides Guidance on Retail Communications Concerning Private Placement Offerings (PDF)",
+   "url": "https://www.finra.org/sites/default/files/2020-06/Regulatory-Notice-20-21.pdf",
+   "retrieved": "2026-10-14",
+   "fetch": null,
+   "status": "no fixture"
+  },
+  {
+   "file": "notice_24-09.md",
+   "title": "Regulatory Notice 24-09 | FINRA.org — FINRA Reminds Members of Regulatory Obligations When Using Generative Artificial Intelligence and Large Language Models",
+   "url": "https://www.finra.org/rules-guidance/notices/24-09",
+   "retrieved": "2026-10-14",
+   "fetch": null,
+   "status": "no fixture"
+  },
+  {
+   "file": "notice_24-09.pdf",
+   "title": "Regulatory Notice 24-09 | FINRA.org — FINRA Reminds Members of Regulatory Obligations When Using Generative Artificial Intelligence and Large Language Models (PDF)",
+   "url": "https://www.finra.org/sites/default/files/2024-06/regulatory-notice-24-09.pdf",
+   "retrieved": "2026-10-14",
+   "fetch": null,
+   "status": "no fixture"
+  },
+  {
+   "file": "sec_rule_34b-1.xml",
+   "title": "§ 270.34b-1 Sales literature deemed to be misleading.",
+   "url": "https://www.ecfr.gov/current/title-17/section-270.34b-1",
+   "retrieved": "2026-10-14",
+   "fetch": null,
+   "status": "no fixture"
+  },
+  {
+   "file": "sec_rule_482.xml",
+   "title": "§ 230.482 Advertising by an investment company as satisfying requirements of section 10.",
+   "url": "https://www.ecfr.gov/current/title-17/section-230.482",
+   "retrieved": "2026-10-14",
+   "fetch": null,
+   "status": "no fixture"
+  },
+  {
+   "file": "faq_advertising_regulation.md",
+   "title": "FINRA Rule 2210 Frequently Asked Questions | FINRA.org",
+   "url": "https://www.finra.org/rules-guidance/guidance/faqs/advertising-regulation",
+   "retrieved": "2026-10-14",
+   "fetch": null,
+   "status": "no fixture"
+  },
+  {
+   "file": "keytopic_advertising_regulation.md",
+   "title": "Advertising Regulation | FINRA.org",
+   "url": "https://www.finra.org/rules-guidance/key-topics/advertising-regulation",
+   "retrieved": "2026-10-14",
+   "fetch": null,
+   "status": "no fixture"
+  },
+  {
+   "file": "oversight_report_communications.md",
+   "title": "Communications with the Public | FINRA.org — 2025 FINRA Annual Regulatory Oversight Report",
+   "url": "https://www.finra.org/rules-guidance/guidance/reports/2025-finra-annual-regulatory-oversight-report/communication-with-public",
+   "retrieved": "2026-10-14",
+   "fetch": null,
+   "status": "no fixture"
+  }
+ ]
+}

@@ -19,6 +19,9 @@ clone it and use it:
   the model card.
 - **Retraining kit:** reviewer feedback, label audits, SFT rounds, DPO, GRPO and a release gate,
   with sample data.
+- **Rule-change watch:** `retraining/00_rule_watch/` diffs the archived FINRA / SEC sources, drafts
+  a change memo mapped to categories and brief lines, and marks stale items; `DIGEST_VERSION` is
+  stamped on verdicts and eval reports.
 
 ## v0.1.0 (2026-10-17)
 

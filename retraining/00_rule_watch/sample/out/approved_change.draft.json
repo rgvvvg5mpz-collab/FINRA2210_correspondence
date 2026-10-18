@@ -1,0 +1,19 @@
+{
+  "memo": "retraining/00_rule_watch/sample/out/change_memo.md",
+  "digest_version_before": "2026-10-14",
+  "effective_date": null,
+  "sources": [
+    "rule_2210.md"
+  ],
+  "categories": [
+    "fund_performance_disclosure"
+  ],
+  "cites": [
+    "2210(d)(5)"
+  ],
+  "topics": [],
+  "relabel_cites": {},
+  "notes": "DRAFT written by make_memo.py from cite matching; review every field before approving.",
+  "approved_by": null,
+  "approved_on": null
+}

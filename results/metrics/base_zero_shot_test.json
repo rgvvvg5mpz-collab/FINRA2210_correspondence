@@ -1,6 +1,7 @@
 {
   "model": "mlx-community/Phi-4-mini-instruct-4bit",
   "data": "data/splits/test.jsonl",
+  "digest_version": "2026-10-14",
   "overall": {
     "n": 1186,
     "json_parse_rate": 0.6779,

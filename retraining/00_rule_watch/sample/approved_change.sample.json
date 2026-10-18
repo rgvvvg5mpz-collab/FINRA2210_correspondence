@@ -1,0 +1,17 @@
+{
+  "_note": "FAKE SAMPLE: a human-edited approval of the fixture change. FINRA has made no such change.",
+  "memo": "retraining/00_rule_watch/sample/out/change_memo.md",
+  "digest_version_before": "2026-10-14",
+  "digest_version_after": "2026-11-03",
+  "effective_date": "2027-01-01",
+  "sources": ["rule_2210.md"],
+  "summary": "Paragraph (d)(5): standardized fund performance must be current to the most recent month-end (was calendar quarter-end) and updated within 10 business days of each month-end. Labels that cite quarter-end timing, and compliant near-misses that quote standardized performance correctly, need a second look.",
+  "categories": ["fund_performance_disclosure"],
+  "cites": ["2210(d)(5)"],
+  "topics": ["standardized performance", "fund performance", "quarter-end", "standardized returns"],
+  "relabel_cites": {},
+  "digest_edits": ["RULE_DIGEST (d)(5): 'as of the most recent calendar quarter-end' -> 'as of the most recent month-end'"],
+  "brief_edits": ["BRIEF.md L101: same wording change"],
+  "approved_by": "sample: compliance owner + engineering owner",
+  "approved_on": "2026-11-03"
+}

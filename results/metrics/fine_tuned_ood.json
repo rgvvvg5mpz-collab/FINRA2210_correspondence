@@ -1,6 +1,7 @@
 {
   "model": "runs/phi4mini-2210-mlx",
   "data": "data/splits/ood.jsonl",
+  "digest_version": "2026-10-14",
   "overall": {
     "n": 5800,
     "json_parse_rate": 0.9974,

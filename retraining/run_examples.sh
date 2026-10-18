@@ -8,6 +8,11 @@ cd "$(dirname "$0")/.."
 PY=${PY:-.venv/bin/python}
 R=retraining
 
+echo "== 0. rule-change watch: diff the fixture against the archive, draft the memo, mark stale items"
+$PY $R/00_rule_watch/watch_sources.py --fixtures $R/00_rule_watch/sample/fixtures --out $R/00_rule_watch/sample/out
+$PY $R/00_rule_watch/make_memo.py --changes $R/00_rule_watch/sample/out/changes.json
+$PY $R/00_rule_watch/mark_stale.py --approved $R/00_rule_watch/sample/approved_change.sample.json --out $R/00_rule_watch/sample/out
+
 echo "== 1. reviewer feedback -> corrections, preference pairs, KTO examples"
 $PY $R/01_feedback/feedback_to_data.py --log $R/01_feedback/sample/feedback_log.sample.jsonl --out $R/01_feedback/sample/out
 
