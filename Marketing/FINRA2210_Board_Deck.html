@@ -75,7 +75,7 @@ button { font: inherit; color: inherit; }
 .tap { position: relative; cursor: pointer; text-align: left; border: 1px solid var(--rule); background: var(--sheet); border-radius: 10px; padding: 20px 22px; transition: border-color .15s, box-shadow .15s, transform .15s; }
 .tap:hover { border-color: var(--ink); box-shadow: 0 6px 20px rgba(20,35,58,.10); }
 @media (prefers-reduced-motion: no-preference) { .tap:hover { transform: translateY(-2px); } }
-.tap::after { content: "Detail +"; position: absolute; right: 14px; top: 12px; font-family: var(--mono); font-size: 14px; letter-spacing: .06em; color: var(--pass); opacity: .75; }
+.tap::after { content: "Detail +"; position: absolute; right: 14px; top: 12px; font-family: var(--mono); font-size: 14px; letter-spacing: .06em; color: var(--pass); opacity: .55; transition: opacity .15s; }
 .tap:hover::after { opacity: 1; }
 .navy .tap { background: var(--ink-2); border-color: #34507a; color: #f2f4f7; }
 .navy .tap:hover { border-color: #e3a65a; }
@@ -94,7 +94,7 @@ button { font: inherit; color: inherit; }
 .io-box .label { color: #8fa1b8; }
 .io-model { border-top-color: #e3a65a; }
 .io-arrow { display: flex; align-items: center; justify-content: center; font-size: 26px; color: #8fa1b8; padding-top: 14px; }
-.stamp { position: absolute; right: 80px; top: 64px; font-family: var(--mono); font-size: 14px; color: #e3a65a; border: 1.5px solid #e3a65a; border-radius: 6px; padding: 8px 12px; transform: rotate(-3deg); letter-spacing: .08em; }
+.stamp { position: absolute; right: 80px; top: 64px; font-family: var(--mono); font-size: 14px; color: #e3a65a; border: 1px solid #e3a65a; border-radius: 999px; padding: 9px 16px; letter-spacing: .1em; }
 
 /* slide 2: message + verdict */
 .msg { background: var(--sheet); border: 1px solid var(--rule); border-radius: 12px; padding: 22px 24px; }
@@ -119,6 +119,7 @@ button { font: inherit; color: inherit; }
 .s10 .list li { font-size: 19.5px; }
 .s10 .list { gap: 10px; }
 .s10 .card h3 { font-size: 28px; }
+.s8 .tbl td { padding: 15px 10px; }
 .miss { font-size: 21px; line-height: 1.45; color: var(--slate); border-left: 3px solid var(--flag); padding: 2px 0 2px 14px; }
 
 /* bars */
@@ -239,7 +240,7 @@ svg text { font-family: var(--mono); }
 
 <!-- ============ 1 · EXECUTIVE ============ -->
 <section class="slide navy s1" data-title="A first-pass reviewer for Rule 2210" data-sec="Executive summary">
-  <div class="stamp">FIRST-PASS REVIEW · v0.1.0</div>
+  <div class="stamp">v0.1.0 · OCTOBER 2026</div>
   <p class="eyebrow">Board briefing · Compliance technology</p>
   <h1>A first-pass reviewer for FINRA Rule 2210 that runs on a laptop</h1>
   <p class="lede">A fine-tuned 3.8-billion-parameter model reads a broker-dealer email, text, post or web page and returns what a principal needs first: the communication type, a compliant or not-compliant verdict, each violation with its rule and the exact words, the severity, and next steps.</p>
@@ -256,7 +257,7 @@ svg text { font-family: var(--mono); }
     <div role="button" tabindex="0" class="tap kpi" data-detail="kpi-type"><b>99.8%</b><span>correct correspondence / retail / institutional call</span></div>
     <div role="button" tabindex="0" class="tap kpi" data-detail="kpi-local"><b>~9 s</b><span>per message on an Apple M5 Pro laptop, fully local</span></div>
   </div>
-  <div class="foot"><span class="sec">Executive summary</span><span>FINRA Rule 2210 reviewer · v0.1.0</span></div>
+  <div class="foot"><span class="sec">Executive summary</span><span>1 / 10</span></div>
 </section>
 
 <!-- ============ 2 · EXECUTIVE ============ -->
@@ -379,14 +380,16 @@ svg text { font-family: var(--mono); }
         <div class="stack" style="margin-top:8px;"><i style="flex:5870;background:var(--ink)">correspondence 49%</i><i style="flex:4567;background:var(--pass)">retail 38%</i><i style="flex:1459;background:#7c8ea6">12%</i></div>
         <div style="margin-top:14px;" class="label">Difficulty</div>
         <div class="stack" style="margin-top:8px;"><i style="flex:3519;background:#8fb3c2;color:var(--ink)">easy 30%</i><i style="flex:4786;background:var(--pass)">medium 40%</i><i style="flex:3591;background:var(--ink)">hard 30%</i></div>
+        <div style="margin-top:14px;" class="label">Channel · chat vs everything else</div>
+        <div class="stack" style="margin-top:8px;"><i style="flex:2231;background:var(--flag)">chat 19%</i><i style="flex:9665;background:#7c8ea6">email, letters, web, social 81%</i></div>
         <p style="margin-top:14px;">44% compliant, so “mentions returns” never means “violation”.</p>
       </div>
     </div>
     <div class="col" style="flex:1;">
       <div role="button" tabindex="0" class="tap card" data-detail="d-ood">
-        <div class="label">Out-of-distribution · eval only</div>
+        <div class="label">Out-of-distribution (OOD) · eval only</div>
         <div class="bignum" style="margin-top:8px;">5,800</div>
-        <p style="margin-top:6px;">Each message shifted on 1–3 axes it never trained on</p>
+        <p style="margin-top:6px;">Deliberately unfamiliar: each message shifted on 1–3 axes it never trained on</p>
         <div class="kv" style="margin-top:16px;">
           <span>Product: options, crypto ETFs, Reg D, structured notes</span><b>2,716</b>
           <span>Channel: WhatsApp, LinkedIn, voicemail, chatbots</span><b>2,711</b>
@@ -406,8 +409,8 @@ svg text { font-family: var(--mono); }
           <span>Largest 6-word overlap, any pair</span><b>~0.38</b>
           <span>Gold answers that parse back to label</span><b>100%</b>
           <span>Written by Claude Opus 5.5</span><b>98%</b>
+          <span>FINRA / SEC source files archived</span><b>38</b>
           <span>Channels covered</span><b>17</b>
-          <span>Chat share (SMS, IM, text blast)</span><b>18.8%</b>
         </div>
         <p style="margin-top:16px;">Grounded in the archived text of Rule 2210, related rules and 8 Regulatory Notices.</p>
       </div>
@@ -458,7 +461,7 @@ svg text { font-family: var(--mono); }
 </section>
 
 <!-- ============ 8 · EVALUATION ============ -->
-<section class="slide" data-title="Evaluation results" data-sec="Architecture and implementation">
+<section class="slide s8" data-title="Evaluation results" data-sec="Architecture and implementation">
   <p class="eyebrow">Evaluation</p>
   <h2>Fine-tuning turns an unusable base model into a dependable first reader</h2>
   <div class="body">
@@ -485,13 +488,13 @@ svg text { font-family: var(--mono); }
   <div class="body">
     <div class="col" style="flex:1.1;">
       <div role="button" tabindex="0" class="tap card" data-detail="r-axes" style="flex:1;">
-        <div class="label">Unfamiliar messages, by what was changed</div>
+        <div class="label">OOD messages, by what was changed</div>
         <div id="axischart" style="margin-top:10px;"></div>
       </div>
     </div>
     <div class="col" style="flex:1;">
       <div role="button" tabindex="0" class="tap card" data-detail="r-weak">
-        <div class="label">Weakest categories (F1, test / unfamiliar)</div>
+        <div class="label">Weakest categories (F1, test / OOD)</div>
         <table class="tbl" style="margin-top:6px;">
           <tr><td>member_name_missing</td><td class="lo">0.13</td><td class="lo">0.06</td></tr>
           <tr><td>product_specific_omission</td><td class="lo">0.00</td><td class="lo">0.01</td></tr>
@@ -499,12 +502,12 @@ svg text { font-family: var(--mono); }
         </table>
       </div>
       <div role="button" tabindex="0" class="tap card" data-detail="r-unseen">
-        <div class="label">Two categories it never saw</div>
+        <div class="label">Two OOD-only categories</div>
         <p style="margin-top:8px;">Never named, yet still flagged not compliant: <b style="color:var(--ink)">16 of 16</b> options messages and <b style="color:var(--ink)">78 of 79</b> forwarded third-party content.</p>
       </div>
       <div role="button" tabindex="0" class="tap card" data-detail="r-chat">
         <div class="label">Chat</div>
-        <p style="margin-top:8px;">Verdict correct on <b style="color:var(--ink)">97.4%</b> of 229 test texts and IMs, and <b style="color:var(--ink)">96.0%</b> of 893 messages from chat apps it never saw.</p>
+        <p style="margin-top:8px;">Verdict correct on <b style="color:var(--ink)">97.4%</b> of 229 test texts and IMs, and <b style="color:var(--ink)">96.0%</b> of 893 OOD messages from chat apps it never saw.</p>
       </div>
     </div>
   </div>
@@ -722,7 +725,7 @@ svg text { font-family: var(--mono); }
 
   // slide 7: loss chart
   (function () {
-    var W = 860, H = 380, L = 64, R = 24, T = 18, B = 46;
+    var W = 860, H = 470, L = 64, R = 24, T = 22, B = 46;
     var svg = el("svg", { viewBox: "0 0 " + W + " " + H, width: "100%", role: "img", "aria-label": "Validation loss falling from 2.185 to 0.287 over 6,636 iterations" }, document.getElementById("losschart"));
     var xmax = 6636, ymax = 2.4;
     function X(i) { return L + (W - L - R) * i / xmax; }
@@ -738,7 +741,7 @@ svg text { font-family: var(--mono); }
     el("circle", { cx: X(6636), cy: Y(0.287), r: 7, fill: "#fbfbf9", stroke: "#14233a", "stroke-width": 2.5 }, svg);
     txt(svg, X(6636) - 12, Y(0.287) - 16, "0.287", { "text-anchor": "end", "font-size": 19, fill: "#14233a", "font-weight": 600 });
     txt(svg, X(1) + 14, Y(2.185) + 5, "2.185", { "font-size": 19, fill: "#14233a", "font-weight": 600 });
-    txt(svg, L, H - 2, "iteration", { "font-size": 16, fill: "#7b8799" });
+    txt(svg, W - R, T - 6, "iteration →", { "text-anchor": "end", "font-size": 15, fill: "#7b8799" });
   })();
 
   // slide 8: eval table + levels chart
@@ -755,7 +758,7 @@ svg text { font-family: var(--mono); }
     table("evaltable", false);
     window.__fillEvalFull = function () { var t = document.getElementById("evalfull"); if (t && !t.innerHTML) { t.id = "evalfull"; table("evalfull", true); } };
 
-    var W = 700, H = 380, L = 54, R = 16, T = 30, B = 52;
+    var W = 700, H = 450, L = 54, R = 16, T = 30, B = 52;
     var svg = el("svg", { viewBox: "0 0 " + W + " " + H, width: "100%", role: "img", "aria-label": "Category F1 at four levels: exact 0.80 test and 0.69 OOD rising to broad group 0.92 and 0.88" }, document.getElementById("levelchart"));
     function Y(v) { return T + (H - T - B) * (1 - v); }
     [0, 0.25, 0.5, 0.75, 1].forEach(function (v) { el("line", { x1: L, x2: W - R, y1: Y(v), y2: Y(v), stroke: "#d9dde3" }, svg); txt(svg, L - 8, Y(v) + 5, v.toFixed(2), { "text-anchor": "end", "font-size": 16, fill: "#4a5870" }); });
@@ -769,7 +772,7 @@ svg text { font-family: var(--mono); }
       txt(svg, cx, H - 24, lv[0], { "text-anchor": "middle", "font-size": 17, fill: "#4a5870" });
     });
     el("rect", { x: L, y: 2, width: 12, height: 12, fill: "#1f6a83", rx: 2 }, svg); txt(svg, L + 18, 13, "test", { "font-size": 16, fill: "#4a5870" });
-    el("rect", { x: L + 84, y: 2, width: 12, height: 12, fill: "#b8650f", rx: 2 }, svg); txt(svg, L + 102, 13, "unfamiliar (OOD)", { "font-size": 16, fill: "#4a5870" });
+    el("rect", { x: L + 84, y: 2, width: 12, height: 12, fill: "#b8650f", rx: 2 }, svg); txt(svg, L + 102, 13, "OOD", { "font-size": 16, fill: "#4a5870" });
   })();
 
   // slide 9: axes chart
