@@ -6,6 +6,10 @@ communication it is under 2210, whether it is approvable, which violations it co
 the verbatim excerpt and rule paragraph), how serious they are, and what the reviewer should do next.
 It is an assistant to a registered principal, not a replacement: every verdict needs human review.
 
+**Get it.** The LoRA adapter (mlx format) is attached to the
+[v0.1.0 release](https://github.com/rgvvvg5mpz-collab/FINRA2210_correspondence/releases/tag/v0.1.0);
+the training and eval data are in [data/](data/); how to run it is in the [README](README.md#use-the-model).
+
 **Input.** The communication text (email, letter, SMS, IM, newsletter, social post, web page, ...)
 plus sender role, firm, recipient type, and distinct retail recipients in the trailing 30 days.
 
@@ -492,39 +496,51 @@ train / 705 validation.
    2,048-token limit used for training.
 
 **Not done yet:** no human compliance expert has reviewed the labels. Chat is 19% of the data,
-and a chat-focused top-up is planned in [CHAT_TOPUP_PLAN.md](CHAT_TOPUP_PLAN.md).
+and a chat-focused top-up is planned in [docs/CHAT_TOPUP_PLAN.md](docs/CHAT_TOPUP_PLAN.md).
 
-## Training and current status
+## Training and results
 
 - **Training.** LoRA (rank 32, alpha 64, dropout 0.05) on 4-bit Phi-4-mini-instruct with mlx-lm
   on an M5 Pro.
   - Adapters on the attention and MLP projections in all 32 blocks.
   - AdamW; learning rate 2e-4 with 50 warmup steps, then cosine decay to 2e-6.
   - Batch 4 with 4-step gradient accumulation (effective batch 16).
-  - 2 epochs (6,636 iterations); loss on reviewer turns only.
+  - 2 epochs (6,636 iterations, about 13 hours); loss on reviewer turns only.
+  - Validation loss fell from 2.185 to 0.287 and was still at its minimum at the last
+    iteration, so there is no sign of overfitting. Loss curve and summary:
+    [results/training/](results/training/).
   - The same recipe runs on NVIDIA GPUs with PyTorch/TRL on the bf16 base
-    (`scripts/run_cuda_pipeline.sh`; guide: [TRAINING_NVIDIA.md](TRAINING_NVIDIA.md)).
-  - Run status: [runs/phi4mini-2210-mlx/training_summary.md](runs/phi4mini-2210-mlx/training_summary.md).
-  - Full test, OOD and zero-shot baseline results will be in `runs/*/eval_*.json`, broken
-    down by chat vs non-chat channel.
-- **Interim result.** Checkpoint 5,200 of 6,636, on the first 128 test rows (indicative only):
+    (`training/run_cuda_pipeline.sh`; guide: [training/TRAINING_NVIDIA.md](training/TRAINING_NVIDIA.md)).
+- **Results** (full tables, per-category numbers and plots: [results/README.md](results/README.md)).
+  The zero-shot base is the same 4-bit Phi-4-mini with the same system prompt and no examples.
 
-  | Metric | Fine-tuned | Zero-shot base (same first 64 rows) |
-  |---|---|---|
-  | Valid JSON output | 100% | 66% |
-  | Compliant / not compliant correct | 97.7% | 30% |
-  | Communication type correct | 100% | 0% |
-  | Severity correct | 91% | 2% |
-  | Violation detection F1 | 0.98 | 0.30 |
-  | Category F1 | 0.77 | 0.00 |
-  | Rule-citation F1 | 0.78 | 0.00 |
+  | Metric | Fine-tuned, test (1,186) | Fine-tuned, OOD (5,800) | Zero-shot base, test | Zero-shot base, OOD |
+  |---|---|---|---|---|
+  | Valid JSON verdict | **99.8%** | **99.7%** | 67.8% | 65.5% |
+  | Compliant / not compliant correct | **96.5%** | **95.3%** | 39.2% | 39.6% |
+  | Communication type correct | **99.8%** | **98.6%** | 0.0% | 0.0% |
+  | Severity correct | **89.5%** | **86.4%** | 1.2% | 2.0% |
+  | Violation detection F1 | **0.97** | **0.96** | 0.44 | 0.48 |
+  | Category F1 (exact) | **0.80** | **0.69** | 0.00 | 0.00 |
+  | Category F1 (broad group) | **0.92** | **0.88** | 0.00 | 0.00 |
+  | Rule-citation F1 | **0.82** | **0.74** | 0.00 | 0.00 |
 
-  - On the 63 correspondence rows, the compliant / not-compliant call was 100% correct and category F1 was 0.77.
-  - The main weakness is naming the exact category among overlapping ones: `not_fair_and_balanced` vs `misleading_in_context` vs `false_or_misleading_statement`.
+  - **Chat** (SMS, instant message, text blast): compliant / not-compliant 97.4% on the 229 test
+    chat items and 96.4% on the 605 OOD chat items; exact-category F1 0.79 and 0.69.
+  - **Where it is weak:** naming the exact category among overlapping ones. Most misses are a
+    neighbouring category with the same or a related rule, so F1 rises from 0.80 (exact) to 0.92 (broad group) on test.
+    The weakest categories are `member_name_missing`, `product_specific_omission` and
+    `misleading_in_context` (see the category table above). The two OOD-only categories are not
+    detected at all.
+  - **The base model** writes labels in its own words and calls about half of what it can
+    parse compliant, so it is not usable without fine-tuning. See
+    [results/README.md](results/README.md) for how to read its numbers.
+  - **Improving it:** the plan for audits, retraining, DPO and GRPO is in
+    [retraining/README.md](retraining/README.md).
 
-## Examples: chat messages (checkpoint 5,200, test set)
+## Examples: chat messages (test set)
 
-Five real SMS / instant-message items from the test set; the model never saw them in training. Its predicted labels are shown in the format it outputs them: type · compliant · severity · violations.
+Five SMS / instant-message items from the test set, with the final v0.1.0 model's answers; the model never saw them in training. Its predicted labels are shown in the format it outputs them: type · compliant · severity · violations.
 
 **1. Group chat with a hypothetical: correctly passed** (`in_domain-002282`, hard). A rep in a firm-approved group chat with 6 retail clients posts a compounding illustration: "HYPOTHETICAL ILLUSTRATION ONLY: $10,000 growing at an assumed constant 6%…". The post adds that the rate "is not a prediction", ignores fees and taxes, and that returns "can be negative, including losses of principal."
 - Model: `correspondence` · compliant · `none` · no violations. ✓ Matches the reference label.
@@ -550,7 +566,7 @@ Five real SMS / instant-message items from the test set; the model never saw the
 - Model: finds the past-recommendation violation and gets the verdict and severity right, but misses the incomplete "tax-free" claim. ✗ (partial)
 - Two violations packed into one short message are where the model most often drops one.
 
-On the 19 chat items in the 128-row sample, all compliant / not-compliant calls and all severities were correct, and category F1 was 0.85. That is a small sample.
+On all 229 chat items in the test set, the compliant / not-compliant call is right 97.4% of the time and exact-category F1 is 0.79.
 
 ## Limits
 
