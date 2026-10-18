@@ -336,6 +336,25 @@ BROAD_GROUPS: dict[str, dict] = {
 BROAD_GROUP_OF = {c: g for g, v in BROAD_GROUPS.items() for c in v["categories"]}
 assert set(BROAD_GROUP_OF) == set(VIOLATION_CATEGORIES), set(VIOLATION_CATEGORIES) ^ set(BROAD_GROUP_OF)
 
+# Descriptive sub-groups inside the two large broad groups (documentation only; not scored).
+SUBGROUPS: dict[str, dict[str, list[str]]] = {
+    "misleading_content": {
+        "One-sided": ["not_fair_and_balanced", "product_specific_omission", "buried_disclosure"],
+        "Overclaiming": ["promissory_or_guarantee", "exaggerated_or_unwarranted_claim",
+                         "false_or_misleading_statement", "misleading_in_context"],
+        "Predicting returns": ["performance_projection", "hypothetical_or_backtest_misuse"],
+        "Other people's content": ["third_party_content_adoption"],
+    },
+    "required_disclosures": {
+        "Firm identity": ["member_name_missing", "brokercheck_link_missing"],
+        "Fund performance and rankings": ["fund_performance_disclosure", "fund_ranking_disclosure"],
+        "Recommendations": ["recommendation_disclosure", "past_recommendations_reference"],
+        "Claims that need qualifiers": ["unsupported_comparison", "tax_claim_incomplete", "testimonial_disclosure"],
+    },
+}
+for _g, _subs in SUBGROUPS.items():
+    assert sorted(c for cs in _subs.values() for c in cs) == sorted(BROAD_GROUPS[_g]["categories"]), _g
+
 COMMUNICATION_TYPES = ["correspondence", "retail_communication", "institutional_communication"]
 SEVERITIES = ["none", "low", "medium", "high"]
 DIFFICULTIES = ["easy", "medium", "hard"]

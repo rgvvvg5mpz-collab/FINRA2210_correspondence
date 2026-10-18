@@ -1,4 +1,4 @@
-# FINRA 2210 reviewer (Phi-4-mini-instruct + LoRA): one-pager
+# FINRA 2210 reviewer (Phi-4-mini-instruct + LoRA): model card
 
 **What it does.** A first-pass compliance reviewer for broker-dealer communications under FINRA
 Rule 2210. Given one communication plus its distribution metadata, it says what kind of
@@ -20,57 +20,340 @@ plus sender role, firm, recipient type, and distinct retail recipients in the tr
 
 It also returns `required_actions` (1 to 3 reviewer steps) and a 2–4 sentence `rationale`.
 
-## The 23 violation categories, in 5 broad groups
+## Violation categories
 
-Applies to: C = correspondence, R = retail, I = institutional. n = in-domain train+test items with that category (11,896 total). The model outputs the label in the second column. The groups are defined in `BROAD_GROUPS` in [taxonomy.py](src/finra2210/taxonomy.py); `evaluate.py` and the live dashboard report precision / recall / F1 per group (`broad_groups`) and overall (`category_broad_group_micro`), where a hit is any category from the right group.
+### How the categories are organized
 
-**A. Misleading or unbalanced content — 2210(d)(1) (10)** · group key `misleading_content`
+Every finding the model reports is one of **23 categories**. Each category is pinned to exactly
+one rule citation, so the `rule` the model writes follows from the `category` it picks. For
+reporting, the 23 categories sit in a three-level hierarchy:
 
-| # | Category | Model label | What it flags | Rule | Applies | n |
-|---|---|---|---|---|---|---|
-| 1 | Performance projection | `performance_projection` | Predicts or projects returns | 2210(d)(1)(F) | C R I | 1,336 |
-| 2 | Hypothetical / backtest misuse | `hypothetical_or_backtest_misuse` | Backtests or illustrations shown as achievable | 2210(d)(1)(F) | C R I | 207 |
-| 3 | Promissory language or guarantee | `promissory_or_guarantee` | "Can't lose", "risk-free", "safe" | 2210(d)(1)(B) | C R I | 1,040 |
-| 4 | Exaggerated or unwarranted claim | `exaggerated_or_unwarranted_claim` | Unsupported superlatives | 2210(d)(1)(B) | C R I | 871 |
-| 5 | False or misleading statement | `false_or_misleading_statement` | Materially untrue fact | 2210(d)(1)(B) | C R I | 749 |
-| 6 | Not fair and balanced | `not_fair_and_balanced` | Benefits without the matching risks | 2210(d)(1)(A) | C R I | 1,324 |
-| 7 | Product-specific omission | `product_specific_omission` | e.g. surrender charges, REIT illiquidity, leveraged-ETF reset | 2210(d)(1)(A) | C R I | 102 |
-| 8 | Misleading in context | `misleading_in_context` | True statements that mislead together | 2210(d)(1)(D) | C R I | 542 |
-| 9 | Buried disclosure | `buried_disclosure` | Material risk hidden in a footnote | 2210(d)(1)(C) | C R I | 321 |
-| 10 | Third-party content adoption | `third_party_content_adoption` | Adopted third-party content that itself violates | 2210(d)(1) / RN 17-18 | C R | OOD only |
+1. **Broad group (5).** Which part of the rules is broken: misleading content, a missing
+   required disclosure, approval and audience, implied regulator endorsement, or a
+   product-specific rule. Defined as `BROAD_GROUPS` in [taxonomy.py](src/finra2210/taxonomy.py)
+   and scored by `evaluate.py` and the live dashboard.
+2. **Sub-group.** Descriptive only, and only inside the two large groups. For example,
+   "One-sided" vs "Overclaiming" inside misleading content. Defined as `SUBGROUPS` in the same
+   file; not scored.
+3. **Category (23).** The label the model outputs in `violations[].category`. Defined with its
+   rule and the communication types it can apply to in `VIOLATION_CATEGORIES`.
 
-**B. Missing required disclosures — 2210(d)(2)-(d)(8), 2212 (9)** · group key `required_disclosures`
+**Labeling conventions** (enforced by the checker on every training item):
+- One entry per category per message, with a verbatim excerpt of at most 200 characters.
+  A message can have up to 4 categories.
+- A category is only used for a communication type it can apply to. The applies-to column below
+  uses C = correspondence, R = retail communication, I = institutional communication.
+- A compliant message has no violations and severity `none`.
 
-| # | Category | Model label | What it flags | Rule | Applies | n |
-|---|---|---|---|---|---|---|
-| 11 | Unsupported comparison | `unsupported_comparison` | Comparison without the material differences | 2210(d)(2) | R | 243 |
-| 12 | Member firm name missing | `member_name_missing` | Firm name not prominent | 2210(d)(3) | C R | 379 |
-| 13 | Incomplete tax claim | `tax_claim_incomplete` | "Tax-free" without saying which taxes | 2210(d)(4) | C R | 334 |
-| 14 | Fund performance disclosure | `fund_performance_disclosure` | Missing standardized returns, sales charge, expense ratio | 2210(d)(5) | C R | 595 |
-| 15 | Testimonial disclosure | `testimonial_disclosure` | Missing "not representative" or paid-testimonial disclosure | 2210(d)(6) | C R | 348 |
-| 16 | Recommendation disclosure | `recommendation_disclosure` | Security recommendation missing conflicts or price | 2210(d)(7) | R | 172 |
-| 17 | Past recommendations reference | `past_recommendations_reference` | Cites past winners without the full one-year list | 2210(d)(7)(C) | C R | 187 |
-| 18 | BrokerCheck link missing | `brokercheck_link_missing` | Retail web page lacks a BrokerCheck link | 2210(d)(8) | R | 107 |
-| 19 | Fund ranking disclosure | `fund_ranking_disclosure` | Fund ranking without Rule 2212 disclosures | 2212 | R | 80 |
+**How to read the numbers.**
+- **Labels:** how many items carry the category: in-domain (11,896 items, train + test) /
+  out-of-distribution (OOD, 5,800 items). An item with two categories counts once for each.
+- **Test P / R / F1:** precision, recall and F1 of the fine-tuned model for that exact category
+  on the 1,186-item held-out test set; `test n` is how many test items carry it. A dash means
+  the category never appears in the test set or the model never predicts it.
 
-**C. Approval and audience — 2210(a), (b) (2)** · group key `approval_and_audience`
+### The 5 broad groups
 
-| # | Category | Model label | What it flags | Rule | Applies | n |
-|---|---|---|---|---|---|---|
-| 20 | Unapproved retail communication | `unapproved_retail_communication` | Retail communication used without principal pre-approval | 2210(b)(1) | R | 155 |
-| 21 | Institutional forwarding | `institutional_forwarding` | "Institutional" piece that will reach retail investors | 2210(a)(4) / (b)(3) | I | 131 |
+| # | Broad group | Key | Rules | The question it asks | Categories | Labels (in-domain / OOD) | Test F1 (group) |
+|---|---|---|---|---|---|---|---|
+| A | Misleading or unbalanced content | `misleading_content` | 2210(d)(1)(A)–(F) | Is the message fair, balanced and not misleading? | 10 | 6,492 / 3,314 | 0.96 |
+| B | Missing required disclosures | `required_disclosures` | 2210(d)(2)–(d)(8), 2212 | Does it include the specific items the rules require? | 9 | 2,445 / 947 | 0.83 |
+| C | Approval and audience | `approval_and_audience` | 2210(a)(4), (b)(1), (b)(3) | Did the right person approve it, and does it reach the audience it claims? | 2 | 286 / 241 | 0.88 |
+| D | Implied FINRA / SIPC endorsement | `regulator_endorsement` | 2210(e) | Does it suggest a regulator approved or guarantees something? | 1 | 345 / 147 | 0.96 |
+| E | Product-specific rules | `product_rules` | 2220 | Does it follow the extra rules for options? | 1 | 0 / 16 | — (OOD only) |
 
-**D. Implied FINRA / SIPC endorsement — 2210(e) (1)** · group key `regulator_endorsement`
+Group test F1 counts a finding as correct when it names any category from the right group.
+On the test set the model is far better at the group than at the exact category: inside group A
+most mistakes are a neighbouring category with the same or a related rule.
 
-| # | Category | Model label | What it flags | Rule | Applies | n |
-|---|---|---|---|---|---|---|
-| 22 | Implied FINRA endorsement | `finra_endorsement_implied` | Implies FINRA or SIPC endorses or approved something | 2210(e) | C R I | 345 |
+### All 23 categories at a glance
 
-**E. Product-specific rules — 2220 (1)** · group key `product_rules`
+| # | Group | Sub-group | Category label | Rule | Applies | Labels (in-domain / OOD) | Test n | Test P / R / F1 |
+|---|---|---|---|---|---|---|---|---|
+| 1 | A | One-sided | `not_fair_and_balanced` | 2210(d)(1)(A) | C R I | 1,324 / 599 | 135 | 0.73 / 0.73 / 0.73 |
+| 2 | A | One-sided | `product_specific_omission` | 2210(d)(1)(A) | C R I | 102 / 307 | 10 | — / 0.00 / 0.00 |
+| 3 | A | One-sided | `buried_disclosure` | 2210(d)(1)(C) | C R I | 321 / 137 | 32 | 0.86 / 0.56 / 0.68 |
+| 4 | A | Overclaiming | `promissory_or_guarantee` | 2210(d)(1)(B) | C R I | 1,040 / 429 | 100 | 0.88 / 0.91 / 0.90 |
+| 5 | A | Overclaiming | `exaggerated_or_unwarranted_claim` | 2210(d)(1)(B) | C R I | 871 / 423 | 87 | 0.93 / 0.87 / 0.90 |
+| 6 | A | Overclaiming | `false_or_misleading_statement` | 2210(d)(1)(B) | C R I | 749 / 378 | 73 | 0.62 / 0.75 / 0.68 |
+| 7 | A | Overclaiming | `misleading_in_context` | 2210(d)(1)(D) | C R I | 542 / 239 | 54 | 0.47 / 0.30 / 0.36 |
+| 8 | A | Predicting returns | `performance_projection` | 2210(d)(1)(F) | C R I | 1,336 / 610 | 130 | 0.97 / 0.95 / 0.96 |
+| 9 | A | Predicting returns | `hypothetical_or_backtest_misuse` | 2210(d)(1)(F) | C R I | 207 / 113 | 21 | 0.87 / 0.95 / 0.91 |
+| 10 | A | Other people's content | `third_party_content_adoption` | 2210(d)(1) / RN 17-18 | C R | 0 / 79 | 0 | — (OOD only) |
+| 11 | B | Firm identity | `member_name_missing` | 2210(d)(3) | C R | 379 / 146 | 36 | 0.30 / 0.08 / 0.13 |
+| 12 | B | Firm identity | `brokercheck_link_missing` | 2210(d)(8) | R | 107 / 3 | 11 | 0.55 / 0.55 / 0.55 |
+| 13 | B | Fund performance and rankings | `fund_performance_disclosure` | 2210(d)(5) | C R | 595 / 230 | 58 | 0.92 / 0.81 / 0.86 |
+| 14 | B | Fund performance and rankings | `fund_ranking_disclosure` | 2212 | R | 80 / 30 | 6 | 1.00 / 0.83 / 0.91 |
+| 15 | B | Recommendations | `recommendation_disclosure` | 2210(d)(7) | R | 172 / 72 | 20 | 0.82 / 0.70 / 0.76 |
+| 16 | B | Recommendations | `past_recommendations_reference` | 2210(d)(7)(C) | C R | 187 / 78 | 19 | 1.00 / 0.84 / 0.91 |
+| 17 | B | Claims that need qualifiers | `unsupported_comparison` | 2210(d)(2) | R | 243 / 107 | 29 | 0.90 / 0.62 / 0.73 |
+| 18 | B | Claims that need qualifiers | `tax_claim_incomplete` | 2210(d)(4) | C R | 334 / 144 | 43 | 1.00 / 0.88 / 0.94 |
+| 19 | B | Claims that need qualifiers | `testimonial_disclosure` | 2210(d)(6) | C R | 348 / 137 | 28 | 1.00 / 0.89 / 0.94 |
+| 20 | C | — | `unapproved_retail_communication` | 2210(b)(1) | R | 155 / 60 | 11 | 1.00 / 1.00 / 1.00 |
+| 21 | C | — | `institutional_forwarding` | 2210(a)(4) / (b)(3) | I | 131 / 181 | 11 | 0.88 / 0.64 / 0.74 |
+| 22 | D | — | `finra_endorsement_implied` | 2210(e) | C R I | 345 / 147 | 37 | 1.00 / 0.92 / 0.96 |
+| 23 | E | — | `options_communication` | 2220 / 2210(d)(1) | C R | 0 / 16 | 0 | — (OOD only) |
 
-| # | Category | Model label | What it flags | Rule | Applies | n |
-|---|---|---|---|---|---|---|
-| 23 | Options communication | `options_communication` | Options risk omitted or promoted before ODD delivery | 2220 / 2210(d)(1) | C R | OOD only |
+The weakest categories on test are `member_name_missing` (the model has to notice that
+something is absent), `product_specific_omission` (the model labels these
+`not_fair_and_balanced`, which has the same rule) and `misleading_in_context` (mostly read as
+`false_or_misleading_statement` or `not_fair_and_balanced`).
+
+### A. Misleading or unbalanced content — 2210(d)(1) · `misleading_content`
+
+The general content standards. They apply to **every** communication, including correspondence
+and institutional communications, and they make up two thirds of all violation labels. The
+categories overlap by nature (a "can't lose" promise is usually also unbalanced), so the data
+follows one convention: name the category that best describes each problem, one entry per
+category, with at most one natural extra.
+
+#### One-sided
+
+**1. `not_fair_and_balanced` — Not fair and balanced** · 2210(d)(1)(A) · C R I
+- **Flags:** benefits presented without the matching risks, an omitted material fact or
+  qualification, or cherry-picked facts. Also used for a misleading comparison in
+  correspondence or institutional communications, where (d)(2) does not apply.
+- **Not this category:** the missing item is a product-specific feature (use
+  `product_specific_omission`); the risk is disclosed but hidden (use `buried_disclosure`).
+- **Example** (`in_domain-000569`, video script, retail): "Our high-yield corporate bond
+  portfolio is paying clients 7.25% a year, deposited monthly." The spot never mentions
+  default, rate, call or liquidity risk.
+
+**2. `product_specific_omission` — Product-specific omission** · 2210(d)(1)(A) · C R I
+- **Flags:** a material feature of the specific product left out: surrender charges on an
+  annuity, the illiquidity of a non-traded REIT or private placement, the daily reset of a
+  leveraged ETF, call risk on a structured note, prepayment risk on a CMO (Rule 2216).
+- **Not this category:** a general missing risk that is not tied to the product's structure
+  (use `not_fair_and_balanced`).
+- **Example** (`in_domain-008657`, website page, retail): "The correct rate is 5.15% per year,
+  guaranteed for all seven years, with a $25,000 minimum". No surrender schedule and no
+  mention that the guarantee depends on the insurer.
+- **Note:** rare in-domain (102) but common in OOD (307), because OOD shifts the product.
+
+**3. `buried_disclosure` — Buried disclosure** · 2210(d)(1)(C) · C R I
+- **Flags:** a material risk or qualification that is present but placed in a footnote, legend
+  or fine print in a way that keeps the reader from understanding it.
+- **Not this category:** the disclosure is missing altogether (use `not_fair_and_balanced`).
+- **Example** (`in_domain-006627`, SMS, correspondence): "*Bonds called by issuer; final
+  redemption at par 6/1/25, no interest paid after that date." The call notice sits after the
+  opt-out boilerplate while the body says payments will continue.
+
+#### Overclaiming
+
+**4. `promissory_or_guarantee` — Promissory language or guarantee** · 2210(d)(1)(B) · C R I
+- **Flags:** "guaranteed", "can't lose", "risk-free" or "safe" for an investment with market
+  risk, or a promise of an outcome.
+- **Not this category:** a guarantee that is literally true and properly attributed (an
+  FDIC-insured CD within limits, a fixed-annuity rate backed by the insurer with the
+  claims-paying caveat). These appear as compliant near-misses.
+- **Example** (`in_domain-000471`, IM, institutional): "which is guaranteed to hold its value,
+  so there's no risk to the portfolio in the meantime" (about an ultra-short bond fund with a
+  floating NAV).
+
+**5. `exaggerated_or_unwarranted_claim` — Exaggerated or unwarranted claim** · 2210(d)(1)(B) · C R I
+- **Flags:** unsupported superlatives or claims: "best fund", "#1 advisor", "never had a
+  losing year".
+- **Not this category:** a promise about outcomes or safety (use `promissory_or_guarantee`);
+  a fund ranking without its required disclosures (use `fund_ranking_disclosure`).
+- **Example** (`in_domain-004499`, email, correspondence): "the Wynfield Equity Income Fund is
+  the single most reliable income fund available anywhere".
+
+**6. `false_or_misleading_statement` — False or misleading statement** · 2210(d)(1)(B) · C R I
+- **Flags:** a materially untrue statement of fact about fees, insurance coverage, product
+  features or credentials.
+- **Not this category:** each statement is true but the combination misleads (use
+  `misleading_in_context`).
+- **Example** (`in_domain-003282`, mass email, retail): "you can redeem a brokered CD through
+  us at any time at its full face value with no penalty". Brokered CDs are sold on the
+  secondary market, often below face value.
+
+**7. `misleading_in_context` — Misleading in context** · 2210(d)(1)(D) · C R I
+- **Flags:** statements that are individually true but mislead in combination or in the
+  context in which they are made, for example a conclusion that the facts given contradict.
+- **Not this category:** one statement is false on its own (use
+  `false_or_misleading_statement`).
+- **Example** (`in_domain-010113`, SMS, correspondence): "With 42 consecutive years of payments
+  behind it, this is an income stream you can count on", sent after mentioning a 28% price
+  drop and a 112% payout ratio.
+
+#### Predicting returns
+
+**8. `performance_projection` — Performance projection** · 2210(d)(1)(F) · C R I
+- **Flags:** predicting or projecting performance, implying past performance will recur, or an
+  unwarranted forecast. Applies to institutional communications too: FINRA's proposed exception
+  for institutional and qualified-purchaser projections is not treated as current rule.
+- **Not this category:** a clearly labeled hypothetical illustration of mathematical principles
+  (such as compounding at an assumed rate) that does not predict an investment; output of an
+  investment analysis tool under Rule 2214; a price target in a research report with a
+  reasonable basis, valuation method and risks (Rule 2241).
+- **Example** (`in_domain-002129`, print ad, retail): "is positioned to deliver rising income
+  and double-digit total returns over the next decade".
+
+**9. `hypothetical_or_backtest_misuse` — Hypothetical or backtest misuse** · 2210(d)(1)(F) · C R I
+- **Flags:** backtested or hypothetical results presented as achievable, or an "illustration"
+  that in substance projects an investment's performance.
+- **Not this category:** the sender forecasts directly rather than through a backtest or model
+  (use `performance_projection`).
+- **Example** (`in_domain-009646`, newsletter, retail): "That backtest is a good guide to what
+  a ladder built today can deliver over the next decade".
+
+#### Other people's content
+
+**10. `third_party_content_adoption` — Third-party content adoption** · 2210(d)(1), Regulatory Notice 17-18 · C R
+- **Flags:** forwarding, sharing or linking third-party content (an article, ranking or chart)
+  that the firm has adopted (for example by endorsing it) or become entangled with (for
+  example by helping prepare it), when that content itself breaks the content standards.
+- **Not this category:** the rep's own words break the standards (use the matching category
+  above).
+- **Example** (`ood-000180`, email, correspondence): "found this and honestly it sums it up
+  perfectly. this is exactly why we like these for you!", forwarding a newsletter that calls
+  CMOs completely safe.
+- **Note:** OOD only (79). The model never saw it in training.
+
+### B. Missing required disclosures — 2210(d)(2)–(d)(8), Rule 2212 · `required_disclosures`
+
+Specific items the rules require. None of them applies to institutional communications; some
+apply to retail communications only.
+
+#### Firm identity
+
+**11. `member_name_missing` — Member firm name missing** · 2210(d)(3) · C R
+- **Flags:** a retail communication or correspondence that does not prominently disclose the
+  name of the FINRA member firm (or the name under which it does business). A nonmember
+  affiliate's name may appear if the relationship is clear.
+- **Not this category:** the member firm is named where a reader would normally look for it,
+  such as the signature block or the footer.
+- **Example** (`in_domain-001781`, website page, retail): "Securities offered through a
+  registered broker-dealer, member FINRA (www.finra.org)/SIPC." The page names only the rep's
+  DBA, never the member firm.
+- **Note:** the model's weakest category on test: it rarely notices the absence and sometimes
+  flags it when the firm is named.
+
+**12. `brokercheck_link_missing` — BrokerCheck link missing** · 2210(d)(8) · R
+- **Flags:** a member's website page meant for retail investors, or a registered person's
+  profile page, with no readily apparent BrokerCheck reference and hyperlink.
+- **Not this category:** emails, texts and other messages that are not website pages
+  (in-domain it is labeled only on website pages; OOD has one WhatsApp exception).
+- **Example** (`in_domain-011686`, website page, retail): a profile page headed "Eleanor
+  Vasquez-Hart, CRPC(R), Registered Representative | Granite Arch Securities, Inc." with no
+  BrokerCheck link anywhere.
+
+#### Fund performance and rankings
+
+**13. `fund_performance_disclosure` — Fund performance disclosure** · 2210(d)(5) · C R
+- **Flags:** performance of a non-money-market open-end fund shown without standardized 1-, 5-
+  and 10-year (or since-inception) average annual total returns as of the latest calendar
+  quarter-end, the maximum sales charge and the gross expense ratio, or with non-standardized
+  returns more prominent than standardized ones. Applies to correspondence too, so a text
+  quoting a fund's return counts.
+- **Not this category:** a fund ranking (use `fund_ranking_disclosure`); a money market fund
+  yield shown with its required disclosures.
+- **Example** (`in_domain-000897`, SMS, correspondence): "the Pacific Crest Municipal Income
+  Fund you bought in March is up 5.2% since your purchase".
+
+**14. `fund_ranking_disclosure` — Fund ranking disclosure** · Rule 2212 · R
+- **Flags:** a retail communication that uses an investment company ranking or rating without
+  the ranking entity, the category, the number of funds in it, the period, the criteria, and
+  that past performance is no guarantee.
+- **Not this category:** a superlative with no ranking behind it (use
+  `exaggerated_or_unwarranted_claim`).
+- **Example** (`in_domain-004082`, mass email, retail): "has been ranked in the top 3% of its
+  category - one of the highest-ranked funds anywhere!"
+
+#### Recommendations
+
+**15. `recommendation_disclosure` — Recommendation disclosure** · 2210(d)(7) · R
+- **Flags:** a retail communication recommending a specific security (not a fund or variable
+  product) without disclosing market-making, a financial interest, or a recent underwriting
+  role; without offering supporting information; or, for a corporate equity, without the
+  price at the time.
+- **Not this category:** correspondence, institutional communications, research reports under
+  Rules 2241 and 2242, or recommendations of registered funds and variable products only.
+- **Example** (`in_domain-007240`, text blast, retail): "Our pick this week is Cedar Falls (IA)
+  Community School District GO 4.10% due 06/01/2041", sent to 1,270 clients from a firm
+  inventory block with no disclosures.
+
+**16. `past_recommendations_reference` — Past recommendations reference** · 2210(d)(7)(C) · C R
+- **Flags:** a reference to specific past recommendations that were or would have been
+  profitable, without providing or offering a list of all such recommendations for at least
+  the prior year and the required legend.
+- **Not this category:** the full list and legend are provided or offered.
+- **Example** (`in_domain-003710`, website page, retail): "We told clients to buy Corvane
+  Systems at $38 in March 2023. It closed at $112 last Friday."
+
+#### Claims that need qualifiers
+
+**17. `unsupported_comparison` — Unsupported comparison** · 2210(d)(2) · R
+- **Flags:** a retail communication that compares investments or services without the material
+  differences: objectives, costs, liquidity, safety, guarantees or insurance, fluctuation of
+  principal or return, tax features.
+- **Not this category:** the same comparison in correspondence or an institutional
+  communication (use `not_fair_and_balanced`).
+- **Example** (`in_domain-006545`, mass email, retail): "Dividend stocks beat money markets on
+  every measure that matters for long-term investors."
+
+**18. `tax_claim_incomplete` — Incomplete tax claim** · 2210(d)(4) · C R
+- **Flags:** "tax-free" or "tax-exempt" without saying which taxes apply (state tax, AMT,
+  capital gains); calling tax-deferred income tax-free; or a tax-deferred vs taxable
+  illustration that breaks (d)(4)(C).
+- **Not this category:** the income really is free of all applicable taxes, or the claim names
+  which taxes it covers.
+- **Example** (`in_domain-000770`, mass email, retail): "Buy them inside your traditional IRA
+  and every dividend and every dollar of gain is tax-free".
+
+**19. `testimonial_disclosure` — Testimonial disclosure** · 2210(d)(6) · C R
+- **Flags:** a testimonial about investment advice or performance without stating that it may
+  not be representative of other clients' experience, that it is no guarantee of future
+  performance, and, if more than $100 was paid, that it is a paid testimonial.
+- **Not this category:** a client's comment about service (wait times, friendliness) rather
+  than advice or performance.
+- **Example** (`in_domain-009590`, mass email, retail): "Jen helped me rebuild my fund lineup
+  after I retired and my portfolio grew 22% last year."
+
+### C. Approval and audience — 2210(a)(4), (b)(1), (b)(3) · `approval_and_audience`
+
+About how a message was handled, not what it says.
+
+**20. `unapproved_retail_communication` — Unapproved retail communication** · 2210(b)(1) · R
+- **Flags:** content that is really a retail communication (a template sent to more than 25
+  retail investors in 30 days, a seminar deck, a mass email, a social post) that the text or
+  metadata shows was already used without a registered principal's approval.
+- **Not this category:** material submitted for review before use (that is the normal pre-use
+  posture), or the exceptions in (b)(1) such as interactive forum posts.
+- **Example** (`in_domain-011725`, newsletter, retail): "resending this morning's newsletter,
+  which went out to my entire client list at 7:15 a.m." The 207-client send was never
+  approved.
+
+**21. `institutional_forwarding` — Institutional forwarding** · 2210(a)(4), (b)(3) · I
+- **Flags:** a communication treated as institutional although the firm has reason to believe
+  it will reach retail investors: plan participants, an adviser's retail clients, "feel free
+  to share with your clients".
+- **Labeling convention:** the item keeps the type `institutional_communication`, and the
+  category records why that treatment fails.
+- **Example** (`in_domain-011585`, IM, institutional): "Pass it around to your clients if you
+  want, they'll get a lot out of the duration section."
+
+### D. Implied FINRA / SIPC endorsement — 2210(e) · `regulator_endorsement`
+
+**22. `finra_endorsement_implied` — Implied FINRA endorsement** · 2210(e) · C R I
+- **Flags:** stating or implying that FINRA, another regulator or SIPC endorses, indemnifies,
+  guarantees or approved the firm, its practices or a security: "FINRA-approved",
+  "FINRA-regulated so your money is safe".
+- **Not this category:** stating FINRA or SIPC membership; "Reviewed by FINRA" or "FINRA
+  Reviewed" on a piece that Advertising Regulation actually reviewed.
+- **Example** (`in_domain-008498`, radio script, retail): "our rollover process is
+  FINRA-approved, so you know every step is being done the right way".
+
+### E. Product-specific rules — Rule 2220 · `product_rules`
+
+**23. `options_communication` — Options communication** · Rule 2220, 2210(d)(1) · C R
+- **Flags:** options discussed with retail investors in a way that omits the risks, implies
+  limited risk, or promotes options before the Options Disclosure Document is delivered.
+- **Not this category:** misleading statements about a non-options product (use the group A
+  category that fits).
+- **Example** (`ood-001245`, webinar follow-up, retail): "A conservative, limited-risk way to
+  turn a stagnant portfolio into a dependable income stream" (about covered-call writing).
+- **Note:** OOD only (16). The model never saw it in training.
 
 ## Training data
 

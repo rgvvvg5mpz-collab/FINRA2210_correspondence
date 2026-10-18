@@ -1,0 +1,1055 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FINRA 2210 Model Card</title>
+<meta name="description" content="FINRA 2210 reviewer (Phi-4-mini-instruct + LoRA): model card">
+<style>
+:root{--bg:#fbfaf7;--card:#ffffff;--ink:#1c1b18;--mute:#66645d;--line:#e6e3db;--accent:#1f5fbf;--code:#f2f0ea;--th:#f6f4ef}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#141413;--card:#1c1c1a;--ink:#ecebe6;--mute:#a09e97;--line:#34332f;--accent:#7aa7ff;--code:#26251f;--th:#22221f}}
+:root[data-theme=dark]{--bg:#141413;--card:#1c1c1a;--ink:#ecebe6;--mute:#a09e97;--line:#34332f;--accent:#7aa7ff;--code:#26251f;--th:#22221f}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:16px}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+.layout{display:grid;grid-template-columns:260px minmax(0,1fr);gap:32px;max-width:1440px;margin:0 auto;padding:28px 16px 64px}
+nav.toc{position:sticky;top:16px;align-self:start;max-height:calc(100vh - 32px);overflow:auto;font-size:13px;border-right:1px solid var(--line);padding-right:16px}
+nav.toc b{display:block;margin-bottom:8px;color:var(--mute);text-transform:uppercase;letter-spacing:.05em;font-size:11px}
+nav.toc a{display:block;color:var(--ink);text-decoration:none;padding:3px 0}
+nav.toc a.l3{padding-left:14px;color:var(--mute)}
+nav.toc a:hover{color:var(--accent)}
+details.toc-m{display:none;margin-bottom:16px;background:var(--card);border:1px solid var(--line);border-radius:8px;padding:8px 12px}
+details.toc-m a{display:block;color:var(--ink);text-decoration:none;padding:2px 0;font-size:14px}
+details.toc-m a.l3{padding-left:14px;color:var(--mute)}
+main{min-width:0}
+h1{font-size:28px;line-height:1.25;margin:0 0 16px}
+h2{font-size:22px;margin:40px 0 12px;padding-top:12px;border-top:1px solid var(--line)}
+h3{font-size:18px;margin:28px 0 10px}
+h4{font-size:15px;margin:22px 0 8px;color:var(--mute);text-transform:uppercase;letter-spacing:.04em}
+p,li{max-width:80ch}
+a{color:var(--accent)}
+code{font:13px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace;background:var(--code);padding:1px 5px;border-radius:4px;overflow-wrap:anywhere}
+td code,th code{white-space:nowrap;overflow-wrap:normal}
+pre{background:var(--code);padding:12px;border-radius:8px;overflow:auto}
+pre code{padding:0;background:none}
+.tw{overflow-x:auto;margin:12px 0 18px;border:1px solid var(--line);border-radius:8px;background:var(--card)}
+table{border-collapse:collapse;width:100%;font-size:13px;font-variant-numeric:tabular-nums}
+th,td{padding:7px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{background:var(--th);font-weight:600;white-space:nowrap}
+tr:last-child td{border-bottom:none}
+blockquote{margin:12px 0;padding:4px 14px;border-left:3px solid var(--line);color:var(--mute)}
+main > p > strong:first-child{color:var(--ink)}
+footer{margin-top:48px;color:var(--mute);font-size:12px;border-top:1px solid var(--line);padding-top:12px}
+@media (max-width:900px){.layout{grid-template-columns:1fr;gap:0}nav.toc{display:none}details.toc-m{display:block}h1{font-size:23px}}
+@media print{nav.toc,details.toc-m{display:none}.layout{display:block}h2{break-before:auto}}
+</style></head>
+<body><div class="layout">
+<nav class="toc" aria-label="Contents"><b>Contents</b><a class="l2" href="#violation-categories">Violation categories</a><a class="l3" href="#how-the-categories-are-organized">How the categories are organized</a><a class="l3" href="#the-5-broad-groups">The 5 broad groups</a><a class="l3" href="#all-23-categories-at-a-glance">All 23 categories at a glance</a><a class="l3" href="#a-misleading-or-unbalanced-content-2210-d-1-misleading-content">A. Misleading or unbalanced content — 2210(d)(1) · misleading_content</a><a class="l3" href="#b-missing-required-disclosures-2210-d-2-d-8-rule-2212-required-disclosures">B. Missing required disclosures — 2210(d)(2)–(d)(8), Rule 2212 · required_disclosures</a><a class="l3" href="#c-approval-and-audience-2210-a-4-b-1-b-3-approval-and-audience">C. Approval and audience — 2210(a)(4), (b)(1), (b)(3) · approval_and_audience</a><a class="l3" href="#d-implied-finra-sipc-endorsement-2210-e-regulator-endorsement">D. Implied FINRA / SIPC endorsement — 2210(e) · regulator_endorsement</a><a class="l3" href="#e-product-specific-rules-rule-2220-product-rules">E. Product-specific rules — Rule 2220 · product_rules</a><a class="l2" href="#training-data">Training data</a><a class="l2" href="#how-the-data-was-curated">How the data was curated</a><a class="l2" href="#training-and-current-status">Training and current status</a><a class="l2" href="#examples-chat-messages-checkpoint-5-200-test-set">Examples: chat messages (checkpoint 5,200, test set)</a><a class="l2" href="#limits">Limits</a></nav>
+<main>
+<details class="toc-m"><summary>Contents</summary><a class="l2" href="#violation-categories">Violation categories</a><a class="l3" href="#how-the-categories-are-organized">How the categories are organized</a><a class="l3" href="#the-5-broad-groups">The 5 broad groups</a><a class="l3" href="#all-23-categories-at-a-glance">All 23 categories at a glance</a><a class="l3" href="#a-misleading-or-unbalanced-content-2210-d-1-misleading-content">A. Misleading or unbalanced content — 2210(d)(1) · misleading_content</a><a class="l3" href="#b-missing-required-disclosures-2210-d-2-d-8-rule-2212-required-disclosures">B. Missing required disclosures — 2210(d)(2)–(d)(8), Rule 2212 · required_disclosures</a><a class="l3" href="#c-approval-and-audience-2210-a-4-b-1-b-3-approval-and-audience">C. Approval and audience — 2210(a)(4), (b)(1), (b)(3) · approval_and_audience</a><a class="l3" href="#d-implied-finra-sipc-endorsement-2210-e-regulator-endorsement">D. Implied FINRA / SIPC endorsement — 2210(e) · regulator_endorsement</a><a class="l3" href="#e-product-specific-rules-rule-2220-product-rules">E. Product-specific rules — Rule 2220 · product_rules</a><a class="l2" href="#training-data">Training data</a><a class="l2" href="#how-the-data-was-curated">How the data was curated</a><a class="l2" href="#training-and-current-status">Training and current status</a><a class="l2" href="#examples-chat-messages-checkpoint-5-200-test-set">Examples: chat messages (checkpoint 5,200, test set)</a><a class="l2" href="#limits">Limits</a></details>
+<h1 id="finra-2210-reviewer-phi-4-mini-instruct-lora-model-card">FINRA 2210 reviewer (Phi-4-mini-instruct + LoRA): model card</h1>
+<p><strong>What it does.</strong> A first-pass compliance reviewer for broker-dealer communications under FINRA
+Rule 2210. Given one communication plus its distribution metadata, it says what kind of
+communication it is under 2210, whether it is approvable, which violations it contains (with
+the verbatim excerpt and rule paragraph), how serious they are, and what the reviewer should do next.
+It is an assistant to a registered principal, not a replacement: every verdict needs human review.</p>
+<p><strong>Input.</strong> The communication text (email, letter, SMS, IM, newsletter, social post, web page, ...)
+plus sender role, firm, recipient type, and distinct retail recipients in the trailing 30 days.</p>
+<p><strong>Output.</strong> A short review in prose ending with one JSON verdict. The model makes four predictions:</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Output</th>
+<th>Kind</th>
+<th>Classes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>communication_type</code></td>
+<td>single-label, 3 classes</td>
+<td><code>correspondence</code>: retail recipients, ≤ 25 in 30 days · <code>retail_communication</code>: retail, &gt; 25 in 30 days or public · <code>institutional_communication</code>: institutional investors only</td>
+</tr>
+<tr>
+<td><code>compliant</code></td>
+<td>binary</td>
+<td>true ⇔ no violations and severity <code>none</code></td>
+</tr>
+<tr>
+<td><code>severity</code></td>
+<td>single-label, 4 classes</td>
+<td><code>none</code> · <code>low</code>: technical or disclosure gap, little investor harm · <code>medium</code>: misleading content a reviewer would send back · <code>high</code>: promissory, guarantee, projection, fraud-adjacent, or likely Enforcement referral</td>
+</tr>
+<tr>
+<td><code>violations[]</code></td>
+<td>multi-label, 0 to 4 per item, 23 categories</td>
+<td>each entry has <code>category</code>, <code>rule</code>, <code>excerpt</code>, <code>explanation</code></td>
+</tr>
+</tbody>
+</table></div>
+<p>It also returns <code>required_actions</code> (1 to 3 reviewer steps) and a 2–4 sentence <code>rationale</code>.</p>
+<h2 id="violation-categories">Violation categories</h2>
+<h3 id="how-the-categories-are-organized">How the categories are organized</h3>
+<p>Every finding the model reports is one of <strong>23 categories</strong>. Each category is pinned to exactly
+one rule citation, so the <code>rule</code> the model writes follows from the <code>category</code> it picks. For
+reporting, the 23 categories sit in a three-level hierarchy:</p>
+<ol>
+<li><strong>Broad group (5).</strong> Which part of the rules is broken: misleading content, a missing
+required disclosure, approval and audience, implied regulator endorsement, or a
+product-specific rule. Defined as <code>BROAD_GROUPS</code> in <a href="src/finra2210/taxonomy.py">taxonomy.py</a>
+and scored by <code>evaluate.py</code> and the live dashboard.</li>
+<li><strong>Sub-group.</strong> Descriptive only, and only inside the two large groups. For example,
+&quot;One-sided&quot; vs &quot;Overclaiming&quot; inside misleading content. Defined as <code>SUBGROUPS</code> in the same
+file; not scored.</li>
+<li><strong>Category (23).</strong> The label the model outputs in <code>violations[].category</code>. Defined with its
+rule and the communication types it can apply to in <code>VIOLATION_CATEGORIES</code>.</li>
+</ol>
+<p><strong>Labeling conventions</strong> (enforced by the checker on every training item):</p>
+<ul>
+<li>One entry per category per message, with a verbatim excerpt of at most 200 characters.
+A message can have up to 4 categories.</li>
+<li>A category is only used for a communication type it can apply to. The applies-to column below
+uses C = correspondence, R = retail communication, I = institutional communication.</li>
+<li>A compliant message has no violations and severity <code>none</code>.</li>
+</ul>
+<p><strong>How to read the numbers.</strong></p>
+<ul>
+<li><strong>Labels:</strong> how many items carry the category: in-domain (11,896 items, train + test) /
+out-of-distribution (OOD, 5,800 items). An item with two categories counts once for each.</li>
+<li><strong>Test P / R / F1:</strong> precision, recall and F1 of the fine-tuned model for that exact category
+on the 1,186-item held-out test set; <code>test n</code> is how many test items carry it. A dash means
+the category never appears in the test set or the model never predicts it.</li>
+</ul>
+<h3 id="the-5-broad-groups">The 5 broad groups</h3>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>#</th>
+<th>Broad group</th>
+<th>Key</th>
+<th>Rules</th>
+<th>The question it asks</th>
+<th>Categories</th>
+<th>Labels (in-domain / OOD)</th>
+<th>Test F1 (group)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A</td>
+<td>Misleading or unbalanced content</td>
+<td><code>misleading_content</code></td>
+<td>2210(d)(1)(A)–(F)</td>
+<td>Is the message fair, balanced and not misleading?</td>
+<td>10</td>
+<td>6,492 / 3,314</td>
+<td>0.96</td>
+</tr>
+<tr>
+<td>B</td>
+<td>Missing required disclosures</td>
+<td><code>required_disclosures</code></td>
+<td>2210(d)(2)–(d)(8), 2212</td>
+<td>Does it include the specific items the rules require?</td>
+<td>9</td>
+<td>2,445 / 947</td>
+<td>0.83</td>
+</tr>
+<tr>
+<td>C</td>
+<td>Approval and audience</td>
+<td><code>approval_and_audience</code></td>
+<td>2210(a)(4), (b)(1), (b)(3)</td>
+<td>Did the right person approve it, and does it reach the audience it claims?</td>
+<td>2</td>
+<td>286 / 241</td>
+<td>0.88</td>
+</tr>
+<tr>
+<td>D</td>
+<td>Implied FINRA / SIPC endorsement</td>
+<td><code>regulator_endorsement</code></td>
+<td>2210(e)</td>
+<td>Does it suggest a regulator approved or guarantees something?</td>
+<td>1</td>
+<td>345 / 147</td>
+<td>0.96</td>
+</tr>
+<tr>
+<td>E</td>
+<td>Product-specific rules</td>
+<td><code>product_rules</code></td>
+<td>2220</td>
+<td>Does it follow the extra rules for options?</td>
+<td>1</td>
+<td>0 / 16</td>
+<td>— (OOD only)</td>
+</tr>
+</tbody>
+</table></div>
+<p>Group test F1 counts a finding as correct when it names any category from the right group.
+On the test set the model is far better at the group than at the exact category: inside group A
+most mistakes are a neighbouring category with the same or a related rule.</p>
+<h3 id="all-23-categories-at-a-glance">All 23 categories at a glance</h3>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>#</th>
+<th>Group</th>
+<th>Sub-group</th>
+<th>Category label</th>
+<th>Rule</th>
+<th>Applies</th>
+<th>Labels (in-domain / OOD)</th>
+<th>Test n</th>
+<th>Test P / R / F1</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>A</td>
+<td>One-sided</td>
+<td><a href="#cat-not_fair_and_balanced"><code>not_fair_and_balanced</code></a></td>
+<td>2210(d)(1)(A)</td>
+<td>C R I</td>
+<td>1,324 / 599</td>
+<td>135</td>
+<td>0.73 / 0.73 / 0.73</td>
+</tr>
+<tr>
+<td>2</td>
+<td>A</td>
+<td>One-sided</td>
+<td><a href="#cat-product_specific_omission"><code>product_specific_omission</code></a></td>
+<td>2210(d)(1)(A)</td>
+<td>C R I</td>
+<td>102 / 307</td>
+<td>10</td>
+<td>— / 0.00 / 0.00</td>
+</tr>
+<tr>
+<td>3</td>
+<td>A</td>
+<td>One-sided</td>
+<td><a href="#cat-buried_disclosure"><code>buried_disclosure</code></a></td>
+<td>2210(d)(1)(C)</td>
+<td>C R I</td>
+<td>321 / 137</td>
+<td>32</td>
+<td>0.86 / 0.56 / 0.68</td>
+</tr>
+<tr>
+<td>4</td>
+<td>A</td>
+<td>Overclaiming</td>
+<td><a href="#cat-promissory_or_guarantee"><code>promissory_or_guarantee</code></a></td>
+<td>2210(d)(1)(B)</td>
+<td>C R I</td>
+<td>1,040 / 429</td>
+<td>100</td>
+<td>0.88 / 0.91 / 0.90</td>
+</tr>
+<tr>
+<td>5</td>
+<td>A</td>
+<td>Overclaiming</td>
+<td><a href="#cat-exaggerated_or_unwarranted_claim"><code>exaggerated_or_unwarranted_claim</code></a></td>
+<td>2210(d)(1)(B)</td>
+<td>C R I</td>
+<td>871 / 423</td>
+<td>87</td>
+<td>0.93 / 0.87 / 0.90</td>
+</tr>
+<tr>
+<td>6</td>
+<td>A</td>
+<td>Overclaiming</td>
+<td><a href="#cat-false_or_misleading_statement"><code>false_or_misleading_statement</code></a></td>
+<td>2210(d)(1)(B)</td>
+<td>C R I</td>
+<td>749 / 378</td>
+<td>73</td>
+<td>0.62 / 0.75 / 0.68</td>
+</tr>
+<tr>
+<td>7</td>
+<td>A</td>
+<td>Overclaiming</td>
+<td><a href="#cat-misleading_in_context"><code>misleading_in_context</code></a></td>
+<td>2210(d)(1)(D)</td>
+<td>C R I</td>
+<td>542 / 239</td>
+<td>54</td>
+<td>0.47 / 0.30 / 0.36</td>
+</tr>
+<tr>
+<td>8</td>
+<td>A</td>
+<td>Predicting returns</td>
+<td><a href="#cat-performance_projection"><code>performance_projection</code></a></td>
+<td>2210(d)(1)(F)</td>
+<td>C R I</td>
+<td>1,336 / 610</td>
+<td>130</td>
+<td>0.97 / 0.95 / 0.96</td>
+</tr>
+<tr>
+<td>9</td>
+<td>A</td>
+<td>Predicting returns</td>
+<td><a href="#cat-hypothetical_or_backtest_misuse"><code>hypothetical_or_backtest_misuse</code></a></td>
+<td>2210(d)(1)(F)</td>
+<td>C R I</td>
+<td>207 / 113</td>
+<td>21</td>
+<td>0.87 / 0.95 / 0.91</td>
+</tr>
+<tr>
+<td>10</td>
+<td>A</td>
+<td>Other people's content</td>
+<td><a href="#cat-third_party_content_adoption"><code>third_party_content_adoption</code></a></td>
+<td>2210(d)(1) / RN 17-18</td>
+<td>C R</td>
+<td>0 / 79</td>
+<td>0</td>
+<td>— (OOD only)</td>
+</tr>
+<tr>
+<td>11</td>
+<td>B</td>
+<td>Firm identity</td>
+<td><a href="#cat-member_name_missing"><code>member_name_missing</code></a></td>
+<td>2210(d)(3)</td>
+<td>C R</td>
+<td>379 / 146</td>
+<td>36</td>
+<td>0.30 / 0.08 / 0.13</td>
+</tr>
+<tr>
+<td>12</td>
+<td>B</td>
+<td>Firm identity</td>
+<td><a href="#cat-brokercheck_link_missing"><code>brokercheck_link_missing</code></a></td>
+<td>2210(d)(8)</td>
+<td>R</td>
+<td>107 / 3</td>
+<td>11</td>
+<td>0.55 / 0.55 / 0.55</td>
+</tr>
+<tr>
+<td>13</td>
+<td>B</td>
+<td>Fund performance and rankings</td>
+<td><a href="#cat-fund_performance_disclosure"><code>fund_performance_disclosure</code></a></td>
+<td>2210(d)(5)</td>
+<td>C R</td>
+<td>595 / 230</td>
+<td>58</td>
+<td>0.92 / 0.81 / 0.86</td>
+</tr>
+<tr>
+<td>14</td>
+<td>B</td>
+<td>Fund performance and rankings</td>
+<td><a href="#cat-fund_ranking_disclosure"><code>fund_ranking_disclosure</code></a></td>
+<td>2212</td>
+<td>R</td>
+<td>80 / 30</td>
+<td>6</td>
+<td>1.00 / 0.83 / 0.91</td>
+</tr>
+<tr>
+<td>15</td>
+<td>B</td>
+<td>Recommendations</td>
+<td><a href="#cat-recommendation_disclosure"><code>recommendation_disclosure</code></a></td>
+<td>2210(d)(7)</td>
+<td>R</td>
+<td>172 / 72</td>
+<td>20</td>
+<td>0.82 / 0.70 / 0.76</td>
+</tr>
+<tr>
+<td>16</td>
+<td>B</td>
+<td>Recommendations</td>
+<td><a href="#cat-past_recommendations_reference"><code>past_recommendations_reference</code></a></td>
+<td>2210(d)(7)(C)</td>
+<td>C R</td>
+<td>187 / 78</td>
+<td>19</td>
+<td>1.00 / 0.84 / 0.91</td>
+</tr>
+<tr>
+<td>17</td>
+<td>B</td>
+<td>Claims that need qualifiers</td>
+<td><a href="#cat-unsupported_comparison"><code>unsupported_comparison</code></a></td>
+<td>2210(d)(2)</td>
+<td>R</td>
+<td>243 / 107</td>
+<td>29</td>
+<td>0.90 / 0.62 / 0.73</td>
+</tr>
+<tr>
+<td>18</td>
+<td>B</td>
+<td>Claims that need qualifiers</td>
+<td><a href="#cat-tax_claim_incomplete"><code>tax_claim_incomplete</code></a></td>
+<td>2210(d)(4)</td>
+<td>C R</td>
+<td>334 / 144</td>
+<td>43</td>
+<td>1.00 / 0.88 / 0.94</td>
+</tr>
+<tr>
+<td>19</td>
+<td>B</td>
+<td>Claims that need qualifiers</td>
+<td><a href="#cat-testimonial_disclosure"><code>testimonial_disclosure</code></a></td>
+<td>2210(d)(6)</td>
+<td>C R</td>
+<td>348 / 137</td>
+<td>28</td>
+<td>1.00 / 0.89 / 0.94</td>
+</tr>
+<tr>
+<td>20</td>
+<td>C</td>
+<td>—</td>
+<td><a href="#cat-unapproved_retail_communication"><code>unapproved_retail_communication</code></a></td>
+<td>2210(b)(1)</td>
+<td>R</td>
+<td>155 / 60</td>
+<td>11</td>
+<td>1.00 / 1.00 / 1.00</td>
+</tr>
+<tr>
+<td>21</td>
+<td>C</td>
+<td>—</td>
+<td><a href="#cat-institutional_forwarding"><code>institutional_forwarding</code></a></td>
+<td>2210(a)(4) / (b)(3)</td>
+<td>I</td>
+<td>131 / 181</td>
+<td>11</td>
+<td>0.88 / 0.64 / 0.74</td>
+</tr>
+<tr>
+<td>22</td>
+<td>D</td>
+<td>—</td>
+<td><a href="#cat-finra_endorsement_implied"><code>finra_endorsement_implied</code></a></td>
+<td>2210(e)</td>
+<td>C R I</td>
+<td>345 / 147</td>
+<td>37</td>
+<td>1.00 / 0.92 / 0.96</td>
+</tr>
+<tr>
+<td>23</td>
+<td>E</td>
+<td>—</td>
+<td><a href="#cat-options_communication"><code>options_communication</code></a></td>
+<td>2220 / 2210(d)(1)</td>
+<td>C R</td>
+<td>0 / 16</td>
+<td>0</td>
+<td>— (OOD only)</td>
+</tr>
+</tbody>
+</table></div>
+<p>The weakest categories on test are <code>member_name_missing</code> (the model has to notice that
+something is absent), <code>product_specific_omission</code> (the model labels these
+<code>not_fair_and_balanced</code>, which has the same rule) and <code>misleading_in_context</code> (mostly read as
+<code>false_or_misleading_statement</code> or <code>not_fair_and_balanced</code>).</p>
+<h3 id="a-misleading-or-unbalanced-content-2210-d-1-misleading-content">A. Misleading or unbalanced content — 2210(d)(1) · <code>misleading_content</code></h3>
+<p>The general content standards. They apply to <strong>every</strong> communication, including correspondence
+and institutional communications, and they make up two thirds of all violation labels. The
+categories overlap by nature (a &quot;can't lose&quot; promise is usually also unbalanced), so the data
+follows one convention: name the category that best describes each problem, one entry per
+category, with at most one natural extra.</p>
+<h4 id="one-sided">One-sided</h4>
+<p id="cat-not_fair_and_balanced"><strong>1. <code>not_fair_and_balanced</code> — Not fair and balanced</strong> · 2210(d)(1)(A) · C R I</p>
+<ul>
+<li><strong>Flags:</strong> benefits presented without the matching risks, an omitted material fact or
+qualification, or cherry-picked facts. Also used for a misleading comparison in
+correspondence or institutional communications, where (d)(2) does not apply.</li>
+<li><strong>Not this category:</strong> the missing item is a product-specific feature (use
+<code>product_specific_omission</code>); the risk is disclosed but hidden (use <code>buried_disclosure</code>).</li>
+<li><strong>Example</strong> (<code>in_domain-000569</code>, video script, retail): &quot;Our high-yield corporate bond
+portfolio is paying clients 7.25% a year, deposited monthly.&quot; The spot never mentions
+default, rate, call or liquidity risk.</li>
+</ul>
+<p id="cat-product_specific_omission"><strong>2. <code>product_specific_omission</code> — Product-specific omission</strong> · 2210(d)(1)(A) · C R I</p>
+<ul>
+<li><strong>Flags:</strong> a material feature of the specific product left out: surrender charges on an
+annuity, the illiquidity of a non-traded REIT or private placement, the daily reset of a
+leveraged ETF, call risk on a structured note, prepayment risk on a CMO (Rule 2216).</li>
+<li><strong>Not this category:</strong> a general missing risk that is not tied to the product's structure
+(use <code>not_fair_and_balanced</code>).</li>
+<li><strong>Example</strong> (<code>in_domain-008657</code>, website page, retail): &quot;The correct rate is 5.15% per year,
+guaranteed for all seven years, with a $25,000 minimum&quot;. No surrender schedule and no
+mention that the guarantee depends on the insurer.</li>
+<li><strong>Note:</strong> rare in-domain (102) but common in OOD (307), because OOD shifts the product.</li>
+</ul>
+<p id="cat-buried_disclosure"><strong>3. <code>buried_disclosure</code> — Buried disclosure</strong> · 2210(d)(1)(C) · C R I</p>
+<ul>
+<li><strong>Flags:</strong> a material risk or qualification that is present but placed in a footnote, legend
+or fine print in a way that keeps the reader from understanding it.</li>
+<li><strong>Not this category:</strong> the disclosure is missing altogether (use <code>not_fair_and_balanced</code>).</li>
+<li><strong>Example</strong> (<code>in_domain-006627</code>, SMS, correspondence): &quot;*Bonds called by issuer; final
+redemption at par 6/1/25, no interest paid after that date.&quot; The call notice sits after the
+opt-out boilerplate while the body says payments will continue.</li>
+</ul>
+<h4 id="overclaiming">Overclaiming</h4>
+<p id="cat-promissory_or_guarantee"><strong>4. <code>promissory_or_guarantee</code> — Promissory language or guarantee</strong> · 2210(d)(1)(B) · C R I</p>
+<ul>
+<li><strong>Flags:</strong> &quot;guaranteed&quot;, &quot;can't lose&quot;, &quot;risk-free&quot; or &quot;safe&quot; for an investment with market
+risk, or a promise of an outcome.</li>
+<li><strong>Not this category:</strong> a guarantee that is literally true and properly attributed (an
+FDIC-insured CD within limits, a fixed-annuity rate backed by the insurer with the
+claims-paying caveat). These appear as compliant near-misses.</li>
+<li><strong>Example</strong> (<code>in_domain-000471</code>, IM, institutional): &quot;which is guaranteed to hold its value,
+so there's no risk to the portfolio in the meantime&quot; (about an ultra-short bond fund with a
+floating NAV).</li>
+</ul>
+<p id="cat-exaggerated_or_unwarranted_claim"><strong>5. <code>exaggerated_or_unwarranted_claim</code> — Exaggerated or unwarranted claim</strong> · 2210(d)(1)(B) · C R I</p>
+<ul>
+<li><strong>Flags:</strong> unsupported superlatives or claims: &quot;best fund&quot;, &quot;#1 advisor&quot;, &quot;never had a
+losing year&quot;.</li>
+<li><strong>Not this category:</strong> a promise about outcomes or safety (use <code>promissory_or_guarantee</code>);
+a fund ranking without its required disclosures (use <code>fund_ranking_disclosure</code>).</li>
+<li><strong>Example</strong> (<code>in_domain-004499</code>, email, correspondence): &quot;the Wynfield Equity Income Fund is
+the single most reliable income fund available anywhere&quot;.</li>
+</ul>
+<p id="cat-false_or_misleading_statement"><strong>6. <code>false_or_misleading_statement</code> — False or misleading statement</strong> · 2210(d)(1)(B) · C R I</p>
+<ul>
+<li><strong>Flags:</strong> a materially untrue statement of fact about fees, insurance coverage, product
+features or credentials.</li>
+<li><strong>Not this category:</strong> each statement is true but the combination misleads (use
+<code>misleading_in_context</code>).</li>
+<li><strong>Example</strong> (<code>in_domain-003282</code>, mass email, retail): &quot;you can redeem a brokered CD through
+us at any time at its full face value with no penalty&quot;. Brokered CDs are sold on the
+secondary market, often below face value.</li>
+</ul>
+<p id="cat-misleading_in_context"><strong>7. <code>misleading_in_context</code> — Misleading in context</strong> · 2210(d)(1)(D) · C R I</p>
+<ul>
+<li><strong>Flags:</strong> statements that are individually true but mislead in combination or in the
+context in which they are made, for example a conclusion that the facts given contradict.</li>
+<li><strong>Not this category:</strong> one statement is false on its own (use
+<code>false_or_misleading_statement</code>).</li>
+<li><strong>Example</strong> (<code>in_domain-010113</code>, SMS, correspondence): &quot;With 42 consecutive years of payments
+behind it, this is an income stream you can count on&quot;, sent after mentioning a 28% price
+drop and a 112% payout ratio.</li>
+</ul>
+<h4 id="predicting-returns">Predicting returns</h4>
+<p id="cat-performance_projection"><strong>8. <code>performance_projection</code> — Performance projection</strong> · 2210(d)(1)(F) · C R I</p>
+<ul>
+<li><strong>Flags:</strong> predicting or projecting performance, implying past performance will recur, or an
+unwarranted forecast. Applies to institutional communications too: FINRA's proposed exception
+for institutional and qualified-purchaser projections is not treated as current rule.</li>
+<li><strong>Not this category:</strong> a clearly labeled hypothetical illustration of mathematical principles
+(such as compounding at an assumed rate) that does not predict an investment; output of an
+investment analysis tool under Rule 2214; a price target in a research report with a
+reasonable basis, valuation method and risks (Rule 2241).</li>
+<li><strong>Example</strong> (<code>in_domain-002129</code>, print ad, retail): &quot;is positioned to deliver rising income
+and double-digit total returns over the next decade&quot;.</li>
+</ul>
+<p id="cat-hypothetical_or_backtest_misuse"><strong>9. <code>hypothetical_or_backtest_misuse</code> — Hypothetical or backtest misuse</strong> · 2210(d)(1)(F) · C R I</p>
+<ul>
+<li><strong>Flags:</strong> backtested or hypothetical results presented as achievable, or an &quot;illustration&quot;
+that in substance projects an investment's performance.</li>
+<li><strong>Not this category:</strong> the sender forecasts directly rather than through a backtest or model
+(use <code>performance_projection</code>).</li>
+<li><strong>Example</strong> (<code>in_domain-009646</code>, newsletter, retail): &quot;That backtest is a good guide to what
+a ladder built today can deliver over the next decade&quot;.</li>
+</ul>
+<h4 id="other-people-s-content">Other people's content</h4>
+<p id="cat-third_party_content_adoption"><strong>10. <code>third_party_content_adoption</code> — Third-party content adoption</strong> · 2210(d)(1), Regulatory Notice 17-18 · C R</p>
+<ul>
+<li><strong>Flags:</strong> forwarding, sharing or linking third-party content (an article, ranking or chart)
+that the firm has adopted (for example by endorsing it) or become entangled with (for
+example by helping prepare it), when that content itself breaks the content standards.</li>
+<li><strong>Not this category:</strong> the rep's own words break the standards (use the matching category
+above).</li>
+<li><strong>Example</strong> (<code>ood-000180</code>, email, correspondence): &quot;found this and honestly it sums it up
+perfectly. this is exactly why we like these for you!&quot;, forwarding a newsletter that calls
+CMOs completely safe.</li>
+<li><strong>Note:</strong> OOD only (79). The model never saw it in training.</li>
+</ul>
+<h3 id="b-missing-required-disclosures-2210-d-2-d-8-rule-2212-required-disclosures">B. Missing required disclosures — 2210(d)(2)–(d)(8), Rule 2212 · <code>required_disclosures</code></h3>
+<p>Specific items the rules require. None of them applies to institutional communications; some
+apply to retail communications only.</p>
+<h4 id="firm-identity">Firm identity</h4>
+<p id="cat-member_name_missing"><strong>11. <code>member_name_missing</code> — Member firm name missing</strong> · 2210(d)(3) · C R</p>
+<ul>
+<li><strong>Flags:</strong> a retail communication or correspondence that does not prominently disclose the
+name of the FINRA member firm (or the name under which it does business). A nonmember
+affiliate's name may appear if the relationship is clear.</li>
+<li><strong>Not this category:</strong> the member firm is named where a reader would normally look for it,
+such as the signature block or the footer.</li>
+<li><strong>Example</strong> (<code>in_domain-001781</code>, website page, retail): &quot;Securities offered through a
+registered broker-dealer, member FINRA (www.finra.org)/SIPC.&quot; The page names only the rep's
+DBA, never the member firm.</li>
+<li><strong>Note:</strong> the model's weakest category on test: it rarely notices the absence and sometimes
+flags it when the firm is named.</li>
+</ul>
+<p id="cat-brokercheck_link_missing"><strong>12. <code>brokercheck_link_missing</code> — BrokerCheck link missing</strong> · 2210(d)(8) · R</p>
+<ul>
+<li><strong>Flags:</strong> a member's website page meant for retail investors, or a registered person's
+profile page, with no readily apparent BrokerCheck reference and hyperlink.</li>
+<li><strong>Not this category:</strong> emails, texts and other messages that are not website pages
+(in-domain it is labeled only on website pages; OOD has one WhatsApp exception).</li>
+<li><strong>Example</strong> (<code>in_domain-011686</code>, website page, retail): a profile page headed &quot;Eleanor
+Vasquez-Hart, CRPC(R), Registered Representative | Granite Arch Securities, Inc.&quot; with no
+BrokerCheck link anywhere.</li>
+</ul>
+<h4 id="fund-performance-and-rankings">Fund performance and rankings</h4>
+<p id="cat-fund_performance_disclosure"><strong>13. <code>fund_performance_disclosure</code> — Fund performance disclosure</strong> · 2210(d)(5) · C R</p>
+<ul>
+<li><strong>Flags:</strong> performance of a non-money-market open-end fund shown without standardized 1-, 5-
+and 10-year (or since-inception) average annual total returns as of the latest calendar
+quarter-end, the maximum sales charge and the gross expense ratio, or with non-standardized
+returns more prominent than standardized ones. Applies to correspondence too, so a text
+quoting a fund's return counts.</li>
+<li><strong>Not this category:</strong> a fund ranking (use <code>fund_ranking_disclosure</code>); a money market fund
+yield shown with its required disclosures.</li>
+<li><strong>Example</strong> (<code>in_domain-000897</code>, SMS, correspondence): &quot;the Pacific Crest Municipal Income
+Fund you bought in March is up 5.2% since your purchase&quot;.</li>
+</ul>
+<p id="cat-fund_ranking_disclosure"><strong>14. <code>fund_ranking_disclosure</code> — Fund ranking disclosure</strong> · Rule 2212 · R</p>
+<ul>
+<li><strong>Flags:</strong> a retail communication that uses an investment company ranking or rating without
+the ranking entity, the category, the number of funds in it, the period, the criteria, and
+that past performance is no guarantee.</li>
+<li><strong>Not this category:</strong> a superlative with no ranking behind it (use
+<code>exaggerated_or_unwarranted_claim</code>).</li>
+<li><strong>Example</strong> (<code>in_domain-004082</code>, mass email, retail): &quot;has been ranked in the top 3% of its
+category - one of the highest-ranked funds anywhere!&quot;</li>
+</ul>
+<h4 id="recommendations">Recommendations</h4>
+<p id="cat-recommendation_disclosure"><strong>15. <code>recommendation_disclosure</code> — Recommendation disclosure</strong> · 2210(d)(7) · R</p>
+<ul>
+<li><strong>Flags:</strong> a retail communication recommending a specific security (not a fund or variable
+product) without disclosing market-making, a financial interest, or a recent underwriting
+role; without offering supporting information; or, for a corporate equity, without the
+price at the time.</li>
+<li><strong>Not this category:</strong> correspondence, institutional communications, research reports under
+Rules 2241 and 2242, or recommendations of registered funds and variable products only.</li>
+<li><strong>Example</strong> (<code>in_domain-007240</code>, text blast, retail): &quot;Our pick this week is Cedar Falls (IA)
+Community School District GO 4.10% due 06/01/2041&quot;, sent to 1,270 clients from a firm
+inventory block with no disclosures.</li>
+</ul>
+<p id="cat-past_recommendations_reference"><strong>16. <code>past_recommendations_reference</code> — Past recommendations reference</strong> · 2210(d)(7)(C) · C R</p>
+<ul>
+<li><strong>Flags:</strong> a reference to specific past recommendations that were or would have been
+profitable, without providing or offering a list of all such recommendations for at least
+the prior year and the required legend.</li>
+<li><strong>Not this category:</strong> the full list and legend are provided or offered.</li>
+<li><strong>Example</strong> (<code>in_domain-003710</code>, website page, retail): &quot;We told clients to buy Corvane
+Systems at $38 in March 2023. It closed at $112 last Friday.&quot;</li>
+</ul>
+<h4 id="claims-that-need-qualifiers">Claims that need qualifiers</h4>
+<p id="cat-unsupported_comparison"><strong>17. <code>unsupported_comparison</code> — Unsupported comparison</strong> · 2210(d)(2) · R</p>
+<ul>
+<li><strong>Flags:</strong> a retail communication that compares investments or services without the material
+differences: objectives, costs, liquidity, safety, guarantees or insurance, fluctuation of
+principal or return, tax features.</li>
+<li><strong>Not this category:</strong> the same comparison in correspondence or an institutional
+communication (use <code>not_fair_and_balanced</code>).</li>
+<li><strong>Example</strong> (<code>in_domain-006545</code>, mass email, retail): &quot;Dividend stocks beat money markets on
+every measure that matters for long-term investors.&quot;</li>
+</ul>
+<p id="cat-tax_claim_incomplete"><strong>18. <code>tax_claim_incomplete</code> — Incomplete tax claim</strong> · 2210(d)(4) · C R</p>
+<ul>
+<li><strong>Flags:</strong> &quot;tax-free&quot; or &quot;tax-exempt&quot; without saying which taxes apply (state tax, AMT,
+capital gains); calling tax-deferred income tax-free; or a tax-deferred vs taxable
+illustration that breaks (d)(4)(C).</li>
+<li><strong>Not this category:</strong> the income really is free of all applicable taxes, or the claim names
+which taxes it covers.</li>
+<li><strong>Example</strong> (<code>in_domain-000770</code>, mass email, retail): &quot;Buy them inside your traditional IRA
+and every dividend and every dollar of gain is tax-free&quot;.</li>
+</ul>
+<p id="cat-testimonial_disclosure"><strong>19. <code>testimonial_disclosure</code> — Testimonial disclosure</strong> · 2210(d)(6) · C R</p>
+<ul>
+<li><strong>Flags:</strong> a testimonial about investment advice or performance without stating that it may
+not be representative of other clients' experience, that it is no guarantee of future
+performance, and, if more than $100 was paid, that it is a paid testimonial.</li>
+<li><strong>Not this category:</strong> a client's comment about service (wait times, friendliness) rather
+than advice or performance.</li>
+<li><strong>Example</strong> (<code>in_domain-009590</code>, mass email, retail): &quot;Jen helped me rebuild my fund lineup
+after I retired and my portfolio grew 22% last year.&quot;</li>
+</ul>
+<h3 id="c-approval-and-audience-2210-a-4-b-1-b-3-approval-and-audience">C. Approval and audience — 2210(a)(4), (b)(1), (b)(3) · <code>approval_and_audience</code></h3>
+<p>About how a message was handled, not what it says.</p>
+<p id="cat-unapproved_retail_communication"><strong>20. <code>unapproved_retail_communication</code> — Unapproved retail communication</strong> · 2210(b)(1) · R</p>
+<ul>
+<li><strong>Flags:</strong> content that is really a retail communication (a template sent to more than 25
+retail investors in 30 days, a seminar deck, a mass email, a social post) that the text or
+metadata shows was already used without a registered principal's approval.</li>
+<li><strong>Not this category:</strong> material submitted for review before use (that is the normal pre-use
+posture), or the exceptions in (b)(1) such as interactive forum posts.</li>
+<li><strong>Example</strong> (<code>in_domain-011725</code>, newsletter, retail): &quot;resending this morning's newsletter,
+which went out to my entire client list at 7:15 a.m.&quot; The 207-client send was never
+approved.</li>
+</ul>
+<p id="cat-institutional_forwarding"><strong>21. <code>institutional_forwarding</code> — Institutional forwarding</strong> · 2210(a)(4), (b)(3) · I</p>
+<ul>
+<li><strong>Flags:</strong> a communication treated as institutional although the firm has reason to believe
+it will reach retail investors: plan participants, an adviser's retail clients, &quot;feel free
+to share with your clients&quot;.</li>
+<li><strong>Labeling convention:</strong> the item keeps the type <code>institutional_communication</code>, and the
+category records why that treatment fails.</li>
+<li><strong>Example</strong> (<code>in_domain-011585</code>, IM, institutional): &quot;Pass it around to your clients if you
+want, they'll get a lot out of the duration section.&quot;</li>
+</ul>
+<h3 id="d-implied-finra-sipc-endorsement-2210-e-regulator-endorsement">D. Implied FINRA / SIPC endorsement — 2210(e) · <code>regulator_endorsement</code></h3>
+<p id="cat-finra_endorsement_implied"><strong>22. <code>finra_endorsement_implied</code> — Implied FINRA endorsement</strong> · 2210(e) · C R I</p>
+<ul>
+<li><strong>Flags:</strong> stating or implying that FINRA, another regulator or SIPC endorses, indemnifies,
+guarantees or approved the firm, its practices or a security: &quot;FINRA-approved&quot;,
+&quot;FINRA-regulated so your money is safe&quot;.</li>
+<li><strong>Not this category:</strong> stating FINRA or SIPC membership; &quot;Reviewed by FINRA&quot; or &quot;FINRA
+Reviewed&quot; on a piece that Advertising Regulation actually reviewed.</li>
+<li><strong>Example</strong> (<code>in_domain-008498</code>, radio script, retail): &quot;our rollover process is
+FINRA-approved, so you know every step is being done the right way&quot;.</li>
+</ul>
+<h3 id="e-product-specific-rules-rule-2220-product-rules">E. Product-specific rules — Rule 2220 · <code>product_rules</code></h3>
+<p id="cat-options_communication"><strong>23. <code>options_communication</code> — Options communication</strong> · Rule 2220, 2210(d)(1) · C R</p>
+<ul>
+<li><strong>Flags:</strong> options discussed with retail investors in a way that omits the risks, implies
+limited risk, or promotes options before the Options Disclosure Document is delivered.</li>
+<li><strong>Not this category:</strong> misleading statements about a non-options product (use the group A
+category that fits).</li>
+<li><strong>Example</strong> (<code>ood-001245</code>, webinar follow-up, retail): &quot;A conservative, limited-risk way to
+turn a stagnant portfolio into a dependable income stream&quot; (about covered-call writing).</li>
+<li><strong>Note:</strong> OOD only (16). The model never saw it in training.</li>
+</ul>
+<h2 id="training-data">Training data</h2>
+<p>All items are synthetic broker-dealer communications with reference labels. People and firms
+are fictional, and dates fall between 2023 and 2026.</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Set</th>
+<th>Items</th>
+<th>Use</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>In-domain train</td>
+<td>10,710</td>
+<td>fine-tuning. 5% is held out as validation (539), so 10,171 are trained on</td>
+</tr>
+<tr>
+<td>In-domain test</td>
+<td>1,186</td>
+<td>held-out evaluation (10%, never trained on)</td>
+</tr>
+<tr>
+<td>Out-of-distribution (OOD)</td>
+<td>5,800</td>
+<td>evaluation only: each item is shifted on 1–3 axes</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>In-domain composition (11,896 items).</strong></p>
+<ul>
+<li><strong>Communication type:</strong> correspondence 5,870 (49%), retail communication 4,567 (38%),
+institutional 1,459 (12%). Type follows the distribution metadata: ≤ 25 retail recipients in 30
+days is correspondence, &gt; 25 or the public is retail, and institutional-only recipients are
+institutional.</li>
+<li><strong>Verdict:</strong> 5,283 compliant (44%; 42–46% within each type), 6,613 not compliant. Severity:
+none 5,283, low 345, medium 3,363, high 2,905.</li>
+<li><strong>Violations per item:</strong> 0 → 5,283, 1 → 4,175, 2 → 1,922, 3 → 515, 4 → 1.</li>
+<li><strong>Difficulty:</strong> easy 3,519 (30%), medium 4,786 (40%), hard 3,591 (30%).
+<ul>
+<li>Easy items have one blatant violation, or are routine compliant messages.</li>
+<li>Medium items need the whole message read, for example an implied projection or a missing
+disclosure.</li>
+<li>Hard items are compound or borderline violations, or compliant near-misses that look
+aggressive but pass.</li>
+</ul>
+</li>
+<li><strong>Channels (16):</strong>
+<ul>
+<li>Email 4,246, letter 1,112, SMS 1,074, instant message 896.</li>
+<li>Mass email 843, social post 687, web page 626, newsletter 445, blog 340.</li>
+<li>Seminar invitation 322, seminar deck/script 306, form letter 284, text blast 261.</li>
+<li>Radio/podcast script 208, print ad 141, video script 102.</li>
+</ul>
+</li>
+<li><strong>Products:</strong> mutual funds 2,081, ETFs 1,840, stocks 1,733, bonds/CDs 1,075, 401(k)/IRA
+rollover 1,052, market commentary 860, target-date funds 817, munis 792, logistics with no
+product 706, 529 plans 530, fixed annuities 410.</li>
+<li><strong>Senders:</strong>
+<ul>
+<li>Registered reps 55% and dual-registered advisors 18%.</li>
+<li>Branch managers, unregistered client-service associates, wholesalers, compliance/ops staff
+and the firm's marketing department make up the rest.</li>
+</ul>
+</li>
+<li><strong>Tones (8, roughly even):</strong> formal, friendly-professional, casual/texting, salesy,
+apologetic complaint response, terse, educational, urgent market event.</li>
+<li><strong>Length:</strong> median 915 characters; 10th–90th percentile 401–1,747; maximum 5,104.</li>
+</ul>
+<p><strong>OOD set (5,800 items, 2,632 compliant).</strong> Each item shifts on 1–3 axes:</p>
+<ul>
+<li><strong>Product (2,716):</strong> options, crypto ETFs, Reg D private placements, structured notes, variable
+annuities, leveraged ETFs, non-traded REITs, SPACs, margin, CMOs.</li>
+<li><strong>Channel (2,711):</strong> LinkedIn / WhatsApp / X DMs, chatbot transcripts, voicemail, long email
+threads, scanned handwriting with OCR noise, payment-app memos.</li>
+<li><strong>Style (1,516):</strong> slang and emoji, non-native English, all caps, pasted third-party links.</li>
+<li><strong>Audience (1,229):</strong> an institution that forwards to retail, a $40M family office (not
+institutional), a Spanish-speaking client, a journalist.</li>
+<li><strong>Regulatory twist (1,035):</strong> 2210(f) public appearances, Rules 2212–2214 and 2241, SIPC,
+Reg BI, Rule 3240, AI-drafted text under RN 24-09.</li>
+<li><strong>Firm type (910):</strong> bank-affiliated, insurance, crypto-adjacent, robo-hybrid, new member.</li>
+</ul>
+<p>The axes are recorded per item, so OOD results break down by axis.</p>
+<p><strong>Training format.</strong> Each item becomes a chat conversation:</p>
+<ul>
+<li>A fixed reviewer system prompt.</li>
+<li>A user turn: one of 15 request phrasings, a sentence of context (sender, recipients, 30-day
+count), and the communication text.</li>
+<li>The reviewer's answer: the classification with its threshold reasoning, the verdict, each
+finding as rule + verbatim excerpt + explanation, the rationale, the next steps and the JSON
+verdict.</li>
+<li>In 30% of conversations, a follow-up exchange: how to fix it, which finding is most serious,
+or why it is (or is not) correspondence.</li>
+</ul>
+<p>That gives 7,444 single-turn and 3,266 two-turn conversations in train. Loss is computed only
+on the reviewer's turns, so each two-turn conversation becomes two training examples: 13,271
+train / 705 validation.</p>
+<h2 id="how-the-data-was-curated">How the data was curated</h2>
+<ol>
+<li>
+<p><strong>Taxonomy first.</strong> A working digest of Rule 2210 was written before any data, along with
+23 violation categories. Each category is pinned to one rule citation and to the
+communication types it can apply to; for example, (d)(2)–(d)(7) disclosures apply to
+correspondence and retail but never to institutional. The digest also defines the
+difficulty tiers and the severity scale.</p>
+</li>
+<li>
+<p><strong>Scenarios are sampled before anything is written.</strong> Every item starts as a spec, so the
+data's diversity is set by the specs rather than left to the writer. A spec fixes:</p>
+<ul>
+<li>difficulty (30/40/30) and the compliance target (~45% compliant);</li>
+<li>the exact violation categories, weighted toward what review desks see most and limited to
+those valid for the type and channel;</li>
+<li>channel, product, sender role, tone and length;</li>
+<li>the recipient profile and 30-day recipient count, which determine the communication type.</li>
+</ul>
+<p>Compliant medium and hard specs carry a &quot;near-miss&quot; topic. For example: fund returns quoted
+with full standardized performance, a hypothetical clearly labeled, or &quot;guaranteed&quot; used only
+where it is literally true. This keeps the model from learning &quot;mentions returns ⇒
+violation&quot;.</p>
+</li>
+<li>
+<p><strong>Teacher writing.</strong> Claude Code subagents wrote the items, acting as a senior FINRA
+Advertising Regulation examiner and former chief compliance officer.</p>
+<ul>
+<li>Claude Opus 5.5 wrote 11,516 in-domain and 5,760 OOD items; Claude Fable 5.1 wrote 380
+and 40.</li>
+<li>Each subagent read the rule digest, the category-to-rule table and the writing and
+labeling rules, then wrote one item per spec in chunks of 24–40.</li>
+<li>Each item is the communication in the channel's native format, plus its label.</li>
+</ul>
+</li>
+<li>
+<p><strong>Automatic validation, repeated until clean.</strong> Every chunk was checked against its specs,
+and the writer fixed and re-checked until it reported zero problems. The checker requires:</p>
+<ul>
+<li>every rule citation to be the one assigned to its category;</li>
+<li>every excerpt to be a verbatim substring of the text (≤ 200 characters);</li>
+<li>no category cited for a communication type it cannot apply to;</li>
+<li>the communication type to agree with the recipient metadata;</li>
+<li><code>compliant</code>, <code>violations</code> and <code>severity</code> to agree with each other;</li>
+<li>the item to match its spec (difficulty, channel, recipient count, type, categories) and
+to be 40–6,000 characters long.</li>
+</ul>
+</li>
+<li>
+<p><strong>Frozen snapshot.</strong> Validated output is copied into a timestamped, append-only snapshot
+with SHA-256 checksums before any cleaning.</p>
+</li>
+<li>
+<p><strong>Re-validation and de-duplication.</strong> Every item was validated again, then de-duplicated:</p>
+<ul>
+<li>exact duplicates (after normalization) are removed;</li>
+<li>near-duplicates are removed when more than 50% of their 6-word sequences match an earlier
+item;</li>
+<li>OOD items were de-duplicated against in-domain, and the top-up against OOD.</li>
+</ul>
+<p>Result: 0 rejects and 0 duplicates. The largest 6-gram overlap between any two round-1 items
+is ≈ 0.38, and ≈ 0.24 between the top-up and everything else.</p>
+</li>
+<li>
+<p><strong>Targeted top-up of sparse categories.</strong> Three categories were rare after round 1, so 336
+extra items made each one the primary violation (plus 16 compliant near-misses per
+category). Each item varies how the category appears, such as a BrokerCheck name with no
+link, or an &quot;institutional&quot; piece offered for white-labeling to an RIA.</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Category</th>
+<th>Train before</th>
+<th>Train after</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>brokercheck_link_missing</td>
+<td>3</td>
+<td>96</td>
+</tr>
+<tr>
+<td>institutional_forwarding</td>
+<td>35</td>
+<td>120</td>
+</tr>
+<tr>
+<td>unapproved_retail_communication</td>
+<td>58</td>
+<td>144</td>
+</tr>
+</tbody>
+</table></div>
+</li>
+<li>
+<p><strong>Splitting.</strong></p>
+<ul>
+<li>Test is 10% of in-domain, stratified by difficulty × communication type × primary
+category.</li>
+<li>The split is incremental: when items are added, earlier items keep their train or test
+side, and only the new items are stratified. A model trained on an earlier train set
+therefore stays uncontaminated on the current test set.</li>
+<li>OOD is never trained on.</li>
+<li>A stratified 5% of train is held out for validation during fine-tuning.</li>
+</ul>
+</li>
+<li>
+<p><strong>Format check.</strong> Every reference answer was parsed back into JSON and compared with its
+label, with 0 mismatches. The longest training example is 1,913 tokens, under the
+2,048-token limit used for training.</p>
+</li>
+</ol>
+<p><strong>Not done yet:</strong> no human compliance expert has reviewed the labels. Chat is 19% of the data,
+and a chat-focused top-up is planned in <a href="CHAT_TOPUP_PLAN.md">CHAT_TOPUP_PLAN.md</a>.</p>
+<h2 id="training-and-current-status">Training and current status</h2>
+<ul>
+<li>
+<p><strong>Training.</strong> LoRA (rank 32, alpha 64, dropout 0.05) on 4-bit Phi-4-mini-instruct with mlx-lm
+on an M5 Pro.</p>
+<ul>
+<li>Adapters on the attention and MLP projections in all 32 blocks.</li>
+<li>AdamW; learning rate 2e-4 with 50 warmup steps, then cosine decay to 2e-6.</li>
+<li>Batch 4 with 4-step gradient accumulation (effective batch 16).</li>
+<li>2 epochs (6,636 iterations); loss on reviewer turns only.</li>
+<li>The same recipe runs on NVIDIA GPUs with PyTorch/TRL on the bf16 base
+(<code>scripts/run_cuda_pipeline.sh</code>; guide: <a href="TRAINING_NVIDIA.md">TRAINING_NVIDIA.md</a>).</li>
+<li>Run status: <a href="runs/phi4mini-2210-mlx/training_summary.md">runs/phi4mini-2210-mlx/training_summary.md</a>.</li>
+<li>Full test, OOD and zero-shot baseline results will be in <code>runs/*/eval_*.json</code>, broken
+down by chat vs non-chat channel.</li>
+</ul>
+</li>
+<li>
+<p><strong>Interim result.</strong> Checkpoint 5,200 of 6,636, on the first 128 test rows (indicative only):</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Metric</th>
+<th>Fine-tuned</th>
+<th>Zero-shot base (same first 64 rows)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Valid JSON output</td>
+<td>100%</td>
+<td>66%</td>
+</tr>
+<tr>
+<td>Compliant / not compliant correct</td>
+<td>97.7%</td>
+<td>30%</td>
+</tr>
+<tr>
+<td>Communication type correct</td>
+<td>100%</td>
+<td>0%</td>
+</tr>
+<tr>
+<td>Severity correct</td>
+<td>91%</td>
+<td>2%</td>
+</tr>
+<tr>
+<td>Violation detection F1</td>
+<td>0.98</td>
+<td>0.30</td>
+</tr>
+<tr>
+<td>Category F1</td>
+<td>0.77</td>
+<td>0.00</td>
+</tr>
+<tr>
+<td>Rule-citation F1</td>
+<td>0.78</td>
+<td>0.00</td>
+</tr>
+</tbody>
+</table></div>
+<ul>
+<li>On the 63 correspondence rows, the compliant / not-compliant call was 100% correct and category F1 was 0.77.</li>
+<li>The main weakness is naming the exact category among overlapping ones: <code>not_fair_and_balanced</code> vs <code>misleading_in_context</code> vs <code>false_or_misleading_statement</code>.</li>
+</ul>
+</li>
+</ul>
+<h2 id="examples-chat-messages-checkpoint-5-200-test-set">Examples: chat messages (checkpoint 5,200, test set)</h2>
+<p>Five real SMS / instant-message items from the test set; the model never saw them in training. Its predicted labels are shown in the format it outputs them: type · compliant · severity · violations.</p>
+<p><strong>1. Group chat with a hypothetical: correctly passed</strong> (<code>in_domain-002282</code>, hard). A rep in a firm-approved group chat with 6 retail clients posts a compounding illustration: &quot;HYPOTHETICAL ILLUSTRATION ONLY: $10,000 growing at an assumed constant 6%…&quot;. The post adds that the rate &quot;is not a prediction&quot;, ignores fees and taxes, and that returns &quot;can be negative, including losses of principal.&quot;</p>
+<ul>
+<li>Model: <code>correspondence</code> · compliant · <code>none</code> · no violations. ✓ Matches the reference label.</li>
+<li>What makes it hard: the post shows numbers, but the hypothetical is properly framed, so neither <code>performance_projection</code> nor <code>hypothetical_or_backtest_misuse</code> applies.</li>
+</ul>
+<p><strong>2. Advisor chat with a prospect: two violations found</strong> (<code>in_domain-005314</code>, medium). An IM thread about a 401(k) rollover:
+&quot;you get growth, you get diversification, you get low cost. kind of the whole package&quot; … one client &quot;told me last month 'Jake turned my sleepy rollover into the best-performing money I've ever had, up 34% in under two years.'&quot;</p>
+<ul>
+<li>Model: <code>correspondence</code> · not compliant · <code>medium</code> · ✓ matches both violations:
+<ul>
+<li><code>not_fair_and_balanced</code> (2210(d)(1)(A))</li>
+<li><code>testimonial_disclosure</code> (2210(d)(6))</li>
+</ul>
+</li>
+<li>Actions: remove the testimonial or add the (d)(6) disclosures; send a follow-up that balances the pitch with risks and costs.</li>
+</ul>
+<p><strong>3. Institutional chat with a forecast: caught</strong> (<code>in_domain-010331</code>, medium). A rep messages a retirement-plan CIO: &quot;the 2040 should compound right around 7-7.5% a year over the next decade, vs. maybe 5-6 for the big passive series.&quot;</p>
+<ul>
+<li>Model: <code>institutional_communication</code> · not compliant · <code>high</code> · <code>performance_projection</code> (2210(d)(1)(F)). ✓ Matches.</li>
+<li>The projection rule applies to institutional communications too; the chat also discusses risk, but that does not cure the forecast.</li>
+</ul>
+<p><strong>4. Text message quoting fund returns: disclosure gap caught</strong> (<code>in_domain-000814</code>, easy). A rep texts a retail client whose CD is maturing: &quot;our Bayshore Core Bond Fund (Class A) returned 11.4% over the past 12 months … want me to set aside a piece of it for the fund?&quot;</p>
+<ul>
+<li>Model: <code>correspondence</code> · not compliant · <code>medium</code> · <code>fund_performance_disclosure</code> (2210(d)(5)). ✓ Matches.</li>
+<li>Action: follow up with standardized quarter-end returns, the maximum sales charge and the expense ratio.</li>
+</ul>
+<p><strong>5. A partial miss: one-line chat with two problems</strong> (<code>in_domain-005140</code>, hard). A rep writes on the firm's secure chat: &quot;remember I had you grab the Clark County water bonds at 91 in Oct, they're 98 now. more tax-free paper on Thursday's calendar, want me to hold you 50k?&quot;</p>
+<ul>
+<li>Reference: <code>past_recommendations_reference</code> (2210(d)(7)(C)) and <code>tax_claim_incomplete</code> (2210(d)(4)), severity <code>medium</code>.</li>
+<li>Model: finds the past-recommendation violation and gets the verdict and severity right, but misses the incomplete &quot;tax-free&quot; claim. ✗ (partial)</li>
+<li>Two violations packed into one short message are where the model most often drops one.</li>
+</ul>
+<p>On the 19 chat items in the 128-row sample, all compliant / not-compliant calls and all severities were correct, and category F1 was 0.85. That is a small sample.</p>
+<h2 id="limits">Limits</h2>
+<ul>
+<li><strong>Synthetic labels.</strong> These are teacher-model judgments, not FINRA or regulator decisions; have a compliance SME spot-check before relying on them.</li>
+<li><strong>Chat is a minority of the data.</strong> Only 19% of in-domain items are chat: 1,074 SMS, 896 IM and 261 retail text blasts. The rest are email, letters and public retail channels, so chat performance should be measured on its own slice.</li>
+<li><strong>Two categories never seen in training.</strong> <code>options_communication</code> and <code>third_party_content_adoption</code> appear only in the OOD set, so expect low recall on them.</li>
+<li><strong>Scope.</strong> It reviews only the text and metadata it is given. It does not check filing deadlines (2210(c)), recordkeeping or supervisory workflow, or rules outside 2210, 2212 and 2220.</li>
+</ul>
+
+<footer>Generated from MODEL_CARD.md by scripts/build_model_card_html.py on 2026-10-18 01:41 UTC. Edit the Markdown, then rerun the script.</footer>
+</main></div></body></html>
