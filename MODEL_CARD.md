@@ -526,12 +526,18 @@ and a chat-focused top-up is planned in [docs/CHAT_TOPUP_PLAN.md](docs/CHAT_TOPU
   | Rule-citation F1 | **0.82** | **0.74** | 0.00 | 0.00 |
 
   - **Chat** (SMS, instant message, text blast): compliant / not-compliant 97.4% on the 229 test
-    chat items and 96.4% on the 605 OOD chat items; exact-category F1 0.79 and 0.69.
+    chat items and 96.4% on the 605 OOD chat items; exact-category F1 0.79 and 0.69. On the 893
+    OOD items in other chat apps, 96.0% and 0.72. The zero-shot base gets 38.4% (test chat) and
+    43.3% (OOD chat), with category F1 0.00.
+  - **By OOD axis** (exact-category F1 / compliant correct): audience 0.73 / 96.3%, firm type
+    0.72 / 95.5%, channel 0.70 / 94.0%, style 0.69 / 94.4%, regulatory twist 0.67 / 95.8%,
+    product 0.61 / 96.0%. Product shifts cost the most on category naming; the verdict holds on every axis.
   - **Where it is weak:** naming the exact category among overlapping ones. Most misses are a
     neighbouring category with the same or a related rule, so F1 rises from 0.80 (exact) to 0.92 (broad group) on test.
     The weakest categories are `member_name_missing`, `product_specific_omission` and
-    `misleading_in_context` (see the category table above). The two OOD-only categories are not
-    detected at all.
+    `misleading_in_context` (see the category table above). The two OOD-only categories are never
+    named (`options_communication` 0/16, `third_party_content_adoption` 0/79), but the items are
+    still flagged not compliant (16/16 and 78/79).
   - **The base model** writes labels in its own words and calls about half of what it can
     parse compliant, so it is not usable without fine-tuning. See
     [results/README.md](results/README.md) for how to read its numbers.
