@@ -11,8 +11,11 @@ Apple Silicon (mlx-lm, see configs/phi4mini_lora_mlx.yaml):
 `--model` may be a LoRA adapter directory (base is read from adapter_config; for mlx the
 "model" key) or a full model. Predictions are appended to <out>.preds.jsonl as they are
 produced; `--resume` skips ids already there, so a long run can be restarted. Reports: JSON parse rate, compliant accuracy / F1, communication_type
-accuracy, severity accuracy, violation-category micro P/R/F1, rule-cite F1, and
-breakdowns by difficulty, by gold communication type (correspondence / retail /
+accuracy, severity accuracy, violation-category micro P/R/F1, rule-cite F1 (the cite string
+the model wrote), the category metric at two coarser levels (category_rule_level_micro: a
+category counts as right if it maps to the gold category's taxonomy cite, e.g. promissory vs
+exaggerated are both (d)(1)(B); category_d1_family_micro: additionally every 2210(d)(1) content
+standard is one group), and breakdowns by difficulty, by gold communication type (correspondence / retail /
 institutional), by channel, by channel group (chat = sms_text / instant_message /
 text_message_blast; chat_app = OOD WhatsApp / LinkedIn / X / Slack-Teams DMs; non_chat; and
 chat x communication type) and (for OOD) by shift axis.
@@ -25,6 +28,8 @@ import json
 import re
 from collections import Counter, defaultdict
 from pathlib import Path
+
+from .taxonomy import VIOLATION_CATEGORIES
 
 _FENCE_RE = re.compile(r"```json\s*(\{.*?\})\s*```", re.S)
 _JSON_RE = re.compile(r"\{.*\}", re.S)
@@ -39,6 +44,20 @@ def channel_group(channel: str | None) -> str:
     if channel in CHAT_CHANNELS:
         return "chat"
     return "chat_app" if channel in CHAT_APP_CHANNELS else "non_chat"
+
+
+D1_FAMILY = "2210(d)(1)"
+
+
+def rule_of(category: str | None) -> str | None:
+    """The taxonomy cite for a category; unknown categories stay as themselves (so they count as misses/false alarms)."""
+    return VIOLATION_CATEGORIES.get(category, {}).get("rule", category)
+
+
+def family_of(category: str | None) -> str | None:
+    """Rule cite, with every 2210(d)(1) content standard (fair/balanced, promissory, misleading, projection, ...) as one group."""
+    r = rule_of(category)
+    return D1_FAMILY if r and r.startswith(D1_FAMILY) else r
 
 
 def _load_hf(model_path: str):
@@ -124,6 +143,14 @@ class Scorer:
         self.c_tp = self.c_fp = self.c_fn = 0   # "violation present" as positive class
         self.cat_tp = self.cat_fp = self.cat_fn = 0
         self.rule_tp = self.rule_fp = self.rule_fn = 0
+        # predicted categories grouped by their taxonomy cite, and with all of (d)(1) as one group
+        self.grp = {"rule_level": [0, 0, 0], "d1_family": [0, 0, 0]}
+
+    def _add_grouped(self, g_cats: set, p_cats: set) -> None:
+        for name, key in (("rule_level", rule_of), ("d1_family", family_of)):
+            g, p = {key(c) for c in g_cats}, {key(c) for c in p_cats}
+            t = self.grp[name]
+            t[0] += len(g & p); t[1] += len(p - g); t[2] += len(g - p)
 
     def add(self, gold: dict, pred: dict | None) -> None:
         self.n += 1
@@ -133,6 +160,7 @@ class Scorer:
             self.c_fn += g_viol
             self.cat_fn += len(gold["violations"])
             self.rule_fn += len({v["rule"] for v in gold["violations"]})
+            self._add_grouped({v["category"] for v in gold["violations"]}, set())
             return
         self.parsed += 1
         p_viol = not bool(pred.get("compliant", True))
@@ -145,6 +173,7 @@ class Scorer:
         g_cats = {v["category"] for v in gold["violations"]}
         p_cats = {v.get("category") for v in pred.get("violations", []) if isinstance(v, dict)}
         self.cat_tp += len(g_cats & p_cats); self.cat_fp += len(p_cats - g_cats); self.cat_fn += len(g_cats - p_cats)
+        self._add_grouped(g_cats, p_cats)
         g_rules = {v["rule"] for v in gold["violations"]}
         p_rules = {v.get("rule") for v in pred.get("violations", []) if isinstance(v, dict)}
         self.rule_tp += len(g_rules & p_rules); self.rule_fp += len(p_rules - g_rules); self.rule_fn += len(g_rules - p_rules)
@@ -160,6 +189,8 @@ class Scorer:
             "severity_accuracy": round(self.sev_correct / n, 4),
             "violation_category_micro": _prf(self.cat_tp, self.cat_fp, self.cat_fn),
             "rule_cite_micro": _prf(self.rule_tp, self.rule_fp, self.rule_fn),
+            "category_rule_level_micro": _prf(*self.grp["rule_level"]),
+            "category_d1_family_micro": _prf(*self.grp["d1_family"]),
         }
 
 

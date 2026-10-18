@@ -328,6 +328,27 @@ performance is never averaged away by the email/web majority. The channel groups
 - `chat_app`: the OOD-only WhatsApp, LinkedIn, X and Slack/Teams DMs;
 - `non_chat`: everything else.
 
+Violation categories are scored at three levels, because several categories share a rule
+paragraph and most category errors are near-misses between them:
+- `violation_category_micro`: the exact category must match.
+- `category_rule_level_micro`: categories are grouped by their taxonomy cite, so
+  `promissory_or_guarantee` vs `exaggerated_or_unwarranted_claim` (both (d)(1)(B)), or
+  `product_specific_omission` vs `not_fair_and_balanced` (both (d)(1)(A)), count as a match.
+- `category_d1_family_micro`: in addition, every 2210(d)(1) content standard is one group.
+
+`rule_cite_micro` scores the cite string the model wrote, which is separate from these three.
+
+To watch an eval as it runs (confusion matrices, the three category levels, per-category hits /
+misses / false alarms, and accuracy by OOD axis, refreshed every 10 scored rows), run the
+dashboard and open http://localhost:8765:
+
+```bash
+.venv/bin/python scripts/live_confusion.py
+```
+
+Pass `--preds runs/base-mlx/eval_ood.preds.jsonl --port 8766` for the base model, or
+`--gold data/splits/test.jsonl` with a test preds file.
+
 ### Apple Silicon (mlx-lm): steps 5–6
 
 No CUDA needed; QLoRA on the 4-bit base `mlx-community/Phi-4-mini-instruct-4bit`, same LoRA targets,
