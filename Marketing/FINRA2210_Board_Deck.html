@@ -140,6 +140,23 @@ button { font: inherit; color: inherit; }
 .s11 .tbl th { white-space: normal; }
 .s11 .tbl th:nth-child(n+2), .s11 .tbl td:nth-child(n+2) { text-align: right; }
 .assume { margin: 0; font-size: 16px; line-height: 1.4; color: var(--slate); border-top: 1px solid var(--rule); padding-top: 14px; }
+.crumb { font-family: var(--mono); font-size: 16px; color: var(--slate); margin-top: 14px; min-height: 22px; }
+.crumb b { color: var(--ink); font-weight: 500; }
+.tx { display: grid; grid-template-columns: 1.15fr 1fr 1.45fr; gap: 20px; flex: 1; min-height: 0; margin-top: 10px; }
+.tx-col { display: flex; flex-direction: column; gap: 10px; min-height: 0; }
+.tx-list { display: flex; flex-direction: column; gap: 7px; }
+.tx-item { position: relative; cursor: pointer; border: 1px solid var(--rule); background: var(--sheet); border-radius: 10px; padding: 11px 14px; display: flex; flex-direction: column; gap: 3px; transition: border-color .15s, background .15s; }
+.tx-item:hover { border-color: var(--ink); }
+.tx-item.sel { border-color: var(--ink); background: #e8edf2; box-shadow: inset 4px 0 0 var(--pass); }
+.tx-item .t { font-family: var(--serif); font-size: 21px; font-weight: 600; line-height: 1.15; display: flex; justify-content: space-between; gap: 10px; }
+.tx-item .t small { font-family: var(--mono); font-size: 14px; font-weight: 400; color: var(--flag); white-space: nowrap; }
+.tx-item .d { font-size: 15.5px; line-height: 1.32; color: var(--slate); }
+.tx-item .m { font-family: var(--mono); font-size: 13.5px; color: #7b8799; }
+.tx-cat .t { font-family: var(--mono); font-size: 17px; font-weight: 500; }
+.tx-cat::after { content: "Detail +"; position: absolute; right: 14px; bottom: 12px; font-family: var(--mono); font-size: 13px; color: var(--pass); opacity: .6; }
+.tx-cat .bar { height: 6px; background: #e4e8ec; border-radius: 3px; overflow: hidden; margin-top: 6px; }
+.tx-cat .bar i { display: block; height: 100%; background: var(--pass); }
+.tx-cat .bar i.lo { background: var(--flag); }
 .miss { font-size: 21px; line-height: 1.45; color: var(--slate); border-left: 3px solid var(--flag); padding: 2px 0 2px 14px; }
 
 /* bars */
@@ -197,7 +214,8 @@ button { font: inherit; color: inherit; }
 .grp .stats b { font-family: var(--mono); font-weight: 500; color: var(--ink); }
 .grp.big { grid-row: span 3; }
 .catrows { display: flex; flex-direction: column; gap: 7px; margin-top: 4px; }
-.catrow { display: grid; grid-template-columns: 1fr 96px 46px; gap: 12px; align-items: center; min-height: 34px; }
+.catrow { display: grid; grid-template-columns: 1fr 96px 46px; gap: 12px; align-items: center; min-height: 34px; cursor: pointer; border-radius: 6px; padding: 0 6px; }
+.catrow:hover { background: #e8edf2; }
 .catrow .nm { font-family: var(--mono); font-size: 15px; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .catrow .nm small { display: block; font-size: 13.5px; color: var(--flag); }
 .catrow .track { height: 10px; background: #e4e8ec; border-radius: 5px; overflow: hidden; }
@@ -277,10 +295,23 @@ svg text { font-family: var(--mono); }
     <div role="button" tabindex="0" class="tap kpi" data-detail="kpi-type"><b>99.8%</b><span>correct correspondence / retail / institutional call</span></div>
     <div role="button" tabindex="0" class="tap kpi" data-detail="kpi-local"><b>1–2 s</b><span>per message on one H100 GPU, estimated; under 1 s on a B200</span></div>
   </div>
-  <div class="foot"><span class="sec">Executive summary</span><span>1 / 12</span></div>
+  <div class="foot"><span class="sec">Executive summary</span><span>1 / 13</span></div>
 </section>
 
-<!-- ============ 2 · EXECUTIVE ============ -->
+<!-- ============ 2 · TAXONOMY EXPLORER ============ -->
+<section class="slide s2x" data-title="What it looks for" data-sec="Executive summary">
+  <p class="eyebrow">What it looks for · click to explore</p>
+  <h2>23 violation types in 5 groups and 8 sub-groups</h2>
+  <div class="crumb" id="txcrumb"></div>
+  <div class="tx" id="tx">
+    <div class="tx-col"><div class="label">Broad group · what it asks</div><div class="tx-list" id="txg"></div></div>
+    <div class="tx-col"><div class="label">Sub-group</div><div class="tx-list" id="txs"></div></div>
+    <div class="tx-col"><div class="label">Categories · click for definition, example, score</div><div class="tx-list" id="txc"></div></div>
+  </div>
+  <div class="foot"><span class="sec">Executive summary</span><span>2 / 13</span></div>
+</section>
+
+<!-- ============ 3 · EXECUTIVE ============ -->
 <section class="slide" data-title="What it does for a compliance desk" data-sec="Executive summary">
   <p class="eyebrow">What it does</p>
   <h2>Every message gets a classification, a verdict and a cited reason in seconds</h2>
@@ -304,7 +335,7 @@ svg text { font-family: var(--mono); }
     </div>
     <p class="miss">The SME still adds one finding: no member firm name, <span class="cite">2210(d)(3)</span>. Absent items are the model’s weakest spot.</p>
   </div>
-  <div class="foot"><span class="sec">Executive summary</span><span>2 / 12</span></div>
+  <div class="foot"><span class="sec">Executive summary</span><span>3 / 13</span></div>
 </section>
 
 <!-- ============ 3 · EXECUTIVE ============ -->
@@ -337,7 +368,7 @@ svg text { font-family: var(--mono); }
         <p class="ask"><b>Decisions needed:</b> pilot scope, who reviews the labels, repository access and licensing.</p></div>
     </div>
   </div>
-  <div class="foot"><span class="sec">Executive summary</span><span>3 / 12</span></div>
+  <div class="foot"><span class="sec">Executive summary</span><span>4 / 13</span></div>
 </section>
 
 <!-- ============ 4 · ARCHITECTURE ============ -->
@@ -384,7 +415,7 @@ svg text { font-family: var(--mono); }
       <div><b>No API</b><span>at review time; data stays local</span></div>
     </div>
   </div>
-  <div class="foot"><span class="sec">Architecture and data</span><span>4 / 12</span></div>
+  <div class="foot"><span class="sec">Architecture and data</span><span>5 / 13</span></div>
 </section>
 
 <!-- ============ 5 · DATA ============ -->
@@ -437,15 +468,15 @@ svg text { font-family: var(--mono); }
       </div>
     </div>
   </div>
-  <div class="foot"><span class="sec">Architecture and data</span><span>5 / 12</span></div>
+  <div class="foot"><span class="sec">Architecture and data</span><span>6 / 13</span></div>
 </section>
 
 <!-- ============ 6 · TAXONOMY ============ -->
 <section class="slide" data-title="What it looks for" data-sec="Architecture and data">
   <p class="eyebrow">Taxonomy</p>
-  <h2>23 violation types in 5 groups, each pinned to one rule paragraph</h2>
+  <h2>How well each of the 23 categories is found on the held-out test set</h2>
   <div class="body" style="margin-top:20px;"><div class="groups" id="groups"></div></div>
-  <div class="foot"><span class="sec">Architecture and data</span><span>6 / 12</span></div>
+  <div class="foot"><span class="sec">Architecture and data</span><span>7 / 13</span></div>
 </section>
 
 <!-- ============ 7 · MODEL & TRAINING ============ -->
@@ -478,7 +509,7 @@ svg text { font-family: var(--mono); }
       </div>
     </div>
   </div>
-  <div class="foot"><span class="sec">Architecture and data</span><span>7 / 12</span></div>
+  <div class="foot"><span class="sec">Architecture and data</span><span>8 / 13</span></div>
 </section>
 
 <!-- ============ 8 · EVALUATION ============ -->
@@ -499,7 +530,7 @@ svg text { font-family: var(--mono); }
       </div>
     </div>
   </div>
-  <div class="foot"><span class="sec">Evaluation</span><span>8 / 12</span></div>
+  <div class="foot"><span class="sec">Evaluation</span><span>9 / 13</span></div>
 </section>
 
 <!-- ============ 9 · ROBUSTNESS ============ -->
@@ -532,7 +563,7 @@ svg text { font-family: var(--mono); }
       </div>
     </div>
   </div>
-  <div class="foot"><span class="sec">Evaluation</span><span>9 / 12</span></div>
+  <div class="foot"><span class="sec">Evaluation</span><span>10 / 13</span></div>
 </section>
 
 <!-- ============ 10 · SERVING ============ -->
@@ -564,7 +595,7 @@ svg text { font-family: var(--mono); }
     </div>
     <p class="assume">All figures are estimates, not measurements. They assume ~460 generated tokens per answer (p90 740, measured on the test set), vLLM with continuous batching, bf16 or FP8 weights, and GPU memory bandwidth as the limit. Prices are 2025–26 on-demand list ranges across major clouds w/o enterprise discount; commitments and spot pricing cut them 30–60%. Verify before budgeting.</p>
   </div>
-  <div class="foot"><span class="sec">Deployment</span><span>10 / 12</span></div>
+  <div class="foot"><span class="sec">Deployment</span><span>11 / 13</span></div>
 </section>
 
 <!-- ============ 11 · AWS DEPLOYMENT ============ -->
@@ -613,7 +644,7 @@ svg text { font-family: var(--mono); }
       <span>Private VPC, no egress</span><span>Firm-held KMS keys</span><span>S3 Object Lock for 17a-4</span><span>Least privilege, CloudTrail</span><span>Model version on every verdict</span><span>Starter ≈ $1k / month w/o enterprise discount</span>
     </div>
   </div>
-  <div class="foot"><span class="sec">Deployment</span><span>11 / 12</span></div>
+  <div class="foot"><span class="sec">Deployment</span><span>12 / 13</span></div>
 </section>
 
 <!-- ============ 12 · IMPROVEMENT & GOVERNANCE ============ -->
@@ -655,7 +686,7 @@ svg text { font-family: var(--mono); }
         <li>Exact-category naming is the main accuracy gap.</li></ul></div>
     </div>
   </div>
-  <div class="foot"><span class="sec">Governance and roadmap</span><span>12 / 12</span></div>
+  <div class="foot"><span class="sec">Governance and roadmap</span><span>13 / 13</span></div>
 </section>
 
     </div>
@@ -678,7 +709,7 @@ svg text { font-family: var(--mono); }
 <aside class="panel left" id="idxpanel" aria-label="Slide index">
   <header><div><div class="label">FINRA Rule 2210 reviewer</div><h3>Slides</h3></div><button class="x" data-close aria-label="Close">×</button></header>
   <ol class="idx" id="idx"></ol>
-  <p class="note-mini">Slides 1–3 are the executive summary. Slides 4–12 cover how it is built, how it was measured, how it would be deployed, and how it is governed.</p>
+  <p class="note-mini">Slides 1–4 are the executive summary. Slides 5–13 cover how it is built, how it was measured, how it would be deployed, and how it is governed.</p>
 </aside>
 <aside class="panel right" id="detail" aria-label="Detail" role="dialog" aria-modal="true">
   <header><div><div class="label" id="dlabel">Detail</div><h3 id="dtitle"></h3></div><button class="x" data-close aria-label="Close">×</button></header>
@@ -797,6 +828,7 @@ svg text { font-family: var(--mono); }
       cats: [["options_communication", "2220 / 2210(d)(1)", "Options risk omitted or promoted before the ODD (OOD only)", 0, 16, null, 0.0]] }
   ];
 
+  var TAX = {"groups": [{"key": "misleading_content", "title": "Misleading or unbalanced content", "rules": "2210(d)(1)", "question": "Is the message fair, balanced and not misleading?", "n_in": 6492, "n_ood": 3314, "subs": [{"name": "One-sided", "about": "Benefits without the risks, or risks hidden away", "cats": ["not_fair_and_balanced", "product_specific_omission", "buried_disclosure"]}, {"name": "Overclaiming", "about": "Promises, superlatives, false or misleading statements", "cats": ["promissory_or_guarantee", "exaggerated_or_unwarranted_claim", "false_or_misleading_statement", "misleading_in_context"]}, {"name": "Predicting returns", "about": "Forecasts, projections and backtests sold as outcomes", "cats": ["performance_projection", "hypothetical_or_backtest_misuse"]}, {"name": "Other people’s content", "about": "Third-party material the firm adopts as its own", "cats": ["third_party_content_adoption"]}]}, {"key": "required_disclosures", "title": "Missing required disclosures", "rules": "2210(d)(2)-(d)(8), 2212", "question": "Does it include the specific items the rules require?", "n_in": 2445, "n_ood": 947, "subs": [{"name": "Firm identity", "about": "Who is behind the message, and where to check them", "cats": ["member_name_missing", "brokercheck_link_missing"]}, {"name": "Fund performance and rankings", "about": "Standardized returns and ranking disclosures", "cats": ["fund_performance_disclosure", "fund_ranking_disclosure"]}, {"name": "Recommendations", "about": "Conflicts of interest and past-pick disclosures", "cats": ["recommendation_disclosure", "past_recommendations_reference"]}, {"name": "Claims that need qualifiers", "about": "Comparisons, tax claims and testimonials that need stated qualifications", "cats": ["unsupported_comparison", "tax_claim_incomplete", "testimonial_disclosure"]}]}, {"key": "approval_and_audience", "title": "Approval and audience", "rules": "2210(a), (b)", "question": "Did the right person approve it, and does it reach the audience it claims?", "n_in": 286, "n_ood": 241, "subs": [{"name": "Approval and audience", "about": "Did the right person approve it, and does it reach the audience it claims?", "cats": ["unapproved_retail_communication", "institutional_forwarding"]}]}, {"key": "regulator_endorsement", "title": "Implied FINRA / SIPC endorsement", "rules": "2210(e)", "question": "Does it suggest a regulator approved or guarantees something?", "n_in": 345, "n_ood": 147, "subs": [{"name": "Implied FINRA / SIPC endorsement", "about": "Does it suggest a regulator approved or guarantees something?", "cats": ["finra_endorsement_implied"]}]}, {"key": "product_rules", "title": "Product-specific rules", "rules": "2220", "question": "Does it follow the extra rules for options?", "n_in": 0, "n_ood": 16, "subs": [{"name": "Product-specific rules", "about": "Does it follow the extra rules for options?", "cats": ["options_communication"]}]}], "cats": {"performance_projection": {"name": "Performance projection", "rule": "2210(d)(1)(F)", "applies": ["correspondence", "retail_communication", "institutional_communication"], "flags": "predicting or projecting performance, implying past performance will recur, or an unwarranted forecast. Applies to institutional communications too: FINRA's proposed exception for institutional and qualified-purchaser projections is not treated as current rule.", "not": "a clearly labeled hypothetical illustration of mathematical principles (such as compounding at an assumed rate) that does not predict an investment; output of an investment analysis tool under Rule 2214; a price target in a research report with a reasonable basis, valuation method and risks (Rule 2241).", "example": {"id": "in_domain-002129", "where": "print ad, retail", "text": "\"is positioned to deliver rising income and double-digit total returns over the next decade\"."}, "note": "", "n_in": 1336, "n_ood": 610, "f1_test": 0.9612, "n_test": 130, "f1_ood": 0.92}, "promissory_or_guarantee": {"name": "Promissory language or guarantee", "rule": "2210(d)(1)(B)", "applies": ["correspondence", "retail_communication", "institutional_communication"], "flags": "\"guaranteed\", \"can't lose\", \"risk-free\" or \"safe\" for an investment with market risk, or a promise of an outcome.", "not": "a guarantee that is literally true and properly attributed (an FDIC-insured CD within limits, a fixed-annuity rate backed by the insurer with the claims-paying caveat). These appear as compliant near-misses.", "example": {"id": "in_domain-000471", "where": "IM, institutional", "text": "\"which is guaranteed to hold its value, so there's no risk to the portfolio in the meantime\" (about an ultra-short bond fund with a floating NAV)."}, "note": "", "n_in": 1040, "n_ood": 429, "f1_test": 0.8966, "n_test": 100, "f1_ood": 0.846}, "exaggerated_or_unwarranted_claim": {"name": "Exaggerated or unwarranted claim", "rule": "2210(d)(1)(B)", "applies": ["correspondence", "retail_communication", "institutional_communication"], "flags": "unsupported superlatives or claims: \"best fund\", \"#1 advisor\", \"never had a losing year\".", "not": "a promise about outcomes or safety (use `promissory_or_guarantee`); a fund ranking without its required disclosures (use `fund_ranking_disclosure`).", "example": {"id": "in_domain-004499", "where": "email, correspondence", "text": "\"the Wynfield Equity Income Fund is the single most reliable income fund available anywhere\"."}, "note": "", "n_in": 871, "n_ood": 423, "f1_test": 0.8994, "n_test": 87, "f1_ood": 0.8658}, "false_or_misleading_statement": {"name": "False or misleading statement", "rule": "2210(d)(1)(B)", "applies": ["correspondence", "retail_communication", "institutional_communication"], "flags": "a materially untrue statement of fact about fees, insurance coverage, product features or credentials.", "not": "each statement is true but the combination misleads (use `misleading_in_context`).", "example": {"id": "in_domain-003282", "where": "mass email, retail", "text": "\"you can redeem a brokered CD through us at any time at its full face value with no penalty\". Brokered CDs are sold on the secondary market, often below face value."}, "note": "", "n_in": 749, "n_ood": 378, "f1_test": 0.6832, "n_test": 73, "f1_ood": 0.619}, "not_fair_and_balanced": {"name": "Not fair and balanced", "rule": "2210(d)(1)(A)", "applies": ["correspondence", "retail_communication", "institutional_communication"], "flags": "benefits presented without the matching risks, an omitted material fact or qualification, or cherry-picked facts. Also used for a misleading comparison in correspondence or institutional communications, where (d)(2) does not apply.", "not": "the missing item is a product-specific feature (use `product_specific_omission`); the risk is disclosed but hidden (use `buried_disclosure`).", "example": {"id": "in_domain-000569", "where": "video script, retail", "text": "\"Our high-yield corporate bond portfolio is paying clients 7.25% a year, deposited monthly.\" The spot never mentions default, rate, call or liquidity risk."}, "note": "", "n_in": 1324, "n_ood": 599, "f1_test": 0.7259, "n_test": 135, "f1_ood": 0.5678}, "misleading_in_context": {"name": "Misleading in context", "rule": "2210(d)(1)(D)", "applies": ["correspondence", "retail_communication", "institutional_communication"], "flags": "statements that are individually true but mislead in combination or in the context in which they are made, for example a conclusion that the facts given contradict.", "not": "one statement is false on its own (use `false_or_misleading_statement`).", "example": {"id": "in_domain-010113", "where": "SMS, correspondence", "text": "\"With 42 consecutive years of payments behind it, this is an income stream you can count on\", sent after mentioning a 28% price drop and a 112% payout ratio."}, "note": "", "n_in": 542, "n_ood": 239, "f1_test": 0.3636, "n_test": 54, "f1_ood": 0.3676}, "buried_disclosure": {"name": "Buried disclosure", "rule": "2210(d)(1)(C)", "applies": ["correspondence", "retail_communication", "institutional_communication"], "flags": "a material risk or qualification that is present but placed in a footnote, legend or fine print in a way that keeps the reader from understanding it.", "not": "the disclosure is missing altogether (use `not_fair_and_balanced`).", "example": {"id": "in_domain-006627", "where": "SMS, correspondence", "text": "\"*Bonds called by issuer; final redemption at par 6/1/25, no interest paid after that date.\" The call notice sits after the opt-out boilerplate while the body says payments will continue."}, "note": "", "n_in": 321, "n_ood": 137, "f1_test": 0.6792, "n_test": 32, "f1_ood": 0.4565}, "unsupported_comparison": {"name": "Unsupported comparison", "rule": "2210(d)(2)", "applies": ["retail_communication"], "flags": "a retail communication that compares investments or services without the material differences: objectives, costs, liquidity, safety, guarantees or insurance, fluctuation of principal or return, tax features.", "not": "the same comparison in correspondence or an institutional communication (use `not_fair_and_balanced`).", "example": {"id": "in_domain-006545", "where": "mass email, retail", "text": "\"Dividend stocks beat money markets on every measure that matters for long-term investors.\""}, "note": "", "n_in": 243, "n_ood": 107, "f1_test": 0.7347, "n_test": 29, "f1_ood": 0.4974}, "member_name_missing": {"name": "Member firm name missing", "rule": "2210(d)(3)", "applies": ["correspondence", "retail_communication"], "flags": "a retail communication or correspondence that does not prominently disclose the name of the FINRA member firm (or the name under which it does business). A nonmember affiliate's name may appear if the relationship is clear.", "not": "the member firm is named where a reader would normally look for it, such as the signature block or the footer.", "example": {"id": "in_domain-001781", "where": "website page, retail", "text": "\"Securities offered through a registered broker-dealer, member FINRA (www.finra.org)/SIPC.\" The page names only the rep's DBA, never the member firm."}, "note": "the model's weakest category on test: it rarely notices the absence and sometimes flags it when the firm is named.", "n_in": 379, "n_ood": 146, "f1_test": 0.1304, "n_test": 36, "f1_ood": 0.0645}, "tax_claim_incomplete": {"name": "Incomplete tax claim", "rule": "2210(d)(4)", "applies": ["correspondence", "retail_communication"], "flags": "\"tax-free\" or \"tax-exempt\" without saying which taxes apply (state tax, AMT, capital gains); calling tax-deferred income tax-free; or a tax-deferred vs taxable illustration that breaks (d)(4)(C).", "not": "the income really is free of all applicable taxes, or the claim names which taxes it covers.", "example": {"id": "in_domain-000770", "where": "mass email, retail", "text": "\"Buy them inside your traditional IRA and every dividend and every dollar of gain is tax-free\"."}, "note": "", "n_in": 334, "n_ood": 144, "f1_test": 0.9383, "n_test": 43, "f1_ood": 0.8726}, "fund_performance_disclosure": {"name": "Fund performance disclosure", "rule": "2210(d)(5)", "applies": ["correspondence", "retail_communication"], "flags": "performance of a non-money-market open-end fund shown without standardized 1-, 5- and 10-year (or since-inception) average annual total returns as of the latest calendar quarter-end, the maximum sales charge and the gross expense ratio, or with non-standardized returns more prominent than standardized ones. Applies to correspondence too, so a text quoting a fund's return counts.", "not": "a fund ranking (use `fund_ranking_disclosure`); a money market fund yield shown with its required disclosures.", "example": {"id": "in_domain-000897", "where": "SMS, correspondence", "text": "\"the Pacific Crest Municipal Income Fund you bought in March is up 5.2% since your purchase\"."}, "note": "", "n_in": 595, "n_ood": 230, "f1_test": 0.8624, "n_test": 58, "f1_ood": 0.8162}, "testimonial_disclosure": {"name": "Testimonial disclosure", "rule": "2210(d)(6)", "applies": ["correspondence", "retail_communication"], "flags": "a testimonial about investment advice or performance without stating that it may not be representative of other clients' experience, that it is no guarantee of future performance, and, if more than $100 was paid, that it is a paid testimonial.", "not": "a client's comment about service (wait times, friendliness) rather than advice or performance.", "example": {"id": "in_domain-009590", "where": "mass email, retail", "text": "\"Jen helped me rebuild my fund lineup after I retired and my portfolio grew 22% last year.\""}, "note": "", "n_in": 348, "n_ood": 137, "f1_test": 0.9434, "n_test": 28, "f1_ood": 0.9242}, "recommendation_disclosure": {"name": "Recommendation disclosure", "rule": "2210(d)(7)", "applies": ["retail_communication"], "flags": "a retail communication recommending a specific security (not a fund or variable product) without disclosing market-making, a financial interest, or a recent underwriting role; without offering supporting information; or, for a corporate equity, without the price at the time.", "not": "correspondence, institutional communications, research reports under Rules 2241 and 2242, or recommendations of registered funds and variable products only.", "example": {"id": "in_domain-007240", "where": "text blast, retail", "text": "\"Our pick this week is Cedar Falls (IA) Community School District GO 4.10% due 06/01/2041\", sent to 1,270 clients from a firm inventory block with no disclosures."}, "note": "", "n_in": 172, "n_ood": 72, "f1_test": 0.7568, "n_test": 20, "f1_ood": 0.6765}, "past_recommendations_reference": {"name": "Past recommendations reference", "rule": "2210(d)(7)(C)", "applies": ["correspondence", "retail_communication"], "flags": "a reference to specific past recommendations that were or would have been profitable, without providing or offering a list of all such recommendations for at least the prior year and the required legend.", "not": "the full list and legend are provided or offered.", "example": {"id": "in_domain-003710", "where": "website page, retail", "text": "\"We told clients to buy Corvane Systems at $38 in March 2023. It closed at $112 last Friday.\""}, "note": "", "n_in": 187, "n_ood": 78, "f1_test": 0.9143, "n_test": 19, "f1_ood": 0.8082}, "brokercheck_link_missing": {"name": "BrokerCheck link missing", "rule": "2210(d)(8)", "applies": ["retail_communication"], "flags": "a member's website page meant for retail investors, or a registered person's profile page, with no readily apparent BrokerCheck reference and hyperlink.", "not": "emails, texts and other messages that are not website pages (in-domain it is labeled only on website pages; OOD has one WhatsApp exception).", "example": {"id": "in_domain-011686", "where": "website page, retail", "text": "a profile page headed \"Eleanor Vasquez-Hart, CRPC(R), Registered Representative | Granite Arch Securities, Inc.\" with no BrokerCheck link anywhere."}, "note": "", "n_in": 107, "n_ood": 3, "f1_test": 0.5455, "n_test": 11, "f1_ood": 0.0}, "fund_ranking_disclosure": {"name": "Fund ranking disclosure", "rule": "2212", "applies": ["retail_communication"], "flags": "a retail communication that uses an investment company ranking or rating without the ranking entity, the category, the number of funds in it, the period, the criteria, and that past performance is no guarantee.", "not": "a superlative with no ranking behind it (use `exaggerated_or_unwarranted_claim`).", "example": {"id": "in_domain-004082", "where": "mass email, retail", "text": "\"has been ranked in the top 3% of its category - one of the highest-ranked funds anywhere!\""}, "note": "", "n_in": 80, "n_ood": 30, "f1_test": 0.9091, "n_test": 6, "f1_ood": 0.8136}, "finra_endorsement_implied": {"name": "Implied FINRA endorsement", "rule": "2210(e)", "applies": ["correspondence", "retail_communication", "institutional_communication"], "flags": "stating or implying that FINRA, another regulator or SIPC endorses, indemnifies, guarantees or approved the firm, its practices or a security: \"FINRA-approved\", \"FINRA-regulated so your money is safe\".", "not": "stating FINRA or SIPC membership; \"Reviewed by FINRA\" or \"FINRA Reviewed\" on a piece that Advertising Regulation actually reviewed.", "example": {"id": "in_domain-008498", "where": "radio script, retail", "text": "\"our rollover process is FINRA-approved, so you know every step is being done the right way\"."}, "note": "", "n_in": 345, "n_ood": 147, "f1_test": 0.9577, "n_test": 37, "f1_ood": 0.9225}, "unapproved_retail_communication": {"name": "Unapproved retail communication", "rule": "2210(b)(1)", "applies": ["retail_communication"], "flags": "content that is really a retail communication (a template sent to more than 25 retail investors in 30 days, a seminar deck, a mass email, a social post) that the text or metadata shows was already used without a registered principal's approval.", "not": "material submitted for review before use (that is the normal pre-use posture), or the exceptions in (b)(1) such as interactive forum posts.", "example": {"id": "in_domain-011725", "where": "newsletter, retail", "text": "\"resending this morning's newsletter, which went out to my entire client list at 7:15 a.m.\" The 207-client send was never approved."}, "note": "", "n_in": 155, "n_ood": 60, "f1_test": 1.0, "n_test": 11, "f1_ood": 0.5246}, "institutional_forwarding": {"name": "Institutional forwarding", "rule": "2210(a)(4) / 2210(b)(3)", "applies": ["institutional_communication"], "flags": "a communication treated as institutional although the firm has reason to believe it will reach retail investors: plan participants, an adviser's retail clients, \"feel free to share with your clients\".", "not": "Labeling convention: the item keeps the type `institutional_communication`, and the category records why that treatment fails.", "example": {"id": "in_domain-011585", "where": "IM, institutional", "text": "\"Pass it around to your clients if you want, they'll get a lot out of the duration section.\""}, "note": "", "n_in": 131, "n_ood": 181, "f1_test": 0.7368, "n_test": 11, "f1_ood": 0.7706}, "hypothetical_or_backtest_misuse": {"name": "Hypothetical or backtest misuse", "rule": "2210(d)(1)(F)", "applies": ["correspondence", "retail_communication", "institutional_communication"], "flags": "backtested or hypothetical results presented as achievable, or an \"illustration\" that in substance projects an investment's performance.", "not": "the sender forecasts directly rather than through a backtest or model (use `performance_projection`).", "example": {"id": "in_domain-009646", "where": "newsletter, retail", "text": "\"That backtest is a good guide to what a ladder built today can deliver over the next decade\"."}, "note": "", "n_in": 207, "n_ood": 113, "f1_test": 0.9091, "n_test": 21, "f1_ood": 0.8655}, "options_communication": {"name": "Options communication", "rule": "2220 / 2210(d)(1)", "applies": ["correspondence", "retail_communication"], "flags": "options discussed with retail investors in a way that omits the risks, implies limited risk, or promotes options before the Options Disclosure Document is delivered.", "not": "misleading statements about a non-options product (use the group A category that fits).", "example": {"id": "ood-001245", "where": "webinar follow-up, retail", "text": "\"A conservative, limited-risk way to turn a stagnant portfolio into a dependable income stream\" (about covered-call writing)."}, "note": "OOD only (16). The model never saw it in training.", "n_in": 0, "n_ood": 16, "f1_test": null, "n_test": 0, "f1_ood": 0.0}, "product_specific_omission": {"name": "Product-specific omission", "rule": "2210(d)(1)(A)", "applies": ["correspondence", "retail_communication", "institutional_communication"], "flags": "a material feature of the specific product left out: surrender charges on an annuity, the illiquidity of a non-traded REIT or private placement, the daily reset of a leveraged ETF, call risk on a structured note, prepayment risk on a CMO (Rule 2216).", "not": "a general missing risk that is not tied to the product's structure (use `not_fair_and_balanced`).", "example": {"id": "in_domain-008657", "where": "website page, retail", "text": "\"The correct rate is 5.15% per year, guaranteed for all seven years, with a $25,000 minimum\". No surrender schedule and no mention that the guarantee depends on the insurer."}, "note": "rare in-domain (102) but common in OOD (307), because OOD shifts the product.", "n_in": 102, "n_ood": 307, "f1_test": 0.0, "n_test": 10, "f1_ood": 0.0065}, "third_party_content_adoption": {"name": "Third-party content adoption", "rule": "2210(d)(1) / RN 17-18", "applies": ["correspondence", "retail_communication"], "flags": "forwarding, sharing or linking third-party content (an article, ranking or chart) that the firm has adopted (for example by endorsing it) or become entangled with (for example by helping prepare it), when that content itself breaks the content standards.", "not": "the rep's own words break the standards (use the matching category above).", "example": {"id": "ood-000180", "where": "email, correspondence", "text": "\"found this and honestly it sums it up perfectly. this is exactly why we like these for you!\", forwarding a newsletter that calls CMOs completely safe."}, "note": "OOD only (79). The model never saw it in training.", "n_in": 0, "n_ood": 79, "f1_test": null, "n_test": 0, "f1_ood": 0.0}}};
   var NS = "http://www.w3.org/2000/svg";
   function fmtPct(v) { return (v * 100).toFixed(1) + "%"; }
   function fmtF(v) { return v == null ? "–" : v.toFixed(2); }
@@ -828,7 +860,7 @@ svg text { font-family: var(--mono); }
         (g.big
           ? '<div class="catrows">' + g.cats.map(function (c) {
               var v = c[5] == null ? null : c[5];
-              return '<div class="catrow" title="' + c[1] + '"><div class="nm">' + c[0] + '</div><div class="track"><i class="' + (v != null && v < 0.5 ? "lo" : "") + '" style="width:' + (v == null ? 0 : v * 100) + '%"></i></div><div class="f">' + (v == null ? "OOD" : v.toFixed(2)) + '</div></div>';
+              return '<div class="catrow" role="button" tabindex="0" data-detail="cat-' + c[0] + '" title="' + c[1] + '"><div class="nm">' + c[0] + '</div><div class="track"><i class="' + (v != null && v < 0.5 ? "lo" : "") + '" style="width:' + (v == null ? 0 : v * 100) + '%"></i></div><div class="f">' + (v == null ? "OOD" : v.toFixed(2)) + '</div></div>';
             }).join("") + '</div>'
           : '<div class="tags">' + g.cats.map(function (c) { return "<span>" + c[0] + "</span>"; }).join("") + '</div>') +
         (g.big ? '<div class="stats"><span><b>' + g.n[0].toLocaleString("en-US") + '</b> / <b>' + g.n[1].toLocaleString("en-US") + '</b> labels, train+test / OOD</span><span>bar = F1 on test; amber below 0.5</span></div>'
@@ -926,6 +958,54 @@ svg text { font-family: var(--mono); }
     t.innerHTML = h;
   }
 
+  // ---- slide 2: taxonomy explorer ----
+  var txState = { g: 0, s: 0 };
+  function esc(t) { return String(t).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+  function firstClause(t) { var c = t.split(/[.:;]/)[0].trim(); return c.charAt(0).toUpperCase() + c.slice(1); }
+  function renderTax() {
+    var g = TAX.groups[txState.g], sg = g.subs[txState.s];
+    document.getElementById("txg").innerHTML = TAX.groups.map(function (x, i) {
+      return '<div class="tx-item' + (i === txState.g ? " sel" : "") + '" role="button" tabindex="0" data-txg="' + i + '"><div class="t"><span>' + esc(x.title) + '</span><small>' + esc(x.rules) + '</small></div><div class="d">' + esc(x.question) + '</div><div class="m">' + (function (n) { return n + (n === 1 ? ' category' : ' categories'); })(x.subs.reduce(function (a, b) { return a + b.cats.length; }, 0)) + ' · ' + x.n_in.toLocaleString("en-US") + ' / ' + x.n_ood.toLocaleString("en-US") + ' labels</div></div>';
+    }).join("");
+    document.getElementById("txs").innerHTML = g.subs.map(function (x, i) {
+      return '<div class="tx-item' + (i === txState.s ? " sel" : "") + '" role="button" tabindex="0" data-txs="' + i + '"><div class="t"><span>' + esc(x.name) + '</span></div><div class="d">' + esc(x.about) + '</div><div class="m">' + x.cats.length + (x.cats.length === 1 ? ' category' : ' categories') + '</div></div>';
+    }).join("");
+    document.getElementById("txc").innerHTML = sg.cats.map(function (c) {
+      var k = TAX.cats[c], f = k.f1_test;
+      return '<div class="tx-item tx-cat" role="button" tabindex="0" data-detail="cat-' + c + '"><div class="t"><span>' + c + '</span><small>' + esc(k.rule) + '</small></div><div class="d">' + esc(firstClause(k.flags)) + '.</div>' +
+        '<div class="m">' + k.n_in.toLocaleString("en-US") + ' / ' + k.n_ood.toLocaleString("en-US") + ' labels · test F1 ' + (f == null ? (k.n_ood ? "OOD only" : "–") : f.toFixed(2)) + '</div>' +
+        '<div class="bar"><i class="' + (f != null && f < .5 ? "lo" : "") + '" style="width:' + (f == null ? 0 : f * 100) + '%"></i></div></div>';
+    }).join("");
+    document.getElementById("txcrumb").innerHTML = '<b>' + esc(g.title) + '</b> › <b>' + esc(sg.name) + '</b> › ' + sg.cats.length + ' categor' + (sg.cats.length === 1 ? "y" : "ies") + ' · bar = test F1, amber below 0.5';
+  }
+  document.addEventListener("click", function (e) {
+    var g = e.target.closest("[data-txg]"), sg = e.target.closest("[data-txs]");
+    if (g) { txState.g = +g.dataset.txg; txState.s = 0; renderTax(); }
+    else if (sg) { txState.s = +sg.dataset.txs; renderTax(); }
+  });
+  document.addEventListener("keydown", function (e) {
+    var t = e.target.closest && e.target.closest("[data-txg],[data-txs]");
+    if (t && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); t.click(); }
+  });
+  renderTax();
+  function showCat(c) {
+    var k = TAX.cats[c]; if (!k) return;
+    var grp = TAX.groups.filter(function (g) { return g.subs.some(function (s) { return s.cats.indexOf(c) >= 0; }); })[0];
+    var sub = grp.subs.filter(function (s) { return s.cats.indexOf(c) >= 0; })[0];
+    var ap = { correspondence: "correspondence", retail_communication: "retail", institutional_communication: "institutional" };
+    document.getElementById("dlabel").textContent = "Category · " + grp.title + " › " + sub.name;
+    document.getElementById("dtitle").innerHTML = '<code>' + c + '</code> — ' + esc(k.name);
+    var f = function (v) { return v == null ? "–" : v.toFixed(2); };
+    var body = document.getElementById("dbody");
+    body.innerHTML = '<div class="tblwrap"><table class="tbl"><tr><td>Rule cite</td><td>' + esc(k.rule) + '</td></tr><tr><td>Applies to</td><td>' + k.applies.map(function (a) { return ap[a] || a; }).join(", ") + '</td></tr>' +
+      '<tr><td>Labels (in-domain / OOD)</td><td>' + k.n_in.toLocaleString("en-US") + ' / ' + k.n_ood.toLocaleString("en-US") + '</td></tr><tr><td>Test F1 (n)</td><td>' + (k.n_test ? f(k.f1_test) + ' (' + k.n_test + ')' : "not in test") + '</td></tr><tr><td>OOD F1</td><td>' + f(k.f1_ood) + '</td></tr></table></div>' +
+      '<h4>Flags</h4><p>' + esc(k.flags) + '</p><h4>Not this category</h4><p>' + esc(k.not) + '</p>' +
+      '<h4>Example</h4><p>' + esc(k.example.text) + '</p><p><code>' + esc(k.example.id) + '</code> · ' + esc(k.example.where) + '</p>' +
+      (k.note ? '<h4>Note</h4><p>' + esc(k.note) + '</p>' : "");
+    body.scrollTop = 0;
+    openPanel(detail);
+  }
+
   // ---- deck navigation ----
   var slides = Array.prototype.slice.call(document.querySelectorAll(".slide"));
   var cur = 0;
@@ -962,6 +1042,7 @@ svg text { font-family: var(--mono); }
   function openPanel(p) { closeAll(true); lastFocus = document.activeElement; p.classList.add("on"); scrim.classList.add("on"); var x = p.querySelector(".x"); if (x) x.focus(); if (p === idxpanel) document.getElementById("idxbtn").setAttribute("aria-expanded", "true"); }
   function closeAll(keepFocus) { [detail, idxpanel].forEach(function (p) { p.classList.remove("on"); }); scrim.classList.remove("on"); document.getElementById("idxbtn").setAttribute("aria-expanded", "false"); if (!keepFocus && lastFocus && lastFocus.focus) lastFocus.focus(); }
   function openDetail(key) {
+    if (key.indexOf("cat-") === 0) { showCat(key.slice(4)); return; }
     var t = document.querySelector('#details template[data-key="' + key + '"]'); if (!t) return;
     document.getElementById("dlabel").textContent = "Slide " + (cur + 1) + " · detail";
     document.getElementById("dtitle").textContent = t.dataset.title;

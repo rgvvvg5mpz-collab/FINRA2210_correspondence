@@ -56,6 +56,7 @@ and breakdowns by difficulty, chat channel and OOD shift: **[results/README.md](
 ├── results/                  v0.1.0 metrics, plots, predictions, training curve
 ├── retraining/               feedback, label audit, SFT rounds, DPO, GRPO, release gate (code + sample data)
 ├── docs/                     chat top-up plan, model-card HTML builder
+├── Marketing/                interactive 13-slide board deck (open the HTML in a browser)
 ├── CHANGELOG.md              what changed in each version
 ├── requirements.txt          project venv: data tools, scoring, dashboard, retraining (+ anthropic for Path B)
 ├── requirements-mlx.txt      Apple Silicon: run / evaluate / train the model, plots, HTML model card
