@@ -71,9 +71,21 @@ Output: one JSON object
 }
 ```
 
-20 violation categories, each pinned to one rule cite, are defined in
+23 violation categories, each pinned to one rule cite, are defined in
 [taxonomy.py](src/finra2210/taxonomy.py). The same file holds the rule digest the
-teacher is grounded on, the difficulty definitions, and the scenario axes.
+teacher is grounded on, the difficulty definitions, and the scenario axes. For reporting, the
+categories fall into 5 broad groups (`BROAD_GROUPS`; full table with descriptions and counts in
+[MODEL_CARD.md](MODEL_CARD.md)):
+
+| Broad group (key) | Category labels |
+|---|---|
+| Misleading or unbalanced content — 2210(d)(1) (`misleading_content`) | `not_fair_and_balanced`, `product_specific_omission`, `buried_disclosure`, `promissory_or_guarantee`, `exaggerated_or_unwarranted_claim`, `false_or_misleading_statement`, `misleading_in_context`, `performance_projection`, `hypothetical_or_backtest_misuse`, `third_party_content_adoption` |
+| Missing required disclosures — 2210(d)(2)-(d)(8), 2212 (`required_disclosures`) | `unsupported_comparison`, `member_name_missing`, `tax_claim_incomplete`, `fund_performance_disclosure`, `testimonial_disclosure`, `recommendation_disclosure`, `past_recommendations_reference`, `brokercheck_link_missing`, `fund_ranking_disclosure` |
+| Approval and audience — 2210(a), (b) (`approval_and_audience`) | `unapproved_retail_communication`, `institutional_forwarding` |
+| Implied FINRA / SIPC endorsement — 2210(e) (`regulator_endorsement`) | `finra_endorsement_implied` |
+| Product-specific rules — 2220 (`product_rules`) | `options_communication` |
+
+`third_party_content_adoption` and `options_communication` appear only in the OOD set.
 
 ## Difficulty tiers
 
@@ -328,18 +340,20 @@ performance is never averaged away by the email/web majority. The channel groups
 - `chat_app`: the OOD-only WhatsApp, LinkedIn, X and Slack/Teams DMs;
 - `non_chat`: everything else.
 
-Violation categories are scored at three levels, because several categories share a rule
+Violation categories are scored at four levels, because several categories share a rule
 paragraph and most category errors are near-misses between them:
 - `violation_category_micro`: the exact category must match.
 - `category_rule_level_micro`: categories are grouped by their taxonomy cite, so
   `promissory_or_guarantee` vs `exaggerated_or_unwarranted_claim` (both (d)(1)(B)), or
   `product_specific_omission` vs `not_fair_and_balanced` (both (d)(1)(A)), count as a match.
 - `category_d1_family_micro`: in addition, every 2210(d)(1) content standard is one group.
+- `category_broad_group_micro`: categories are grouped into the 5 broad groups above.
+  `broad_groups` gives precision / recall / F1, support, hits and false alarms for each group.
 
 `rule_cite_micro` scores the cite string the model wrote, which is separate from these three.
 
-To watch an eval as it runs (confusion matrices, the three category levels, per-category hits /
-misses / false alarms, and accuracy by OOD axis, refreshed every 10 scored rows), run the
+To watch an eval as it runs (confusion matrices, the four category levels, broad-group metrics,
+per-category hits / misses / false alarms grouped by broad group, and accuracy by OOD axis, refreshed every 10 scored rows), run the
 dashboard and open http://localhost:8765:
 
 ```bash

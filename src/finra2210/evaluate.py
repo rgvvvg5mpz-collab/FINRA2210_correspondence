@@ -17,7 +17,8 @@ accuracy, severity accuracy, violation-category micro P/R/F1, rule-cite F1 (the 
 the model wrote), the category metric at two coarser levels (category_rule_level_micro: a
 category counts as right if it maps to the gold category's taxonomy cite, e.g. promissory vs
 exaggerated are both (d)(1)(B); category_d1_family_micro: additionally every 2210(d)(1) content
-standard is one group), and breakdowns by difficulty, by gold communication type (correspondence / retail /
+standard is one group; category_broad_group_micro: categories grouped into the five
+taxonomy.BROAD_GROUPS), per-broad-group P/R/F1 (broad_groups), and breakdowns by difficulty, by gold communication type (correspondence / retail /
 institutional), by channel, by channel group (chat = sms_text / instant_message /
 text_message_blast; chat_app = OOD WhatsApp / LinkedIn / X / Slack-Teams DMs; non_chat; and
 chat x communication type) and (for OOD) by shift axis.
@@ -31,7 +32,7 @@ import re
 from collections import Counter, defaultdict
 from pathlib import Path
 
-from .taxonomy import VIOLATION_CATEGORIES
+from .taxonomy import BROAD_GROUP_OF, BROAD_GROUPS, VIOLATION_CATEGORIES
 
 _FENCE_RE = re.compile(r"```json\s*(\{.*?\})\s*```", re.S)
 _JSON_RE = re.compile(r"\{.*\}", re.S)
@@ -60,6 +61,11 @@ def family_of(category: str | None) -> str | None:
     """Rule cite, with every 2210(d)(1) content standard (fair/balanced, promissory, misleading, projection, ...) as one group."""
     r = rule_of(category)
     return D1_FAMILY if r and r.startswith(D1_FAMILY) else r
+
+
+def group_of(category: str | None) -> str | None:
+    """Broad group (taxonomy.BROAD_GROUPS) of a category; unknown categories stay as themselves."""
+    return BROAD_GROUP_OF.get(category, category)
 
 
 def _load_hf(model_path: str):
@@ -146,13 +152,17 @@ class Scorer:
         self.cat_tp = self.cat_fp = self.cat_fn = 0
         self.rule_tp = self.rule_fp = self.rule_fn = 0
         # predicted categories grouped by their taxonomy cite, and with all of (d)(1) as one group
-        self.grp = {"rule_level": [0, 0, 0], "d1_family": [0, 0, 0]}
+        self.grp = {"rule_level": [0, 0, 0], "d1_family": [0, 0, 0], "broad_group": [0, 0, 0]}
+        self.per_group = {g: [0, 0, 0] for g in BROAD_GROUPS}  # tp, fp, fn per broad group
 
     def _add_grouped(self, g_cats: set, p_cats: set) -> None:
-        for name, key in (("rule_level", rule_of), ("d1_family", family_of)):
+        for name, key in (("rule_level", rule_of), ("d1_family", family_of), ("broad_group", group_of)):
             g, p = {key(c) for c in g_cats}, {key(c) for c in p_cats}
             t = self.grp[name]
             t[0] += len(g & p); t[1] += len(p - g); t[2] += len(g - p)
+        g, p = {group_of(c) for c in g_cats}, {group_of(c) for c in p_cats}
+        for name, t in self.per_group.items():
+            t[0] += name in g and name in p; t[1] += name in p and name not in g; t[2] += name in g and name not in p
 
     def add(self, gold: dict, pred: dict | None) -> None:
         self.n += 1
@@ -193,6 +203,8 @@ class Scorer:
             "rule_cite_micro": _prf(self.rule_tp, self.rule_fp, self.rule_fn),
             "category_rule_level_micro": _prf(*self.grp["rule_level"]),
             "category_d1_family_micro": _prf(*self.grp["d1_family"]),
+            "category_broad_group_micro": _prf(*self.grp["broad_group"]),
+            "broad_groups": {g: {**_prf(*t), "support": t[0] + t[2], "hits": t[0], "false_alarms": t[1]} for g, t in self.per_group.items()},
         }
 
 

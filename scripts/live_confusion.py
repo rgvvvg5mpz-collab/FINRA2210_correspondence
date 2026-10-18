@@ -22,7 +22,8 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
-from finra2210.evaluate import Scorer  # noqa: E402
+from finra2210.evaluate import Scorer, group_of  # noqa: E402
+from finra2210.taxonomy import BROAD_GROUPS  # noqa: E402
 
 CTYPES = ["correspondence", "retail_communication", "institutional_communication"]
 SEVS = ["none", "low", "medium", "high"]
@@ -110,7 +111,10 @@ def compute(preds: list[dict], gold: dict) -> dict:
         return {"precision": pr, "recall": rc, "f1": f1}
 
     cats = [{"category": k, **v, **prf(v)} for k, v in cat.items()]
-    cats.sort(key=lambda r: (-r["gold"], -r["fp"]))
+    order = list(BROAD_GROUPS)
+    for r in cats:
+        r["group"] = group_of(r["category"]) if group_of(r["category"]) in BROAD_GROUPS else "unknown"
+    cats.sort(key=lambda r: (order.index(r["group"]) if r["group"] in order else len(order), -r["gold"], -r["fp"]))
     rep = scorer.report()
     n = len(preds)
     return {
@@ -123,8 +127,14 @@ def compute(preds: list[dict], gold: dict) -> dict:
             {"level": "Exact category", "note": "what the per-category table scores", **rep["violation_category_micro"]},
             {"level": "Rule level", "note": "categories grouped by taxonomy cite", **rep["category_rule_level_micro"]},
             {"level": "(d)(1) family", "note": "all 2210(d)(1) content standards as one group", **rep["category_d1_family_micro"]},
+            {"level": "Broad group", "note": "the five broad groups below", **rep["category_broad_group_micro"]},
         ],
         "rule_cite": rep["rule_cite_micro"],
+        "broad_groups": [
+            {"group": g, "title": BROAD_GROUPS[g]["title"], "categories": BROAD_GROUPS[g]["categories"], **v}
+            for g, v in rep["broad_groups"].items()
+        ],
+        "group_titles": {g: v["title"] for g, v in BROAD_GROUPS.items()},
         "compliant": comp,
         "ctype": ctype,
         "severity": sev,
@@ -171,7 +181,8 @@ td.lab,th.lab{text-align:left}.cm td.v{text-align:center;border-radius:4px;min-w
  <div class="card"><h2>Category precision / recall by level</h2><div id="levels"></div></div>
  <div class="card"><h2>Accuracy by OOD axis / difficulty</h2><div id="axes"></div></div>
 </div>
-<div class="card" style="margin-top:12px"><h2>Violation categories (gold count, hits, misses, false alarms)</h2><div id="cats"></div></div>
+<div class="card" style="margin-top:12px"><h2>Broad categories (a hit = any category from the right group)</h2><div id="groups"></div></div>
+<div class="card" style="margin-top:12px"><h2>Violation categories by broad group (gold count, hits, misses, false alarms)</h2><div id="cats"></div></div>
 <div class="card" style="margin-top:12px"><h2>Most common category swaps (missed → predicted instead)</h2><div id="swaps"></div></div>
 <div class="foot">Rows = gold, columns = prediction; cell shade is the share of its row. Updates every 10 scored rows.</div>
 </main><script>
@@ -192,7 +203,7 @@ async function tick(){
   const eta=d.rate_per_min?` · ${d.rate_per_min.toFixed(0)} rows/min · ETA ${Math.round((total-d.lines)/d.rate_per_min)} min`:"";
   document.getElementById("sub").textContent=`${d.label} — scored ${s.n.toLocaleString()} of ${total.toLocaleString()} (file has ${d.lines})${eta} · checked ${new Date().toLocaleTimeString()}`;
   if(s.n===last) return; last=s.n;
-  const k=[["Compliant accuracy",pct(s.accuracy)],["Comm-type accuracy",pct(s.ctype_accuracy)],["Severity accuracy",pct(s.severity_accuracy)],["Category F1 (exact)",f2(s.category_levels[0].f1)],["Category F1 (rule level)",f2(s.category_levels[1].f1)],["Category F1 ((d)(1) family)",f2(s.category_levels[2].f1)],["Valid JSON",pct(s.parse_rate)]];
+  const k=[["Compliant accuracy",pct(s.accuracy)],["Comm-type accuracy",pct(s.ctype_accuracy)],["Severity accuracy",pct(s.severity_accuracy)],["Category F1 (exact)",f2(s.category_levels[0].f1)],["Category F1 (rule level)",f2(s.category_levels[1].f1)],["Category F1 ((d)(1) family)",f2(s.category_levels[2].f1)],["Category F1 (broad group)",f2(s.category_levels[3].f1)],["Valid JSON",pct(s.parse_rate)]];
   document.getElementById("kpis").innerHTML=k.map(([a,b])=>`<div class="kpi flash"><b>${b}</b><span>${a}</span></div>`).join("");
   document.getElementById("cm_comp").innerHTML=cm(s.compliant);
   document.getElementById("cm_ctype").innerHTML=cm(s.ctype);
@@ -203,8 +214,13 @@ async function tick(){
   const ax=Object.entries(s.axes).map(([a,v])=>`<tr><td class="lab">${a}</td><td>${v.n}</td><td>${pct(v.accuracy)}</td></tr>`).join("");
   const df=Object.entries(s.difficulty).map(([a,v])=>`<tr><td class="lab">${a}</td><td>${v.n}</td><td>${pct(v.accuracy)}</td></tr>`).join("");
   document.getElementById("axes").innerHTML=`<table><tr><th class="lab">axis</th><th>n</th><th>accuracy</th></tr>${ax}<tr><th class="lab">difficulty</th><th></th><th></th></tr>${df}</table>`;
+  const lo=x=>x!=null&&x<.6?"lo":"";
+  document.getElementById("groups").innerHTML='<table class="cats"><tr><th class="lab">broad group / category labels</th><th>gold</th><th>hit</th><th>missed</th><th>false alarm</th><th>precision</th><th>recall</th><th>F1</th></tr>'+
+    s.broad_groups.map(g=>`<tr><td class="lab" style="white-space:normal"><b>${g.title}</b><br><small style="color:var(--mute)">${g.categories.join(", ")}</small></td><td>${g.support}</td><td>${g.hits}</td><td>${g.support-g.hits}</td><td>${g.false_alarms}</td><td>${g.support||g.false_alarms?f2(g.precision):"–"}</td><td class="${g.support?lo(g.recall):""}">${g.support?f2(g.recall):"–"}</td><td class="${g.support?lo(g.f1):""}"><b>${g.support?f2(g.f1):"–"}</b></td></tr>`).join("")+"</table>";
+  let prev=null;
   document.getElementById("cats").innerHTML='<table class="cats"><tr><th class="lab">category</th><th>gold</th><th>hit</th><th>missed</th><th>false alarm</th><th>precision</th><th>recall</th><th>F1</th></tr>'+
-    s.categories.map(c=>`<tr><td class="lab">${c.category}</td><td>${c.gold}</td><td>${c.tp}</td><td>${c.fn}</td><td>${c.fp}</td><td>${f2(c.precision)}</td><td class="${c.recall!=null&&c.recall<.6?"lo":""}">${f2(c.recall)}</td><td class="${c.f1!=null&&c.f1<.6?"lo":""}">${f2(c.f1)}</td></tr>`).join("")+"</table>";
+    s.categories.map(c=>{const head=c.group!==prev?`<tr><th class="lab" colspan="8" style="padding-top:12px">${s.group_titles[c.group]||"not in taxonomy"}</th></tr>`:"";prev=c.group;
+      return head+`<tr><td class="lab">${c.category}</td><td>${c.gold}</td><td>${c.tp}</td><td>${c.fn}</td><td>${c.fp}</td><td>${f2(c.precision)}</td><td class="${lo(c.recall)}">${f2(c.recall)}</td><td class="${lo(c.f1)}">${f2(c.f1)}</td></tr>`}).join("")+"</table>";
   document.getElementById("swaps").innerHTML=s.swaps.length?'<table class="cats"><tr><th class="lab">gold category missed</th><th class="lab">predicted instead</th><th>count</th></tr>'+s.swaps.map(w=>`<tr><td class="lab">${w.missed}</td><td class="lab">${w.predicted}</td><td>${w.count}</td></tr>`).join("")+"</table>":"none yet";
 }
 tick(); setInterval(tick,3000);

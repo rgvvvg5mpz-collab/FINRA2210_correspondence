@@ -20,11 +20,11 @@ plus sender role, firm, recipient type, and distinct retail recipients in the tr
 
 It also returns `required_actions` (1 to 3 reviewer steps) and a 2–4 sentence `rationale`.
 
-## The 23 violation categories, in 4 families
+## The 23 violation categories, in 5 broad groups
 
-Applies to: C = correspondence, R = retail, I = institutional. n = in-domain train+test items with that category (11,896 total). The model outputs the label in the second column.
+Applies to: C = correspondence, R = retail, I = institutional. n = in-domain train+test items with that category (11,896 total). The model outputs the label in the second column. The groups are defined in `BROAD_GROUPS` in [taxonomy.py](src/finra2210/taxonomy.py); `evaluate.py` and the live dashboard report precision / recall / F1 per group (`broad_groups`) and overall (`category_broad_group_micro`), where a hit is any category from the right group.
 
-**A. Content standards: misleading content (11)**
+**A. Misleading or unbalanced content — 2210(d)(1) (10)** · group key `misleading_content`
 
 | # | Category | Model label | What it flags | Rule | Applies | n |
 |---|---|---|---|---|---|---|
@@ -38,34 +38,39 @@ Applies to: C = correspondence, R = retail, I = institutional. n = in-domain tra
 | 8 | Misleading in context | `misleading_in_context` | True statements that mislead together | 2210(d)(1)(D) | C R I | 542 |
 | 9 | Buried disclosure | `buried_disclosure` | Material risk hidden in a footnote | 2210(d)(1)(C) | C R I | 321 |
 | 10 | Third-party content adoption | `third_party_content_adoption` | Adopted third-party content that itself violates | 2210(d)(1) / RN 17-18 | C R | OOD only |
-| 11 | Options communication | `options_communication` | Options risk omitted or promoted before ODD delivery | 2220 / 2210(d)(1) | C R | OOD only |
 
-**B. Required disclosures (9)**
-
-| # | Category | Model label | What it flags | Rule | Applies | n |
-|---|---|---|---|---|---|---|
-| 12 | Unsupported comparison | `unsupported_comparison` | Comparison without the material differences | 2210(d)(2) | R | 243 |
-| 13 | Member firm name missing | `member_name_missing` | Firm name not prominent | 2210(d)(3) | C R | 379 |
-| 14 | Incomplete tax claim | `tax_claim_incomplete` | "Tax-free" without saying which taxes | 2210(d)(4) | C R | 334 |
-| 15 | Fund performance disclosure | `fund_performance_disclosure` | Missing standardized returns, sales charge, expense ratio | 2210(d)(5) | C R | 595 |
-| 16 | Testimonial disclosure | `testimonial_disclosure` | Missing "not representative" or paid-testimonial disclosure | 2210(d)(6) | C R | 348 |
-| 17 | Recommendation disclosure | `recommendation_disclosure` | Security recommendation missing conflicts or price | 2210(d)(7) | R | 172 |
-| 18 | Past recommendations reference | `past_recommendations_reference` | Cites past winners without the full one-year list | 2210(d)(7)(C) | C R | 187 |
-| 19 | BrokerCheck link missing | `brokercheck_link_missing` | Retail web page lacks a BrokerCheck link | 2210(d)(8) | R | 107 |
-| 20 | Fund ranking disclosure | `fund_ranking_disclosure` | Fund ranking without Rule 2212 disclosures | 2212 | R | 80 |
-
-**C. Approval and classification (2)**
+**B. Missing required disclosures — 2210(d)(2)-(d)(8), 2212 (9)** · group key `required_disclosures`
 
 | # | Category | Model label | What it flags | Rule | Applies | n |
 |---|---|---|---|---|---|---|
-| 21 | Unapproved retail communication | `unapproved_retail_communication` | Retail communication used without principal pre-approval | 2210(b)(1) | R | 155 |
-| 22 | Institutional forwarding | `institutional_forwarding` | "Institutional" piece that will reach retail investors | 2210(a)(4) / (b)(3) | I | 131 |
+| 11 | Unsupported comparison | `unsupported_comparison` | Comparison without the material differences | 2210(d)(2) | R | 243 |
+| 12 | Member firm name missing | `member_name_missing` | Firm name not prominent | 2210(d)(3) | C R | 379 |
+| 13 | Incomplete tax claim | `tax_claim_incomplete` | "Tax-free" without saying which taxes | 2210(d)(4) | C R | 334 |
+| 14 | Fund performance disclosure | `fund_performance_disclosure` | Missing standardized returns, sales charge, expense ratio | 2210(d)(5) | C R | 595 |
+| 15 | Testimonial disclosure | `testimonial_disclosure` | Missing "not representative" or paid-testimonial disclosure | 2210(d)(6) | C R | 348 |
+| 16 | Recommendation disclosure | `recommendation_disclosure` | Security recommendation missing conflicts or price | 2210(d)(7) | R | 172 |
+| 17 | Past recommendations reference | `past_recommendations_reference` | Cites past winners without the full one-year list | 2210(d)(7)(C) | C R | 187 |
+| 18 | BrokerCheck link missing | `brokercheck_link_missing` | Retail web page lacks a BrokerCheck link | 2210(d)(8) | R | 107 |
+| 19 | Fund ranking disclosure | `fund_ranking_disclosure` | Fund ranking without Rule 2212 disclosures | 2212 | R | 80 |
 
-**D. Regulator references (1)**
+**C. Approval and audience — 2210(a), (b) (2)** · group key `approval_and_audience`
 
 | # | Category | Model label | What it flags | Rule | Applies | n |
 |---|---|---|---|---|---|---|
-| 23 | Implied FINRA endorsement | `finra_endorsement_implied` | Implies FINRA or SIPC endorses or approved something | 2210(e) | C R I | 345 |
+| 20 | Unapproved retail communication | `unapproved_retail_communication` | Retail communication used without principal pre-approval | 2210(b)(1) | R | 155 |
+| 21 | Institutional forwarding | `institutional_forwarding` | "Institutional" piece that will reach retail investors | 2210(a)(4) / (b)(3) | I | 131 |
+
+**D. Implied FINRA / SIPC endorsement — 2210(e) (1)** · group key `regulator_endorsement`
+
+| # | Category | Model label | What it flags | Rule | Applies | n |
+|---|---|---|---|---|---|---|
+| 22 | Implied FINRA endorsement | `finra_endorsement_implied` | Implies FINRA or SIPC endorses or approved something | 2210(e) | C R I | 345 |
+
+**E. Product-specific rules — 2220 (1)** · group key `product_rules`
+
+| # | Category | Model label | What it flags | Rule | Applies | n |
+|---|---|---|---|---|---|---|
+| 23 | Options communication | `options_communication` | Options risk omitted or promoted before ODD delivery | 2220 / 2210(d)(1) | C R | OOD only |
 
 ## Training data
 

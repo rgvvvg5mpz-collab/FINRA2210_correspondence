@@ -301,6 +301,41 @@ VIOLATION_CATEGORIES: dict[str, dict] = {
 
 RULE_CITES = sorted({v["rule"] for v in VIOLATION_CATEGORIES.values()})
 
+# Broad groups for reporting only (labels and prompts use the categories above).
+BROAD_GROUPS: dict[str, dict] = {
+    "misleading_content": {
+        "title": "Misleading or unbalanced content — 2210(d)(1)",
+        "categories": [
+            "not_fair_and_balanced", "product_specific_omission", "buried_disclosure",
+            "promissory_or_guarantee", "exaggerated_or_unwarranted_claim", "false_or_misleading_statement",
+            "misleading_in_context", "performance_projection", "hypothetical_or_backtest_misuse",
+            "third_party_content_adoption",
+        ],
+    },
+    "required_disclosures": {
+        "title": "Missing required disclosures — 2210(d)(2)-(d)(8), 2212",
+        "categories": [
+            "unsupported_comparison", "member_name_missing", "tax_claim_incomplete", "fund_performance_disclosure",
+            "testimonial_disclosure", "recommendation_disclosure", "past_recommendations_reference",
+            "brokercheck_link_missing", "fund_ranking_disclosure",
+        ],
+    },
+    "approval_and_audience": {
+        "title": "Approval and audience — 2210(a), (b)",
+        "categories": ["unapproved_retail_communication", "institutional_forwarding"],
+    },
+    "regulator_endorsement": {
+        "title": "Implied FINRA / SIPC endorsement — 2210(e)",
+        "categories": ["finra_endorsement_implied"],
+    },
+    "product_rules": {
+        "title": "Product-specific rules — 2220",
+        "categories": ["options_communication"],
+    },
+}
+BROAD_GROUP_OF = {c: g for g, v in BROAD_GROUPS.items() for c in v["categories"]}
+assert set(BROAD_GROUP_OF) == set(VIOLATION_CATEGORIES), set(VIOLATION_CATEGORIES) ^ set(BROAD_GROUP_OF)
+
 COMMUNICATION_TYPES = ["correspondence", "retail_communication", "institutional_communication"]
 SEVERITIES = ["none", "low", "medium", "high"]
 DIFFICULTIES = ["easy", "medium", "hard"]
