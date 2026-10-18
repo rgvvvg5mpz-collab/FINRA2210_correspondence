@@ -120,7 +120,8 @@ def plot(d: dict, facts: dict, path: Path) -> None:
     ax.set_xlim(0, d["iters_total"] or facts["last_iter"])
     ax.set_xlabel(f"{d.get('x_unit', 'Iteration')} (batch {d['batch']})")
     ax.set_ylabel("Loss (log scale)")
-    status = "finished" if facts["finished"] else f"in progress, {facts['last_iter']:,} / {d['iters_total']:,}"
+    total = f"{d['iters_total']:,}" if d.get("iters_total") else "?"
+    status = "finished" if facts["finished"] else f"in progress, {facts['last_iter']:,} / {total}"
     ax.set_title(f"Phi-4-mini LoRA ({d.get('backend', 'mlx-lm')}), {status}", fontsize=11, loc="left")
     ax.grid(axis="y", color="#e1e0d9", lw=0.8)
     for side in ("top", "right"):
@@ -134,7 +135,8 @@ def plot(d: dict, facts: dict, path: Path) -> None:
 def summary_md(d: dict, facts: dict, log: Path) -> str:
     lines = [f"# Training summary: `{log.parent}`", ""]
     status = "finished" if facts["finished"] else "in progress / stopped early"
-    lines += [f"- Status: {status}; last logged iteration {facts['last_iter']:,} of {d['iters_total']:,} "
+    total = f"{d['iters_total']:,}" if d.get("iters_total") else "?"
+    lines += [f"- Status: {status}; last logged iteration {facts['last_iter']:,} of {total} "
               f"(batch {d['batch']})."]
     if best := facts.get("best_val"):
         lines.append(f"- Best validation loss: {best['loss']:.3f} at iteration {best['iter']:,}"
@@ -149,7 +151,7 @@ def summary_md(d: dict, facts: dict, log: Path) -> str:
                      f"gap to last validation loss: {facts['train_val_gap']:+.3f}.")
     for s in facts["epoch_steps"]:
         lines.append(f"- Epoch boundary at iteration {s['boundary']:,}: train loss {s['train_mean_before']:.3f} "
-                     f"in the 200 iterations before vs {s['train_mean_after']:.3f} after (second pass over seen examples).")
+                     f"in the {d.get('epoch_window', 200)} iterations before vs {s['train_mean_after']:.3f} after (second pass over seen examples).")
     for s in facts["spikes"]:
         lines.append(f"- Loss spike at iteration {s['iter']:,}: {s['loss']:.3f} vs neighbour median "
                      f"{s['neighbour_median']:.3f}; check that validation loss recovered afterwards.")

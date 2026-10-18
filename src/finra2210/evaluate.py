@@ -4,7 +4,7 @@
   python -m finra2210.evaluate --model runs/phi4mini-2210 --data data/splits/ood.jsonl  --out runs/phi4mini-2210/eval_ood.json
   python -m finra2210.evaluate --model microsoft/Phi-4-mini-instruct --data data/splits/test.jsonl --limit 100   # zero-shot baseline
 
-Apple Silicon (mlx-lm, see configs/phi4mini_lora_mlx.yaml):
+Apple Silicon (mlx-lm, see training/configs/phi4mini_lora_mlx.yaml):
   python -m finra2210.evaluate --backend mlx --model runs/phi4mini-2210-mlx --data data/splits/test.jsonl --out runs/phi4mini-2210-mlx/eval_test.json
   python -m finra2210.evaluate --backend mlx --model mlx-community/Phi-4-mini-instruct-4bit --data data/splits/test.jsonl --out runs/base-mlx/eval_test.json
 
@@ -95,7 +95,7 @@ def _load_hf(model_path: str):
     @torch.inference_mode()
     def generate(prompts: list[list[dict]], max_new_tokens: int) -> list[str]:
         texts = [tok.apply_chat_template(m, tokenize=False, add_generation_prompt=True) for m in prompts]
-        enc = tok(texts, return_tensors="pt", padding=True, truncation=True, max_length=3072).to(device)
+        enc = tok(texts, return_tensors="pt", padding=True).to(device)  # no truncation: it would cut the end of the prompt
         out = model.generate(**enc, max_new_tokens=max_new_tokens, do_sample=False, pad_token_id=tok.pad_token_id)
         return tok.batch_decode(out[:, enc["input_ids"].shape[1]:], skip_special_tokens=True)
 
@@ -132,6 +132,30 @@ def _parse(text: str) -> dict | None:
         except json.JSONDecodeError:
             continue
     return None
+
+
+_TRUE = {"true", "yes", "y", "compliant", "1"}
+_FALSE = {"false", "no", "n", "not compliant", "non-compliant", "noncompliant", "0"}
+
+
+def as_compliant(value) -> bool:
+    """The model's `compliant` field as a bool. Strings such as "false" / "No" are read by meaning
+    (bool("false") would be True); a missing or unrecognised value counts as compliant."""
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, str):
+        v = value.strip().lower()
+        if v in _FALSE:
+            return False
+        if v in _TRUE:
+            return True
+    return True if value is None else bool(value)
+
+
+def pred_violations(pred: dict) -> list[dict]:
+    """The model's violation entries; tolerates `"violations": null`, a non-list, or non-dict items."""
+    v = pred.get("violations")
+    return [x for x in v if isinstance(x, dict)] if isinstance(v, list) else []
 
 
 def _prf(tp: int, fp: int, fn: int) -> dict:
@@ -175,7 +199,7 @@ class Scorer:
             self._add_grouped({v["category"] for v in gold["violations"]}, set())
             return
         self.parsed += 1
-        p_viol = not bool(pred.get("compliant", True))
+        p_viol = not as_compliant(pred.get("compliant"))
         self.compliant_correct += g_viol == p_viol
         self.c_tp += g_viol and p_viol
         self.c_fp += (not g_viol) and p_viol
@@ -183,11 +207,11 @@ class Scorer:
         self.ctype_correct += pred.get("communication_type") == gold["communication_type"]
         self.sev_correct += pred.get("severity") == gold["severity"]
         g_cats = {v["category"] for v in gold["violations"]}
-        p_cats = {v.get("category") for v in pred.get("violations", []) if isinstance(v, dict)}
+        p_cats = {v.get("category") for v in pred_violations(pred)}
         self.cat_tp += len(g_cats & p_cats); self.cat_fp += len(p_cats - g_cats); self.cat_fn += len(g_cats - p_cats)
         self._add_grouped(g_cats, p_cats)
         g_rules = {v["rule"] for v in gold["violations"]}
-        p_rules = {v.get("rule") for v in pred.get("violations", []) if isinstance(v, dict)}
+        p_rules = {v.get("rule") for v in pred_violations(pred)}
         self.rule_tp += len(g_rules & p_rules); self.rule_fp += len(p_rules - g_rules); self.rule_fn += len(g_rules - p_rules)
 
     def report(self) -> dict:
@@ -210,7 +234,7 @@ class Scorer:
 
 def main() -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--model", required=True)
+    ap.add_argument("--model", required=True, help="adapter dir, model path or HF id (ignored for the report name with --score-only when --out exists)")
     ap.add_argument("--data", required=True)
     ap.add_argument("--out", default=None)
     ap.add_argument("--limit", type=int, default=None)
@@ -224,6 +248,11 @@ def main() -> None:
     args = ap.parse_args()
     if args.score_only and not args.out:
         ap.error("--score-only needs --out (the predictions are read from <out>.preds.jsonl)")
+
+    model_name = args.model
+    if args.score_only and Path(args.out).exists():
+        # re-scoring: keep the model name recorded by the run that made the predictions
+        model_name = json.loads(Path(args.out).read_text()).get("model", args.model)
 
     rows = [json.loads(l) for l in Path(args.data).read_text().splitlines()]
     if args.limit:
@@ -298,7 +327,7 @@ def main() -> None:
         preds_f.close()
 
     report = {
-        "model": args.model,
+        "model": model_name,
         "data": args.data,
         "overall": overall.report(),
         "by_difficulty": {k: v.report() for k, v in sorted(by_diff.items())},

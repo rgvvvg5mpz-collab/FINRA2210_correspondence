@@ -15,7 +15,7 @@ from collections import Counter
 from datetime import datetime, timezone
 from pathlib import Path
 
-SOURCES = [Path("data/agent_out"), Path("data/agent_out_r1"), Path("data/agent_out_topup")]
+SOURCES = [Path("data/agent_out"), Path("data/agent_out_r1"), Path("data/agent_out_topup"), Path("data/agent_out_chat")]
 
 
 def _sha256(path: Path) -> str:
