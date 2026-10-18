@@ -30,7 +30,7 @@ results are comparable. v0.1.0 was trained with mlx-lm on an M5 Pro (24 GB).
 ## Apple Silicon (mlx-lm)
 
 ```bash
-python3 -m venv .venv-mlx && .venv-mlx/bin/pip install mlx-lm matplotlib markdown-it-py
+python3 -m venv .venv-mlx && .venv-mlx/bin/pip install -r requirements-mlx.txt
 ```
 
 ```bash
@@ -56,7 +56,7 @@ curve and summary: [`results/training/`](../results/training/).
 ## NVIDIA GPU (PyTorch + TRL)
 
 ```bash
-nohup training/run_cuda_pipeline.sh > runs/pipeline_cuda.log 2>&1 &
+mkdir -p runs && nohup training/run_cuda_pipeline.sh > runs/pipeline_cuda.log 2>&1 &
 ```
 
 Environment variables: `STAGES`, `TRAIN_ARGS` (for example `--qlora` or `--batch 2 --grad-accum 8`),

@@ -1,2 +1,5 @@
-# data generation (teacher = Claude Fable 5.1)
+# Project venv (.venv): data tools, scoring (evaluate.py --score-only), the dashboard and the
+# retraining scripts run on the standard library alone. anthropic is only needed for Path B
+# (src/finra2210/generate.py, generation through the API instead of Claude Code agents).
+#   python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
 anthropic>=1.14.0

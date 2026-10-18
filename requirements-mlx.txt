@@ -1,0 +1,7 @@
+# Apple Silicon (MLX): run, evaluate and train the model; build results/ plots and the HTML model card.
+#   python3 -m venv .venv-mlx && .venv-mlx/bin/pip install -r requirements-mlx.txt
+# Tested with Python 3.14, mlx 0.32.4, mlx-lm 0.32.2, transformers 5.20.1, matplotlib 3.11.2, markdown-it-py 4.2.0.
+# evaluate.py uses mlx_lm.batch_generate, which needs a recent mlx-lm.
+mlx-lm>=0.32.2,<0.33
+matplotlib>=3.8
+markdown-it-py>=3.0

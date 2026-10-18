@@ -36,7 +36,8 @@ data/
   chunks_r1/BRIEF.md                generation brief every round-1 agent followed (rule digest, categories, labeling rules)
   chunks_r1/AGENT_INSTRUCTIONS.md   per-chunk agent procedure (round 1)
   chunks_topup/BRIEF.md             brief for the sparse-category top-up
-  chunks_topup/AGENT_INSTRUCTIONS.md
+  chunks_topup/AGENT_INSTRUCTIONS.md   (the agent instructions contain the original machine's
+                                    absolute path; replace it with your clone's path to reuse them)
   raw_finra/                        the FINRA / SEC source documents the brief was distilled from
     SOURCES.md                      file, title, URL, retrieval date and how each maps to the dataset
 ```
@@ -75,7 +76,7 @@ ex["messages"]          # [{"role": "system"|"user"|"assistant", "content": ...}
 ex["label"]["compliant"], [v["category"] for v in ex["label"]["violations"]]
 ```
 
-With Hugging Face `datasets`:
+With Hugging Face `datasets` (`pip install datasets`; not in the project venvs):
 
 ```python
 from datasets import load_dataset

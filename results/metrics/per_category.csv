@@ -1,6 +1,6 @@
 split,broad_group,category,gold,hits,missed,false_alarms,precision,recall,f1
 test,misleading_content,not_fair_and_balanced,135,98,37,37,0.7259,0.7259,0.7259
-test,misleading_content,product_specific_omission,10,0,10,0,,0.0,
+test,misleading_content,product_specific_omission,10,0,10,0,,0.0,0.0
 test,misleading_content,buried_disclosure,32,18,14,3,0.8571,0.5625,0.6792
 test,misleading_content,promissory_or_guarantee,100,91,9,12,0.8835,0.91,0.8966
 test,misleading_content,exaggerated_or_unwarranted_claim,87,76,11,6,0.9268,0.8736,0.8994
@@ -31,7 +31,7 @@ ood,misleading_content,false_or_misleading_statement,378,251,127,182,0.5797,0.66
 ood,misleading_content,misleading_in_context,239,75,164,94,0.4438,0.3138,0.3676
 ood,misleading_content,performance_projection,610,558,52,45,0.9254,0.9148,0.92
 ood,misleading_content,hypothetical_or_backtest_misuse,113,103,10,22,0.824,0.9115,0.8655
-ood,misleading_content,third_party_content_adoption,79,0,79,0,,0.0,
+ood,misleading_content,third_party_content_adoption,79,0,79,0,,0.0,0.0
 ood,required_disclosures,member_name_missing,146,8,138,94,0.0784,0.0548,0.0645
 ood,required_disclosures,brokercheck_link_missing,3,0,3,8,0.0,0.0,0.0
 ood,required_disclosures,fund_performance_disclosure,230,171,59,18,0.9048,0.7435,0.8162
@@ -44,4 +44,4 @@ ood,required_disclosures,testimonial_disclosure,137,122,15,5,0.9606,0.8905,0.924
 ood,approval_and_audience,unapproved_retail_communication,60,32,28,30,0.5161,0.5333,0.5246
 ood,approval_and_audience,institutional_forwarding,181,126,55,20,0.863,0.6961,0.7706
 ood,regulator_endorsement,finra_endorsement_implied,147,131,16,6,0.9562,0.8912,0.9225
-ood,product_rules,options_communication,16,0,16,0,,0.0,
+ood,product_rules,options_communication,16,0,16,0,,0.0,0.0

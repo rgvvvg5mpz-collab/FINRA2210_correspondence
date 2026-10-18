@@ -17,7 +17,9 @@ retraining/run_examples.sh
 | 5 | [`05_grpo/`](05_grpo/) | an automatic reward computed from the labels, and GRPO reinforcement learning with it | reward: any machine; training: NVIDIA GPU |
 | 6 | [`06_release_gate/`](06_release_gate/) | compares a candidate with the current model on test, OOD, chat, broad groups and difficulty; PASS / FAIL | any machine |
 
-Shared helpers are in [`common.py`](common.py). All scripts run from the repository root with the
+`run_examples.sh` rewrites the tracked `sample/out/` files and the gate reports; the scripts are
+deterministic, so `git status` stays clean unless a script changed. Shared helpers are in
+[`common.py`](common.py). All scripts run from the repository root with the
 project venv (`.venv/bin/python ...`); the two training scripts need an NVIDIA GPU with
 `requirements-train.txt` (see [`training/TRAINING_NVIDIA.md`](../training/TRAINING_NVIDIA.md)).
 
@@ -106,7 +108,7 @@ preference training there would need a third-party extension, so stages 2 and 3 
 | Version | Change | Gate |
 |---|---|---|
 | v0.2 (SFT) | audit disagreements with Opus; relabel overlapping categories; add paired examples for `member_name_missing` and `product_specific_omission`; generate the planned 2,400-item chat top-up ([`docs/CHAT_TOPUP_PLAN.md`](../docs/CHAT_TOPUP_PLAN.md)); retrain from the base | beat v0.1.0 on test, OOD and chat |
-| v0.3 (DPO) | preference pairs from v0.2's own mistakes on the training set | beat v0.2 |
+| v0.3 (DPO) | preference pairs from v0.2's own mistakes on the training set. DPO and GRPO start from a PEFT adapter, so v0.2 must be trained on NVIDIA with `train_phi4.py` (the released v0.1.0 adapter is mlx-only) | beat v0.2 |
 | v0.4 (GRPO, if needed) | the automatic reward in `05_grpo/reward.py` | beat v0.3 |
 | ongoing | reviewer feedback in the `01_feedback` log format feeds v0.2+ rounds | every release |
 

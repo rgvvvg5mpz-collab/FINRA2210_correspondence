@@ -10,6 +10,9 @@ keeps its train or test side.
     --keep-test data/splits/test.jsonl --keep-train data/splits/train.jsonl --out data/rounds/r2
 ```
 
+`data/clean/chat_topup.clean.jsonl` is an example: it exists once the planned chat top-up
+([docs/CHAT_TOPUP_PLAN.md](../../docs/CHAT_TOPUP_PLAN.md)) has been generated.
+
 What it does:
 1. **Label fixes** from the audit replace the labels of train items. A fix for a test or OOD item
    stops the script: those change the eval set, not the training data. Each fixed item keeps its
@@ -27,7 +30,10 @@ items and why) and `splits/train.jsonl` / `splits/test.jsonl`.
 ## Then train, from the base model
 
 Retrain on the whole new train split, starting from the base model rather than the previous
-adapter, so earlier skills are not forgotten. Point the pipeline at the new split:
+adapter, so earlier skills are not forgotten. A bigger train split means more iterations: in
+`training/configs/phi4mini_lora_mlx.yaml` set `iters` to 2 epochs of the new example count
+(`data/mlx/manifest.json` after the data step) divided by the batch size of 4, and the cosine
+`lr_schedule` steps to `iters / 4 - 50`. Point the pipeline at the new split:
 
 - **Apple Silicon:** `PYTHONPATH=src .venv-mlx/bin/python -m finra2210.mlx_data --train data/rounds/r2/splits/train.jsonl --out data/mlx`,
   then train with `training/configs/phi4mini_lora_mlx.yaml` and a new `adapter_path` (for example

@@ -6,7 +6,10 @@ communication it is under 2210, whether it is approvable, which violations it co
 the verbatim excerpt and rule paragraph), how serious they are, and what the reviewer should do next.
 It is an assistant to a registered principal, not a replacement: every verdict needs human review.
 
-**Get it.** The LoRA adapter (mlx format) is attached to the
+**License.** No license has been chosen yet for this repository's code, data or adapter; the base
+model, `microsoft/Phi-4-mini-instruct`, is MIT-licensed.
+
+**Get it.** The LoRA adapter (mlx format, Apple Silicon only) is attached to the
 [v0.1.0 release](https://github.com/rgvvvg5mpz-collab/FINRA2210_correspondence/releases/tag/v0.1.0);
 the training and eval data are in [data/](data/); how to run it is in the [README](README.md#use-the-model).
 
@@ -384,11 +387,11 @@ are fictional, and dates fall between 2023 and 2026.
     disclosure.
   - Hard items are compound or borderline violations, or compliant near-misses that look
     aggressive but pass.
-- **Channels (16):**
+- **Channels (17):**
   - Email 4,246, letter 1,112, SMS 1,074, instant message 896.
   - Mass email 843, social post 687, web page 626, newsletter 445, blog 340.
   - Seminar invitation 322, seminar deck/script 306, form letter 284, text blast 261.
-  - Radio/podcast script 208, print ad 141, video script 102.
+  - Radio/podcast script 208, print ad 141, video script 102, mass-email template 3.
 - **Products:** mutual funds 2,081, ETFs 1,840, stocks 1,733, bonds/CDs 1,075, 401(k)/IRA
   rollover 1,052, market commentary 860, target-date funds 817, munis 792, logistics with no
   product 706, 529 plans 530, fixed annuities 410.
@@ -578,5 +581,5 @@ On all 229 chat items in the test set, the compliant / not-compliant call is rig
 
 - **Synthetic labels.** These are teacher-model judgments, not FINRA or regulator decisions; have a compliance SME spot-check before relying on them.
 - **Chat is a minority of the data.** Only 19% of in-domain items are chat: 1,074 SMS, 896 IM and 261 retail text blasts. The rest are email, letters and public retail channels, so chat performance should be measured on its own slice.
-- **Two categories never seen in training.** `options_communication` and `third_party_content_adoption` appear only in the OOD set, so expect low recall on them.
+- **Two categories never seen in training.** `options_communication` and `third_party_content_adoption` appear only in the OOD set. The model never names them, but still flags the items not compliant (16 of 16 and 78 of 79), usually under a general 2210(d)(1) category.
 - **Scope.** It reviews only the text and metadata it is given. It does not check filing deadlines (2210(c)), recordkeeping or supervisory workflow, or rules outside 2210, 2212 and 2220.

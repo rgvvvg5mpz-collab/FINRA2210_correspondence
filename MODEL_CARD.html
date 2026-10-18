@@ -50,7 +50,9 @@ Rule 2210. Given one communication plus its distribution metadata, it says what 
 communication it is under 2210, whether it is approvable, which violations it contains (with
 the verbatim excerpt and rule paragraph), how serious they are, and what the reviewer should do next.
 It is an assistant to a registered principal, not a replacement: every verdict needs human review.</p>
-<p><strong>Get it.</strong> The LoRA adapter (mlx format) is attached to the
+<p><strong>License.</strong> No license has been chosen yet for this repository's code, data or adapter; the base
+model, <code>microsoft/Phi-4-mini-instruct</code>, is MIT-licensed.</p>
+<p><strong>Get it.</strong> The LoRA adapter (mlx format, Apple Silicon only) is attached to the
 <a href="https://github.com/rgvvvg5mpz-collab/FINRA2210_correspondence/releases/tag/v0.1.0">v0.1.0 release</a>;
 the training and eval data are in <a href="data/">data/</a>; how to run it is in the <a href="README.md#use-the-model">README</a>.</p>
 <p><strong>Input.</strong> The communication text (email, letter, SMS, IM, newsletter, social post, web page, ...)
@@ -775,12 +777,12 @@ disclosure.</li>
 aggressive but pass.</li>
 </ul>
 </li>
-<li><strong>Channels (16):</strong>
+<li><strong>Channels (17):</strong>
 <ul>
 <li>Email 4,246, letter 1,112, SMS 1,074, instant message 896.</li>
 <li>Mass email 843, social post 687, web page 626, newsletter 445, blog 340.</li>
 <li>Seminar invitation 322, seminar deck/script 306, form letter 284, text blast 261.</li>
-<li>Radio/podcast script 208, print ad 141, video script 102.</li>
+<li>Radio/podcast script 208, print ad 141, video script 102, mass-email template 3.</li>
 </ul>
 </li>
 <li><strong>Products:</strong> mutual funds 2,081, ETFs 1,840, stocks 1,733, bonds/CDs 1,075, 401(k)/IRA
@@ -1090,9 +1092,9 @@ parse compliant, so it is not usable without fine-tuning. See
 <ul>
 <li><strong>Synthetic labels.</strong> These are teacher-model judgments, not FINRA or regulator decisions; have a compliance SME spot-check before relying on them.</li>
 <li><strong>Chat is a minority of the data.</strong> Only 19% of in-domain items are chat: 1,074 SMS, 896 IM and 261 retail text blasts. The rest are email, letters and public retail channels, so chat performance should be measured on its own slice.</li>
-<li><strong>Two categories never seen in training.</strong> <code>options_communication</code> and <code>third_party_content_adoption</code> appear only in the OOD set, so expect low recall on them.</li>
+<li><strong>Two categories never seen in training.</strong> <code>options_communication</code> and <code>third_party_content_adoption</code> appear only in the OOD set. The model never names them, but still flags the items not compliant (16 of 16 and 78 of 79), usually under a general 2210(d)(1) category.</li>
 <li><strong>Scope.</strong> It reviews only the text and metadata it is given. It does not check filing deadlines (2210(c)), recordkeeping or supervisory workflow, or rules outside 2210, 2212 and 2220.</li>
 </ul>
 
-<footer>Generated from MODEL_CARD.md by docs/build_model_card_html.py on 2026-10-18 12:55 UTC. Edit the Markdown, then rerun the script.</footer>
+<footer>Generated from MODEL_CARD.md by docs/build_model_card_html.py. Edit the Markdown, then rerun the script.</footer>
 </main></div></body></html>

@@ -338,5 +338,17 @@
       "says_correspondence": 29,
       "says_compliant": 0.48788198103266595
     }
+  },
+  "unseen_categories_ood": {
+    "options_communication": {
+      "gold": 16,
+      "named": 0,
+      "flagged_not_compliant": 16
+    },
+    "third_party_content_adoption": {
+      "gold": 79,
+      "named": 0,
+      "flagged_not_compliant": 78
+    }
   }
 }

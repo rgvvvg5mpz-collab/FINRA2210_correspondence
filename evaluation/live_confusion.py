@@ -1,14 +1,16 @@
-"""Live confusion matrices for a running eval, refreshed every 10 scored rows.
+"""Live confusion matrices for an eval, refreshed every 10 scored rows.
 
-  .venv/bin/python evaluation/live_confusion.py                       # tuned model on OOD, http://localhost:8765
+  .venv/bin/python evaluation/live_confusion.py                       # fine-tuned model on OOD, http://localhost:8765
   .venv/bin/python evaluation/live_confusion.py --preds runs/base-mlx/eval_ood.preds.jsonl --port 8766
+  .venv/bin/python evaluation/live_confusion.py --gold data/splits/test.jsonl   # fine-tuned model on test
 
-Reads <eval out>.preds.jsonl (appended by finra2210.evaluate) and the gold split, and serves a
-page that polls every 3 s. Only the first multiple of 10 rows is scored, so the numbers move in
-steps of 10. Unparsable predictions get their own column instead of being folded into "compliant".
-Category precision / recall are shown at three levels, computed by finra2210.evaluate.Scorer so
-they match eval_*.json: exact category, rule level (categories grouped by taxonomy cite) and
-(d)(1) family (every 2210(d)(1) content standard as one group).
+Reads a predictions file written by finra2210.evaluate (<eval out>.preds.jsonl, or a gzipped copy
+such as results/predictions/*.preds.jsonl.gz) and the gold split, and serves a page that polls every
+3 s. Without --preds it uses the running or finished eval in runs/phi4mini-2210-mlx, and in a fresh
+clone (no runs/) the published v0.1.0 predictions in results/predictions/. Only the first multiple
+of 10 rows is scored, so the numbers move in steps of 10. Unparsable predictions get their own
+column. Category precision / recall are shown at four levels (exact, rule level, (d)(1) family,
+broad group), computed by finra2210.evaluate.Scorer so they match eval_*.json.
 """
 
 from __future__ import annotations
@@ -110,15 +112,23 @@ tick(); setInterval(tick,3000);
 
 def main() -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--preds", default="runs/phi4mini-2210-mlx/eval_ood.preds.jsonl")
+    ap.add_argument("--preds", default=None,
+                    help="predictions file (.jsonl or .jsonl.gz); default: the running / finished eval in "
+                         "runs/phi4mini-2210-mlx, or the published v0.1.0 predictions in results/predictions/")
     ap.add_argument("--gold", default="data/splits/ood.jsonl")
     ap.add_argument("--label", default=None)
     ap.add_argument("--port", type=int, default=8765)
     args = ap.parse_args()
 
     gold, order = load_gold(Path(args.gold))
+    if args.preds is None:
+        split = Path(args.gold).stem
+        live = Path(f"runs/phi4mini-2210-mlx/eval_{split}.preds.jsonl")
+        published = Path(f"results/predictions/fine_tuned_{split}.preds.jsonl.gz")
+        args.preds = str(live if live.exists() or not published.exists() else published)
     preds_path = Path(args.preds)
-    label = args.label or f"{preds_path.parent.name} on {Path(args.gold).stem}"
+    run = preds_path.name.split(".")[0] if preds_path.parent.name == "predictions" else preds_path.parent.name
+    label = args.label or f"{run} on {Path(args.gold).stem}"
     history: list[tuple[float, int]] = []
     cache = {"key": None, "stats": None}
 

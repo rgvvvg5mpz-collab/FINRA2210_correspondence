@@ -104,7 +104,7 @@ falling loss lines, and leave an adapter in `runs/smoke/`. Delete `runs/smoke` a
 ## 5. Full run: train → loss report → evaluate tuned → evaluate base
 
 ```bash
-nohup training/run_cuda_pipeline.sh > runs/pipeline_cuda.log 2>&1 &
+mkdir -p runs && nohup training/run_cuda_pipeline.sh > runs/pipeline_cuda.log 2>&1 &
 ```
 
 Follow it with `tail -f runs/pipeline_cuda.log` (training lines also go to

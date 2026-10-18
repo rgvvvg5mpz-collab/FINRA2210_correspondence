@@ -70,12 +70,33 @@ near-misses between neighbours (for example `product_specific_omission` read as
 .venv/bin/python evaluation/live_confusion.py
 ```
 
-Open http://localhost:8765. It reads the predictions file of a running (or finished) eval and shows
-the confusion matrices for compliant, type and severity; category precision / recall at the four
-levels; broad-group and per-category hits, misses and false alarms; the most common category swaps;
-and accuracy by OOD axis and difficulty. Defaults to the fine-tuned model on OOD; for another run:
-`--preds runs/base-mlx/eval_ood.preds.jsonl --port 8766`, or `--gold data/splits/test.jsonl` with a
-test predictions file. In Claude Code the two dashboards are in `.claude/launch.json`.
+Open http://localhost:8765. It shows the confusion matrices for compliant, type and severity;
+category precision / recall at the four levels; broad-group and per-category hits, misses and
+false alarms; the most common category swaps; and accuracy by OOD axis and difficulty.
+
+- **Which predictions:** by default the eval in `runs/phi4mini-2210-mlx/` (live while it runs), or,
+  in a fresh clone without `runs/`, the published v0.1.0 predictions in `results/predictions/`.
+- **Other runs:** `--preds <file>` takes a `.preds.jsonl` or `.preds.jsonl.gz`, e.g.
+  `--preds results/predictions/base_zero_shot_ood.preds.jsonl.gz --port 8766`.
+- **Test instead of OOD:** `--gold data/splits/test.jsonl`.
+- In Claude Code the two dashboards are in `.claude/launch.json`.
+
+## Reproducing the v0.1.0 numbers end to end
+
+With the released adapter in `runs/phi4mini-2210-mlx/` (see the top-level README), run both models
+on both sets, then rebuild the results into a separate folder so the tracked `results/` is not
+overwritten:
+
+```bash
+STAGES="eval_tuned eval_base" caffeinate -i training/run_mlx_pipeline.sh
+```
+
+```bash
+PYTHONPATH=src .venv-mlx/bin/python evaluation/make_results.py --out runs/results-check
+```
+
+That is 6,986 items for each model at about 1.4 s per item, roughly 5.5 hours in total on an M5 Pro.
+Greedy decoding makes the predictions repeatable on the same software versions.
 
 ## Building `results/`
 
@@ -86,5 +107,6 @@ PYTHONPATH=src .venv-mlx/bin/python evaluation/make_results.py
 Reads `runs/phi4mini-2210-mlx/` and `runs/base-mlx/` (`--tuned`, `--base` to change) and rewrites
 `results/`: the four eval reports, `per_category.csv`, `summary.json`, nine plots, gzipped
 predictions, the training curve and summary, and `results/README.md`. Needs matplotlib (in
-`.venv-mlx`). Re-score any predictions file from `results/predictions/` with
-`gunzip -k` and `finra2210.evaluate --score-only`.
+`.venv-mlx`). To re-score a published predictions file, unzip it to `<dir>/eval_<split>.preds.jsonl`
+and run `finra2210.evaluate --score-only --out <dir>/eval_<split>.json` (example in the
+[top-level README](../README.md#evaluate-and-build-the-results)).

@@ -34,3 +34,6 @@ data/chunks_r1/*
 data/chunks_topup/*
 !data/chunks_topup/BRIEF.md
 !data/chunks_topup/AGENT_INSTRUCTIONS.md
+
+# macOS
+.DS_Store

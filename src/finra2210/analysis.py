@@ -7,6 +7,7 @@ eval_*.json exactly.
 
 from __future__ import annotations
 
+import gzip
 import json
 from collections import Counter, defaultdict
 from pathlib import Path
@@ -31,12 +32,14 @@ def load_gold(path: Path) -> tuple[dict, list[str]]:
 
 
 def read_preds(path: Path) -> list[dict]:
-    """Rows of <eval out>.preds.jsonl; stops at a half-written last line (safe while an eval runs)."""
+    """Rows of <eval out>.preds.jsonl (or .jsonl.gz); stops at a half-written last line, so it is safe
+    while an eval is still writing the file."""
     path = Path(path)
     if not path.exists():
         return []
+    text = gzip.decompress(path.read_bytes()).decode() if path.suffix == ".gz" else path.read_text()
     out = []
-    for line in path.read_text().splitlines():
+    for line in text.splitlines():
         try:
             out.append(json.loads(line))
         except json.JSONDecodeError:
@@ -107,7 +110,8 @@ def analyze(preds: list[dict], gold: dict, step: int | None = None) -> dict:
     def prf(c):
         pr = c["tp"] / (c["tp"] + c["fp"]) if c["tp"] + c["fp"] else None
         rc = c["tp"] / (c["tp"] + c["fn"]) if c["tp"] + c["fn"] else None
-        f1 = 2 * pr * rc / (pr + rc) if pr and rc else (0.0 if pr is not None and rc is not None else None)
+        # a category with gold items but no predictions has recall 0 and F1 0 (precision is undefined)
+        f1 = 2 * pr * rc / (pr + rc) if pr and rc else (0.0 if rc is not None else None)
         return {"precision": pr, "recall": rc, "f1": f1}
 
     cats = [{"category": k, **v, **prf(v)} for k, v in cat.items()]

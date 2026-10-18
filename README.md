@@ -15,6 +15,9 @@ serious they are; and what the reviewer should do next.
 - **Release:** [v0.1.0](https://github.com/rgvvvg5mpz-collab/FINRA2210_correspondence/releases/tag/v0.1.0)
   (adapter + dataset archive). Summary: [MODEL_CARD.md](MODEL_CARD.md) ([HTML](MODEL_CARD.html)).
 
+> **Access.** The GitHub repository and its releases are private: you need to be added as a
+> collaborator (ask the owner) to clone it or download the adapter.
+
 > **An assistant, not a decision-maker.** Labels are synthetic teacher judgments, not regulator
 > decisions, and have not been reviewed by a compliance professional. Every verdict needs review by
 > a registered principal.
@@ -53,8 +56,10 @@ and breakdowns by difficulty, chat channel and OOD shift: **[results/README.md](
 ├── results/                  v0.1.0 metrics, plots, predictions, training curve
 ├── retraining/               feedback, label audit, SFT rounds, DPO, GRPO, release gate (code + sample data)
 ├── docs/                     chat top-up plan, model-card HTML builder
-├── requirements.txt          generation and evaluation (project venv)
-└── requirements-train.txt    NVIDIA training
+├── CHANGELOG.md              what changed in each version
+├── requirements.txt          project venv: data tools, scoring, dashboard, retraining (+ anthropic for Path B)
+├── requirements-mlx.txt      Apple Silicon: run / evaluate / train the model, plots, HTML model card
+└── requirements-train.txt    NVIDIA training (PyTorch, TRL)
 ```
 
 | Folder | README |
@@ -64,32 +69,65 @@ and breakdowns by difficulty, chat channel and OOD shift: **[results/README.md](
 | `evaluation/` | [evaluation/README.md](evaluation/README.md): eval sets, metrics, dashboard, building `results/` |
 | `results/` | [results/README.md](results/README.md): every number and plot for v0.1.0 |
 | `retraining/` | [retraining/README.md](retraining/README.md): how the model improves (RLHF, DPO, GRPO, audits, release gate) |
-| `docs/` | [docs/CHAT_TOPUP_PLAN.md](docs/CHAT_TOPUP_PLAN.md): the planned 2,400-item chat top-up |
+| `docs/` | [docs/README.md](docs/README.md): the planned chat top-up and the model-card HTML builder |
 
 `runs/` (adapters, checkpoints, logs) is local and ignored by git.
 
 ## Quick start
 
+### Requirements
+
+| To | You need |
+|---|---|
+| use the dataset, re-score evals, run the dashboard and the retraining examples | Python 3.10+ (tested with 3.14) |
+| run or train the released model | a Mac with Apple Silicon (MLX); about 3 GB of disk for the base model, which downloads from Hugging Face on first use |
+| train on NVIDIA | Linux or WSL2, Python 3.11 / 3.12, a CUDA GPU with 16 GB+ (12 GB with `--qlora`); see [training/TRAINING_NVIDIA.md](training/TRAINING_NVIDIA.md) |
+
 ### Install
+
+```bash
+git clone https://github.com/rgvvvg5mpz-collab/FINRA2210_correspondence.git && cd FINRA2210_correspondence
+```
 
 ```bash
 python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
 ```
 
 ```bash
-python3 -m venv .venv-mlx && .venv-mlx/bin/pip install mlx-lm matplotlib markdown-it-py
+python3 -m venv .venv-mlx && .venv-mlx/bin/pip install -r requirements-mlx.txt
 ```
 
-`.venv` runs the data tools, the evaluation scoring, the dashboard and the retraining scripts.
-`.venv-mlx` (Apple Silicon) runs the model. For NVIDIA see
-[training/TRAINING_NVIDIA.md](training/TRAINING_NVIDIA.md).
+- `.venv` (standard library; `anthropic` only for Path B) runs the data tools, scoring
+  (`--score-only`), the dashboard and the retraining scripts.
+- `.venv-mlx` (Apple Silicon) runs the model, `evaluation/make_results.py` (matplotlib) and
+  `docs/build_model_card_html.py` (markdown-it-py). Tested versions are listed in
+  `requirements-mlx.txt`.
+- Every `python -m finra2210...` command needs `PYTHONPATH=src` (there is no installable package);
+  run all commands from the repository root.
+- The dataset is already in the clone (`data/splits/`, `data/clean/`); nothing else to download
+  unless you want the model.
 
 ### Use the model
 
-Download `phi4mini-finra2210-lora-mlx-v0.1.0.tar.gz` from the
-[v0.1.0 release](https://github.com/rgvvvg5mpz-collab/FINRA2210_correspondence/releases/tag/v0.1.0),
-check it against its `.sha256` file, and extract the adapter folder (here `runs/phi4mini-2210-mlx`).
-Then review a message:
+Download the adapter (171 MB) and its checksum from the
+[v0.1.0 release](https://github.com/rgvvvg5mpz-collab/FINRA2210_correspondence/releases/tag/v0.1.0)
+with the GitHub CLI (signed in with access to the repository), or from the release page into `runs/`:
+
+```bash
+mkdir -p runs && gh release download v0.1.0 --repo rgvvvg5mpz-collab/FINRA2210_correspondence --pattern 'phi4mini-finra2210-lora-mlx-v0.1.0.tar.gz*' --dir runs
+```
+
+Check it, unpack it, and rename the folder to `runs/phi4mini-2210-mlx`, the name the training
+pipeline writes and every other command in this repository uses:
+
+```bash
+cd runs && shasum -a 256 -c phi4mini-finra2210-lora-mlx-v0.1.0.tar.gz.sha256 && tar -xzf phi4mini-finra2210-lora-mlx-v0.1.0.tar.gz && mv phi4mini-finra2210-lora-mlx-v0.1.0 phi4mini-2210-mlx && cd ..
+```
+
+The folder holds the adapter weights and config, the training report, the test metrics, a copy of
+the model card and a `USAGE.md` written before the repository was reorganized (follow this README
+instead). The base model, `mlx-community/Phi-4-mini-instruct-4bit` (about 2.2 GB), downloads from
+Hugging Face on first use. Then review a message:
 
 ```bash
 PYTHONPATH=src .venv-mlx/bin/python -m finra2210.review --model runs/phi4mini-2210-mlx --channel sms_text --recipients 3 --firm "Harbor Point Securities LLC" --text "Hi all, the Atlas Income Fund is a can't-lose 7% a year. Want in? - Dana" --json
@@ -111,14 +149,17 @@ PYTHONPATH=src .venv-mlx/bin/python -m finra2210.review --model runs/phi4mini-22
 }
 ```
 
-That is a real output (about 9 s on an M5 Pro). It also shows the known weakness: the text never
-names the member firm, so `member_name_missing` (2210(d)(3)) should have been flagged too.
+That is a real output (about 9 s on an M5 Pro, after the first run has cached the base model). It
+also shows the known weakness: the text never names the member firm, so `member_name_missing`
+(2210(d)(3)) should have been flagged too.
 
 `--recipients` matters: 25 or fewer retail recipients in 30 days is correspondence, more is a retail
-communication. Without `--json` the command prints the full review in prose. `--backend hf` runs
-a PyTorch adapter or merged model. In your own code, build the messages the same way,
+communication. `--file message.txt` (or `--file -` for stdin) reads the text from a file, and
+`python -m finra2210.review --help` lists the other metadata flags. Without `--json` the command
+prints the full review in prose. `--backend hf` runs a PyTorch (PEFT) adapter or merged model from
+the NVIDIA path; the released adapter is mlx-only. In your own code, build the messages the same way,
 `[{"role": "system", "content": finra2210.prompts.STUDENT_SYSTEM}, {"role": "user", "content": finra2210.prompts.student_input(sample)}]`,
-and parse the answer with `finra2210.evaluate._parse`.
+and parse the answer with `finra2210.evaluate.parse_verdict`.
 
 ### Train
 
@@ -132,20 +173,29 @@ the adapter and the zero-shot base on test and OOD. Details and the NVIDIA pipel
 
 ### Evaluate and build the results
 
+Re-score the published v0.1.0 predictions without a model (any machine, a few seconds):
+
 ```bash
-PYTHONPATH=src .venv-mlx/bin/python -m finra2210.evaluate --backend mlx --model runs/phi4mini-2210-mlx --data data/splits/test.jsonl --batch 16 --resume --out runs/phi4mini-2210-mlx/eval_test.json
+mkdir -p runs/v0.1.0 && gunzip -c results/predictions/fine_tuned_test.preds.jsonl.gz > runs/v0.1.0/eval_test.preds.jsonl && PYTHONPATH=src .venv/bin/python -m finra2210.evaluate --model v0.1.0 --data data/splits/test.jsonl --score-only --out runs/v0.1.0/eval_test.json
 ```
+
+Watch the confusion matrices, per-category and broad-group metrics in a browser at
+http://localhost:8765 (in a fresh clone it shows the published OOD predictions; during an eval it
+follows the run live):
 
 ```bash
 .venv/bin/python evaluation/live_confusion.py
 ```
 
+Run a model on a split (Apple Silicon, about 1.4 s per item at batch 16; `--limit 50` for a quick check):
+
 ```bash
-PYTHONPATH=src .venv-mlx/bin/python evaluation/make_results.py
+PYTHONPATH=src .venv-mlx/bin/python -m finra2210.evaluate --backend mlx --model runs/phi4mini-2210-mlx --data data/splits/test.jsonl --batch 16 --resume --out runs/phi4mini-2210-mlx/eval_test.json
 ```
 
-The first scores a model, the second serves a live dashboard at http://localhost:8765 while an eval
-runs, the third rebuilds `results/`. See [evaluation/README.md](evaluation/README.md).
+`evaluation/make_results.py --tuned <run dir> --base <run dir>` rebuilds `results/` from two run
+folders that each hold `eval_test.json`, `eval_ood.json` and their `.preds.jsonl` files. Metric
+definitions and the dashboard options: [evaluation/README.md](evaluation/README.md).
 
 ## The task
 
@@ -195,8 +245,8 @@ not, an example and its test metrics.
 | [`data/splits/ood.jsonl`](data/splits/) | 5,800 | out-of-distribution evaluation only |
 
 - **Composition (in-domain):** correspondence 5,870, retail 4,567, institutional 1,459; 44%
-  compliant; difficulty 30% easy / 40% medium / 30% hard; 16 channels from email (4,246) to
-  video scripts (102); chat channels (SMS, IM, text blast) 18.8%.
+  compliant; difficulty 30% easy / 40% medium / 30% hard; 17 channels from email (4,246) to
+  video scripts (102) and mass-email templates (3); chat channels (SMS, IM, text blast) 18.8%.
 - **Difficulty tiers:** easy = one blatant violation, or routine logistics; medium = needs the whole
   message (implied projection, omitted risk, fund performance without standardized returns, a
   template that the metadata shows went to more than 25 people), or a compliant message that
@@ -213,7 +263,9 @@ Record formats, distributions, every category's count, and the full curation pro
 ## Data pipeline
 
 How the dataset was generated, inside Claude Code without an API key (Path A). Each step is
-re-runnable; all commands run from the repository root with `PYTHONPATH=src`.
+re-runnable from the repository root. Steps 2–3 need Claude Code; the raw agent output they write
+(`data/agent_out*`) is not in git, so to re-run steps 4–7 without regenerating, unpack the dataset
+archive from the release and use its `data/snapshots/20261017T045434Z/` as `<latest>`.
 
 1. **Sources.** Rule 2210, the related rules, the relevant Regulatory Notices, the 2210 FAQ and SEC
    Rules 482 / 34b-1 were archived in `data/raw_finra/` ([SOURCES.md](data/raw_finra/SOURCES.md))
@@ -222,11 +274,11 @@ re-runnable; all commands run from the repository root with `PYTHONPATH=src`.
    product, sender, recipient count and type, tone, length; OOD shift axes):
 
    ```bash
-   .venv/bin/python -m finra2210.chunks --n 11520 --per-chunk 24 --out data/chunks_r1/in_domain
+   PYTHONPATH=src .venv/bin/python -m finra2210.chunks --n 11520 --per-chunk 24 --out data/chunks_r1/in_domain
    ```
 
    ```bash
-   .venv/bin/python -m finra2210.chunks --n 5760 --per-chunk 24 --ood --seed 99 --out data/chunks_r1/ood
+   PYTHONPATH=src .venv/bin/python -m finra2210.chunks --n 5760 --per-chunk 24 --ood --seed 99 --out data/chunks_r1/ood
    ```
 
    The sampler was corrected during the run (two scenario combinations were fixed), so re-running
@@ -238,34 +290,34 @@ re-runnable; all commands run from the repository root with `PYTHONPATH=src`.
    `data/agent_out_r1/<split>/chunk_XXXX.json` and loop the checker until it reports no problems:
 
    ```bash
-   .venv/bin/python -m finra2210.check data/chunks_r1/in_domain/chunk_0000.json data/agent_out_r1/in_domain/chunk_0000.json --emit data/agent_out_r1/in_domain/chunk_0000.raw.jsonl --teacher claude-opus-5-5
+   PYTHONPATH=src .venv/bin/python -m finra2210.check data/chunks_r1/in_domain/chunk_0000.json data/agent_out_r1/in_domain/chunk_0000.json --emit data/agent_out_r1/in_domain/chunk_0000.raw.jsonl --teacher claude-opus-5-5
    ```
 
-   Progress and the next chunks to assign: `.venv/bin/python -m finra2210.progress data/chunks_r1/in_domain data/agent_out_r1/in_domain --next 20`.
+   Progress and the next chunks to assign: `PYTHONPATH=src .venv/bin/python -m finra2210.progress data/chunks_r1/in_domain data/agent_out_r1/in_domain --next 20`.
 4. **Snapshot** every validated record into a timestamped, checksummed, append-only copy:
-   `.venv/bin/python -m finra2210.snapshot` writes `data/snapshots/<UTC>/` with `MANIFEST.json`.
+   `PYTHONPATH=src .venv/bin/python -m finra2210.snapshot` writes `data/snapshots/<UTC>/` with `MANIFEST.json`.
 5. **Validate and de-duplicate** (exact and 6-word-shingle near-duplicates; OOD against in-domain):
 
    ```bash
-   .venv/bin/python -m finra2210.postprocess --raw data/snapshots/<latest>/ood.raw.jsonl --out data/clean/ood.clean.jsonl
+   PYTHONPATH=src .venv/bin/python -m finra2210.postprocess --raw data/snapshots/<latest>/ood.raw.jsonl --out data/clean/ood.clean.jsonl
    ```
 
    ```bash
-   .venv/bin/python -m finra2210.postprocess --raw data/snapshots/<latest>/in_domain.raw.jsonl --out data/clean/in_domain.clean.jsonl --exclude data/clean/ood.clean.jsonl
+   PYTHONPATH=src .venv/bin/python -m finra2210.postprocess --raw data/snapshots/<latest>/in_domain.raw.jsonl --out data/clean/in_domain.clean.jsonl --exclude data/clean/ood.clean.jsonl
    ```
 
 6. **Targeted top-up** of sparse categories (336 items, same agent loop, `data/chunks_topup/`):
-   `.venv/bin/python -m finra2210.topup --out data/chunks_topup/in_domain`.
+   `PYTHONPATH=src .venv/bin/python -m finra2210.topup --out data/chunks_topup/in_domain`.
 7. **Split and export to chat format.** The split is incremental: items already in train or test
    stay there, and only new ids are stratified, so a model trained on an earlier `train.jsonl`
    stays uncontaminated on the new `test.jsonl`:
 
    ```bash
-   .venv/bin/python -m finra2210.split --clean data/clean/in_domain.clean.jsonl --out data/splits --keep-test data/splits_r1_ids/test.ids --keep-train data/splits_r1_ids/train.ids
+   PYTHONPATH=src .venv/bin/python -m finra2210.split --clean data/clean/in_domain.clean.jsonl --out data/splits --keep-test data/splits_r1_ids/test.ids --keep-train data/splits_r1_ids/train.ids
    ```
 
    ```bash
-   .venv/bin/python -m finra2210.split --clean data/clean/ood.clean.jsonl --out data/splits --name ood
+   PYTHONPATH=src .venv/bin/python -m finra2210.split --clean data/clean/ood.clean.jsonl --out data/splits --name ood
    ```
 
 **Quality controls.** Specs are sampled before anything is written, so diversity and label balance
@@ -277,7 +329,7 @@ answer parses back to its label.
 
 **Path B (not used for v0.1.0).** `src/finra2210/generate.py` writes the same data through the
 Anthropic API (live or Batch) instead of Claude Code agents; it needs `ANTHROPIC_API_KEY` and the
-`anthropic` package in `requirements.txt`. Run `.venv/bin/python -m finra2210.generate --help`.
+`anthropic` package in `requirements.txt`. Run `PYTHONPATH=src .venv/bin/python -m finra2210.generate --help`.
 
 ## Retraining and feedback
 
@@ -316,4 +368,10 @@ and the full plan: **[retraining/README.md](retraining/README.md)**.
   workflow, and nothing outside 2210, 2212 and 2220. US retail broker-dealer focus.
 - **Rules change.** The digest reflects the rule text retrieved in October 2026; check current
   FINRA rules before production use.
-- **License.** None has been chosen yet.
+- **License.** None has been chosen yet for this repository's code and data, so default copyright
+  applies. The base model, `microsoft/Phi-4-mini-instruct`, is MIT-licensed.
+
+## Versions and contact
+
+[CHANGELOG.md](CHANGELOG.md) lists what changed in each version. Questions and problems: open an
+issue on the GitHub repository.

@@ -158,6 +158,11 @@ def pred_violations(pred: dict) -> list[dict]:
     return [x for x in v if isinstance(x, dict)] if isinstance(v, list) else []
 
 
+def parse_verdict(text: str) -> dict | None:
+    """The JSON verdict in a model answer (the last ```json block, else the widest {...} span), or None."""
+    return _parse(text)
+
+
 def _prf(tp: int, fp: int, fn: int) -> dict:
     p = tp / (tp + fp) if tp + fp else 0.0
     r = tp / (tp + fn) if tp + fn else 0.0

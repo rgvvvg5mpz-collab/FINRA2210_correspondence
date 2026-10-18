@@ -2,8 +2,8 @@
 
 Status, 2026-10-18: **plan only**. No chunks, agent output, snapshot, clean set or split has been
 written. v0.1.0 is trained and evaluated; its chat baseline (by channel group) is in
-[`results/`](../results/). Generation needs the user's go-ahead; retraining needs a separate
-go-ahead. This is the chat part of the v0.2 round in [`retraining/`](../retraining/).
+[`results/`](../results/). Generating the data and retraining are separate decisions for the
+project owner. This is the chat part of the v0.2 round in [`retraining/`](../retraining/).
 
 ## Why
 
@@ -179,9 +179,10 @@ The v0.1.0 run has finished and been evaluated; its `by_channel_group` /
 4. `postprocess` with `--exclude data/clean/ood.clean.jsonl`. Check that the first 11,896 records
    are identical, so the new ids are `in_domain-011896`… and OOD clean is unchanged (md5).
 5. `cp -R data/splits data/splits_pre_chat_<date>`, then
-   `.venv/bin/python -m finra2210.split --clean data/clean/in_domain.clean.jsonl --out data/splits --keep-test data/splits_pre_chat_<date>/test.jsonl --keep-train data/splits_pre_chat_<date>/train.jsonl`.
+   `PYTHONPATH=src .venv/bin/python -m finra2210.split --clean data/clean/in_domain.clean.jsonl --out data/splits --keep-test data/splits_pre_chat_<date>/test.jsonl --keep-train data/splits_pre_chat_<date>/train.jsonl`.
    The keep lists point at the copy, not the files being rewritten. All current test ids stay
    in test and all train ids stay in train. Only the 2,400 chat ids are stratified. The current model stays clean on
    the new test.jsonl.
-6. Retrain (new `iters`), evaluate with the same `evaluate.py`, and compare the chat slices with
-   step 0's baseline. Needs a separate go-ahead.
+6. Retrain (new `iters` and `lr_schedule` in the mlx config), evaluate with the same `evaluate.py`,
+   compare the chat slices with the v0.1.0 baseline, and run the release gate in
+   `retraining/06_release_gate/`.

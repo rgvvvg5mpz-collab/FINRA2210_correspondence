@@ -9,6 +9,7 @@ MANIFEST.json with chunk/sample counts, teacher mix and sha256 per file. Snapsho
 
 from __future__ import annotations
 
+import argparse
 import hashlib
 import json
 from collections import Counter
@@ -27,6 +28,8 @@ def _sha256(path: Path) -> str:
 
 
 def main() -> None:
+    argparse.ArgumentParser(description="Copy every validated raw record (" + ", ".join(map(str, SOURCES))
+                            + ") into data/snapshots/<UTC timestamp>/ with a checksummed MANIFEST.json.").parse_args()
     stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     out = Path("data/snapshots") / stamp
     out.mkdir(parents=True, exist_ok=False)

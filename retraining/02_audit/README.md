@@ -7,11 +7,13 @@ label fixes.
 
 ## Steps
 
-1. **Predictions on the train split** (never use test or OOD for training fixes):
+1. **Predictions on the train split** (never use test or OOD for training fixes). On Apple
+   Silicon this takes about 4 hours for the 10,710 train items; `--resume` continues after an
+   interruption, and `--limit 2000` is enough for a first audit:
 
    ```bash
    PYTHONPATH=src .venv-mlx/bin/python -m finra2210.evaluate --backend mlx --model runs/phi4mini-2210-mlx \
-       --data data/splits/train.jsonl --out runs/phi4mini-2210-mlx/eval_train.json
+       --data data/splits/train.jsonl --batch 16 --resume --out runs/phi4mini-2210-mlx/eval_train.json
    ```
 
 2. **Select disagreements** into chunks of 20, most important first: a different compliant call,

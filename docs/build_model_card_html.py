@@ -5,7 +5,8 @@
 
 Needs markdown-it-py (already in .venv-mlx; otherwise `pip install markdown-it-py`). The page has
 no external dependencies: styles are inline, it follows the system light/dark setting, and it has
-a table of contents built from the ## and ### headings. Rerun after editing MODEL_CARD.md.
+a table of contents built from the ## and ### headings. The output depends only on the Markdown,
+so rebuilding an unchanged card changes nothing. Rerun after editing MODEL_CARD.md.
 """
 
 from __future__ import annotations
@@ -13,7 +14,6 @@ from __future__ import annotations
 import argparse
 import html
 import re
-from datetime import datetime, timezone
 from pathlib import Path
 
 from markdown_it import MarkdownIt
@@ -98,7 +98,6 @@ def build(src: Path, out: Path) -> None:
     title = html.unescape(re.sub(r"<[^>]+>", "", title_m.group(1))) if title_m else "Model card"
 
     links = "".join(f'<a class="l{lvl}" href="#{hid}">{html.escape(t)}</a>' for lvl, hid, t in toc)
-    stamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
     page = f"""<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>FINRA 2210 Model Card</title>
@@ -109,7 +108,7 @@ def build(src: Path, out: Path) -> None:
 <main>
 <details class="toc-m"><summary>Contents</summary>{links}</details>
 {body}
-<footer>Generated from {html.escape(src.name)} by docs/build_model_card_html.py on {stamp}. Edit the Markdown, then rerun the script.</footer>
+<footer>Generated from {html.escape(src.name)} by docs/build_model_card_html.py. Edit the Markdown, then rerun the script.</footer>
 </main></div></body></html>
 """
     out.write_text(page)
