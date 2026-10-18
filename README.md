@@ -309,7 +309,8 @@ and the full plan: **[retraining/README.md](retraining/README.md)**.
 - **Overlapping categories.** Several categories share a rule paragraph; exact-category scores
   understate how often the model finds the right problem (see the broad-group scores).
 - **Unseen categories.** `options_communication` and `third_party_content_adoption` were never
-  trained on and are not detected.
+  trained on and are never named, although the items are still flagged not compliant (16 of 16
+  and 78 of 79 on OOD).
 - **Chat is a minority** of the data (18.8%); a chat top-up is planned.
 - **Scope.** Text and metadata only. No filing deadlines (2210(c)), recordkeeping or supervisory
   workflow, and nothing outside 2210, 2212 and 2220. US retail broker-dealer focus.

@@ -1031,12 +1031,18 @@ The zero-shot base is the same 4-bit Phi-4-mini with the same system prompt and 
 </table></div>
 <ul>
 <li><strong>Chat</strong> (SMS, instant message, text blast): compliant / not-compliant 97.4% on the 229 test
-chat items and 96.4% on the 605 OOD chat items; exact-category F1 0.79 and 0.69.</li>
+chat items and 96.4% on the 605 OOD chat items; exact-category F1 0.79 and 0.69. On the 893
+OOD items in other chat apps, 96.0% and 0.72. The zero-shot base gets 38.4% (test chat) and
+43.3% (OOD chat), with category F1 0.00.</li>
+<li><strong>By OOD axis</strong> (exact-category F1 / compliant correct): audience 0.73 / 96.3%, firm type
+0.72 / 95.5%, channel 0.70 / 94.0%, style 0.69 / 94.4%, regulatory twist 0.67 / 95.8%,
+product 0.61 / 96.0%. Product shifts cost the most on category naming; the verdict holds on every axis.</li>
 <li><strong>Where it is weak:</strong> naming the exact category among overlapping ones. Most misses are a
 neighbouring category with the same or a related rule, so F1 rises from 0.80 (exact) to 0.92 (broad group) on test.
 The weakest categories are <code>member_name_missing</code>, <code>product_specific_omission</code> and
-<code>misleading_in_context</code> (see the category table above). The two OOD-only categories are not
-detected at all.</li>
+<code>misleading_in_context</code> (see the category table above). The two OOD-only categories are never
+named (<code>options_communication</code> 0/16, <code>third_party_content_adoption</code> 0/79), but the items are
+still flagged not compliant (16/16 and 78/79).</li>
 <li><strong>The base model</strong> writes labels in its own words and calls about half of what it can
 parse compliant, so it is not usable without fine-tuning. See
 <a href="results/README.md">results/README.md</a> for how to read its numbers.</li>
@@ -1088,5 +1094,5 @@ parse compliant, so it is not usable without fine-tuning. See
 <li><strong>Scope.</strong> It reviews only the text and metadata it is given. It does not check filing deadlines (2210(c)), recordkeeping or supervisory workflow, or rules outside 2210, 2212 and 2220.</li>
 </ul>
 
-<footer>Generated from MODEL_CARD.md by docs/build_model_card_html.py on 2026-10-18 07:28 UTC. Edit the Markdown, then rerun the script.</footer>
+<footer>Generated from MODEL_CARD.md by docs/build_model_card_html.py on 2026-10-18 12:55 UTC. Edit the Markdown, then rerun the script.</footer>
 </main></div></body></html>
