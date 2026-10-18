@@ -4,7 +4,7 @@
   python -m finra2210.train_phi4 --train data/splits/train.jsonl --out runs/phi4mini-2210-qlora --qlora   # 12-16 GB GPUs
   accelerate launch --num_processes 2 -m finra2210.train_phi4 --train data/splits/train.jsonl --out runs/phi4mini-2210   # multi-GPU (DDP)
 
-Same recipe as the mlx-lm run (configs/phi4mini_lora_mlx.yaml), so the two backends are comparable:
+Same recipe as the mlx-lm run (training/configs/phi4mini_lora_mlx.yaml), so the two backends are comparable:
 - validation = a stratified 5% holdout of train.jsonl (mlx_data.holdout, same seed, same ids), so
   test.jsonl is never seen during training; the ids are written to <out>/valid.ids;
 - loss on reviewer turns only: each conversation becomes one prompt/completion example per

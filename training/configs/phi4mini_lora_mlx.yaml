@@ -1,5 +1,5 @@
 # LoRA (QLoRA on the 4-bit base) for Phi-4-mini-instruct with mlx-lm.
-#   .venv-mlx/bin/python -m mlx_lm lora -c configs/phi4mini_lora_mlx.yaml
+#   .venv-mlx/bin/python -m mlx_lm lora -c training/configs/phi4mini_lora_mlx.yaml
 # Data: python -m finra2210.mlx_data (train/valid.jsonl; test.jsonl is never used here).
 model: mlx-community/Phi-4-mini-instruct-4bit
 train: true

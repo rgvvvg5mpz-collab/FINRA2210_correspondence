@@ -4,13 +4,13 @@
     {
       "name": "ood-confusion",
       "runtimeExecutable": ".venv/bin/python",
-      "runtimeArgs": ["scripts/live_confusion.py", "--port", "8765"],
+      "runtimeArgs": ["evaluation/live_confusion.py", "--port", "8765"],
       "port": 8765
     },
     {
       "name": "ood-confusion-base",
       "runtimeExecutable": ".venv/bin/python",
-      "runtimeArgs": ["scripts/live_confusion.py", "--preds", "runs/base-mlx/eval_ood.preds.jsonl", "--port", "8766"],
+      "runtimeArgs": ["evaluation/live_confusion.py", "--preds", "runs/base-mlx/eval_ood.preds.jsonl", "--port", "8766"],
       "port": 8766
     }
   ]

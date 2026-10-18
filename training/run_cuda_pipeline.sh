@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 # LoRA-train Phi-4-mini-instruct on an NVIDIA GPU (PyTorch / TRL), save the loss curve + summary,
 # then evaluate it and the zero-shot base on test + OOD. CUDA counterpart of run_mlx_pipeline.sh.
-#   nohup scripts/run_cuda_pipeline.sh > runs/pipeline_cuda.log 2>&1 &
-#   STAGES="eval_tuned eval_base" scripts/run_cuda_pipeline.sh
-#   TRAIN_ARGS="--qlora" scripts/run_cuda_pipeline.sh                  # 12-16 GB GPUs
-#   NGPU=2 scripts/run_cuda_pipeline.sh                                # multi-GPU training (DDP)
+#   nohup training/run_cuda_pipeline.sh > runs/pipeline_cuda.log 2>&1 &
+#   STAGES="eval_tuned eval_base" training/run_cuda_pipeline.sh
+#   TRAIN_ARGS="--qlora" training/run_cuda_pipeline.sh                  # 12-16 GB GPUs
+#   NGPU=2 training/run_cuda_pipeline.sh                                # multi-GPU training (DDP)
 # Evals use --resume, so rerunning after a crash continues where it stopped.
 set -euo pipefail
 cd "$(dirname "$0")/.."

@@ -1,8 +1,9 @@
 # Chat top-up plan (proposed, not generated)
 
-Status, 2026-10-17: **plan only**. No chunks, agent output, snapshot, clean set or split has been
-written. `data/splits` and the running Phi-4-mini mlx run are untouched. Generation needs the user's
-go-ahead; retraining needs a separate go-ahead.
+Status, 2026-10-18: **plan only**. No chunks, agent output, snapshot, clean set or split has been
+written. v0.1.0 is trained and evaluated; its chat baseline (by channel group) is in
+[`results/`](../results/). Generation needs the user's go-ahead; retraining needs a separate
+go-ahead. This is the chat part of the v0.2 round in [`retraining/`](../retraining/).
 
 ## Why
 
@@ -19,11 +20,12 @@ the training data and almost absent from the retail-only rules:
   9 / 0. Chat test metrics for these are noise today.
 
 `evaluate.py` now reports `by_channel_group` (chat / chat_app / non_chat), `chat_by_communication_type`
-and `by_channel` on every run, so the current run's eval will give the chat baseline.
+and `by_channel` on every run. The v0.1.0 chat baseline: compliant accuracy 97.4% on the 229 test
+chat items and 96.4% on the 605 OOD chat items; exact-category F1 0.79 (test) and 0.69 (OOD).
 
 ## What: 2,400 chat scenarios, 100 chunks of 24
 
-Generator: [src/finra2210/chat_topup.py](src/finra2210/chat_topup.py) (seed 2212). To see the tables
+Generator: [src/finra2210/chat_topup.py](../src/finra2210/chat_topup.py) (seed 2212). To see the tables
 without writing anything:
 
 ```bash
@@ -75,7 +77,7 @@ Communication-type totals in the top-up: correspondence 1,100, retail 850, insti
 | options_communication | 40 | 40 | 0 | 40 | 0 → ~4 |
 | brokercheck_link_missing | 0 | 0 | 0 | 0 | n/a: website_page only, cannot occur in chat |
 
-Violations per top-up spec: 1 → 738, 2 → 562, 3 → 140. Difficulty: easy 649, medium 830, hard 921.
+Violations per top-up spec: 1 → 761, 2 → 536, 3 → 143. Difficulty: easy 682, medium 782, hard 936.
 Length: one-liner 776, short (2–4 messages) 1,053, thread (5–8 messages) 571.
 
 ### Chat-specific angles (each spec carries `chat_angle` and `chat_format`)
@@ -129,7 +131,7 @@ test cases each, which is too few to read reliably. **Recommendation: the full 2
 ### Downstream cost: retraining
 
 - Train grows by ~2,160 conversations, to ~12,870. mlx rows grow ~13,271 → ~16,100. Two epochs
-  at batch 4 is ~8,050 iterations (`iters` in configs/phi4mini_lora_mlx.yaml must be updated from
+  at batch 4 is ~8,050 iterations (`iters` in training/configs/phi4mini_lora_mlx.yaml must be updated from
   6,636). That is ~15–16 h at 7 s/iteration; probably less, since chat rows are short.
 - Test grows ~1,186 → ~1,426 (chat 229 → ~469). The eval adds ~6 minutes per model at 1.4 s/row.
 
@@ -163,9 +165,8 @@ test cases each, which is too few to read reliably. **Recommendation: the full 2
 
 ## Steps once approved
 
-Recommended order: let the current run (iteration 5,200 / 6,636) finish and evaluate. Its
-`by_channel_group` / `chat_by_communication_type` numbers are the chat baseline on today's
-test. Then:
+The v0.1.0 run has finished and been evaluated; its `by_channel_group` /
+`chat_by_communication_type` numbers in `results/metrics/` are the chat baseline. Then:
 
 1. `PYTHONPATH=src .venv/bin/python -m finra2210.chat_topup --out data/chunks_chat/in_domain` (100 chunks).
 2. Write `data/chunks_chat/AGENT_INSTRUCTIONS.md` + `BRIEF.md` (copied from `data/chunks_topup/`,
@@ -173,7 +174,7 @@ test. Then:
    timestamps, one-liners under 160 characters with every listed violation evidenced, off-channel
    requests labeled through required_actions, varied footers). Agents write to
    `data/agent_out_chat/in_domain/` and loop `finra2210.check` to 0 problems, then `--emit`.
-3. Add `data/agent_out_chat` to `SOURCES` in `snapshot.py` and take a new snapshot (in_domain =
+3. Take a new snapshot (`data/agent_out_chat` is already in `SOURCES` in `snapshot.py`) (in_domain =
    previous raw + chat raws, byte-for-byte; ood unchanged).
 4. `postprocess` with `--exclude data/clean/ood.clean.jsonl`. Check that the first 11,896 records
    are identical, so the new ids are `in_domain-011896`… and OOD clean is unchanged (md5).

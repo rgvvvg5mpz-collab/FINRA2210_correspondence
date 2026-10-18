@@ -2,15 +2,15 @@
 
 How to LoRA-fine-tune `microsoft/Phi-4-mini-instruct` as the FINRA 2210 reviewer on an NVIDIA
 GPU with PyTorch + TRL, and evaluate it. This is the CUDA counterpart of the Apple Silicon
-(mlx-lm) run described in the README. The recipe is the same, so the two runs can be compared.
+(mlx-lm) run described in [training/README.md](README.md). The recipe is the same, so the two runs can be compared.
 
 | Piece | File |
 |---|---|
-| Training | [src/finra2210/train_phi4.py](src/finra2210/train_phi4.py) |
-| Evaluation | [src/finra2210/evaluate.py](src/finra2210/evaluate.py) (`--backend hf`) |
-| Loss curve + summary | [src/finra2210/loss_report.py](src/finra2210/loss_report.py) (`--hf-state`) |
-| Everything in one go | [scripts/run_cuda_pipeline.sh](scripts/run_cuda_pipeline.sh) |
-| Python packages | [requirements-train.txt](requirements-train.txt) |
+| Training | [src/finra2210/train_phi4.py](../src/finra2210/train_phi4.py) |
+| Evaluation | [src/finra2210/evaluate.py](../src/finra2210/evaluate.py) (`--backend hf`) |
+| Loss curve + summary | [src/finra2210/loss_report.py](../src/finra2210/loss_report.py) (`--hf-state`) |
+| Everything in one go | [training/run_cuda_pipeline.sh](run_cuda_pipeline.sh) |
+| Python packages | [requirements-train.txt](../requirements-train.txt) |
 
 Status: tested end to end on CPU with a tiny random Phi-3-architecture model and the real
 Phi-4-mini tokenizer (torch 2.14.1, transformers 5.20.1, TRL 1.16.0, PEFT 0.21.2). It has not
@@ -39,8 +39,8 @@ The base model has 3.8B parameters, ~7.7 GB of weights in bf16.
 git clone https://github.com/rgvvvg5mpz-collab/FINRA2210_correspondence.git && cd FINRA2210_correspondence
 ```
 
-`data/` is gitignored, so the splits must be copied from the machine that built them. You need
-these three files (about 116 MB in total) in `data/splits/`:
+The splits are in the repository, so the clone already has them in `data/splits/` (about
+120 MB in total):
 
 | File | Rows | MD5 |
 |---|---|---|
@@ -48,13 +48,7 @@ these three files (about 116 MB in total) in `data/splits/`:
 | `test.jsonl` | 1,186 | `36569ce553eed440dd09074cb0bac327` |
 | `ood.jsonl` | 5,800 | `b7bcc715295d2f991afb9801912bf207` |
 
-Copy them from the Mac (adjust user, host and path):
-
-```bash
-mkdir -p data/splits && rsync -av you@mac-host:~/Desktop/ClaudeCode_GIT/FINRA2210_correspondence/data/splits/ data/splits/
-```
-
-Then check them:
+Check them:
 
 ```bash
 md5sum data/splits/train.jsonl data/splits/test.jsonl data/splits/ood.jsonl
@@ -110,7 +104,7 @@ falling loss lines, and leave an adapter in `runs/smoke/`. Delete `runs/smoke` a
 ## 5. Full run: train → loss report → evaluate tuned → evaluate base
 
 ```bash
-nohup scripts/run_cuda_pipeline.sh > runs/pipeline_cuda.log 2>&1 &
+nohup training/run_cuda_pipeline.sh > runs/pipeline_cuda.log 2>&1 &
 ```
 
 Follow it with `tail -f runs/pipeline_cuda.log` (training lines also go to
@@ -169,12 +163,12 @@ GPUs, so lower `--grad-accum` to keep it at 16:
 PYTHONPATH=src .venv-cuda/bin/accelerate launch --num_processes 2 -m finra2210.train_phi4 --train data/splits/train.jsonl --out runs/phi4mini-2210 --grad-accum 2
 ```
 
-With the pipeline script: `NGPU=2 TRAIN_ARGS="--grad-accum 2" scripts/run_cuda_pipeline.sh`.
+With the pipeline script: `NGPU=2 TRAIN_ARGS="--grad-accum 2" training/run_cuda_pipeline.sh`.
 Evaluation runs on one GPU.
 
 ## 8. What the training does
 
-Same as `configs/phi4mini_lora_mlx.yaml`:
+Same as `training/configs/phi4mini_lora_mlx.yaml`:
 
 | Setting | Value |
 |---|---|

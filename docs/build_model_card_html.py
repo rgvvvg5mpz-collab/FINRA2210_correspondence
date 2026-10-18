@@ -1,7 +1,7 @@
 """Render MODEL_CARD.md as a standalone, styled HTML page (MODEL_CARD.html next to it).
 
-  .venv-mlx/bin/python scripts/build_model_card_html.py
-  .venv-mlx/bin/python scripts/build_model_card_html.py --src MODEL_CARD.md --out MODEL_CARD.html
+  .venv-mlx/bin/python docs/build_model_card_html.py
+  .venv-mlx/bin/python docs/build_model_card_html.py --src MODEL_CARD.md --out MODEL_CARD.html
 
 Needs markdown-it-py (already in .venv-mlx; otherwise `pip install markdown-it-py`). The page has
 no external dependencies: styles are inline, it follows the system light/dark setting, and it has
@@ -109,7 +109,7 @@ def build(src: Path, out: Path) -> None:
 <main>
 <details class="toc-m"><summary>Contents</summary>{links}</details>
 {body}
-<footer>Generated from {html.escape(src.name)} by scripts/build_model_card_html.py on {stamp}. Edit the Markdown, then rerun the script.</footer>
+<footer>Generated from {html.escape(src.name)} by docs/build_model_card_html.py on {stamp}. Edit the Markdown, then rerun the script.</footer>
 </main></div></body></html>
 """
     out.write_text(page)

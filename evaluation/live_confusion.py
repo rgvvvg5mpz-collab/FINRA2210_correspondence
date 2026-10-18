@@ -1,7 +1,7 @@
 """Live confusion matrices for a running eval, refreshed every 10 scored rows.
 
-  .venv/bin/python scripts/live_confusion.py                       # tuned model on OOD, http://localhost:8765
-  .venv/bin/python scripts/live_confusion.py --preds runs/base-mlx/eval_ood.preds.jsonl --port 8766
+  .venv/bin/python evaluation/live_confusion.py                       # tuned model on OOD, http://localhost:8765
+  .venv/bin/python evaluation/live_confusion.py --preds runs/base-mlx/eval_ood.preds.jsonl --port 8766
 
 Reads <eval out>.preds.jsonl (appended by finra2210.evaluate) and the gold split, and serves a
 page that polls every 3 s. Only the first multiple of 10 rows is scored, so the numbers move in
@@ -17,132 +17,13 @@ import argparse
 import json
 import sys
 import time
-from collections import Counter, defaultdict
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
-from finra2210.evaluate import Scorer, group_of  # noqa: E402
-from finra2210.taxonomy import BROAD_GROUPS  # noqa: E402
+from finra2210.analysis import analyze, load_gold, read_preds  # noqa: E402
 
-CTYPES = ["correspondence", "retail_communication", "institutional_communication"]
-SEVS = ["none", "low", "medium", "high"]
 STEP = 10
-
-
-def load_gold(path: Path) -> tuple[dict, list[str]]:
-    gold, order = {}, []
-    with path.open() as f:
-        for line in f:
-            r = json.loads(line)
-            gold[r["id"]] = {"label": r["label"], "axes": list((r.get("ood_shifts") or {}).keys()), "difficulty": r["difficulty"]}
-            order.append(r["id"])
-    return gold, order
-
-
-def read_preds(path: Path) -> list[dict]:
-    if not path.exists():
-        return []
-    out = []
-    for line in path.read_text().splitlines():
-        try:
-            out.append(json.loads(line))
-        except json.JSONDecodeError:
-            break  # a half-written last line
-    return out
-
-
-def matrix(rows, cols):
-    return {"rows": rows, "cols": cols, "cells": [[0] * len(cols) for _ in rows]}
-
-
-def compute(preds: list[dict], gold: dict) -> dict:
-    preds = [p for p in preds if p["id"] in gold]
-    preds = preds[: len(preds) // STEP * STEP]
-    comp = matrix(["violation", "compliant"], ["violation", "compliant", "unparsed"])
-    ctype = matrix(CTYPES, CTYPES + ["other", "unparsed"])
-    sev = matrix(SEVS, SEVS + ["other", "unparsed"])
-    cat = defaultdict(lambda: Counter(gold=0, tp=0, fp=0, fn=0))
-    swaps: Counter = Counter()
-    axes = defaultdict(lambda: Counter(n=0, ok=0))
-    diffs = defaultdict(lambda: Counter(n=0, ok=0))
-    correct = 0
-    scorer = Scorer()
-    for p in preds:
-        g = gold[p["id"]]
-        lab, pred = g["label"], p["pred"]
-        scorer.add(lab, pred)
-        gi = 0 if not lab["compliant"] else 1
-        if pred is None:
-            comp["cells"][gi][2] += 1
-            ctype["cells"][CTYPES.index(lab["communication_type"])][-1] += 1
-            sev["cells"][SEVS.index(lab["severity"])][-1] += 1
-            ok = False
-            p_cats: set = set()
-        else:
-            p_viol = not bool(pred.get("compliant", True))
-            comp["cells"][gi][0 if p_viol else 1] += 1
-            ok = p_viol == (not lab["compliant"])
-            pc = pred.get("communication_type")
-            ctype["cells"][CTYPES.index(lab["communication_type"])][CTYPES.index(pc) if pc in CTYPES else 3] += 1
-            ps = pred.get("severity")
-            sev["cells"][SEVS.index(lab["severity"])][SEVS.index(ps) if ps in SEVS else 4] += 1
-            p_cats = {v.get("category") for v in pred.get("violations", []) if isinstance(v, dict)}
-        g_cats = {v["category"] for v in lab["violations"]}
-        for c in g_cats:
-            cat[c]["gold"] += 1
-            cat[c]["tp" if c in p_cats else "fn"] += 1
-        for c in p_cats - g_cats:
-            cat[c]["fp"] += 1
-        for m in g_cats - p_cats:
-            for x in p_cats - g_cats:
-                swaps[(m, x)] += 1
-        correct += ok
-        for ax in g["axes"]:
-            axes[ax]["n"] += 1
-            axes[ax]["ok"] += ok
-        diffs[g["difficulty"]]["n"] += 1
-        diffs[g["difficulty"]]["ok"] += ok
-
-    def prf(c):
-        pr = c["tp"] / (c["tp"] + c["fp"]) if c["tp"] + c["fp"] else None
-        rc = c["tp"] / (c["tp"] + c["fn"]) if c["tp"] + c["fn"] else None
-        f1 = 2 * pr * rc / (pr + rc) if pr and rc else (0.0 if pr is not None and rc is not None else None)
-        return {"precision": pr, "recall": rc, "f1": f1}
-
-    cats = [{"category": k, **v, **prf(v)} for k, v in cat.items()]
-    order = list(BROAD_GROUPS)
-    for r in cats:
-        r["group"] = group_of(r["category"]) if group_of(r["category"]) in BROAD_GROUPS else "unknown"
-    cats.sort(key=lambda r: (order.index(r["group"]) if r["group"] in order else len(order), -r["gold"], -r["fp"]))
-    rep = scorer.report()
-    n = len(preds)
-    return {
-        "n": n,
-        "accuracy": correct / n if n else None,
-        "parse_rate": sum(p["pred"] is not None for p in preds) / n if n else None,
-        "ctype_accuracy": sum(ctype["cells"][i][i] for i in range(3)) / n if n else None,
-        "severity_accuracy": sum(sev["cells"][i][i] for i in range(4)) / n if n else None,
-        "category_levels": [
-            {"level": "Exact category", "note": "what the per-category table scores", **rep["violation_category_micro"]},
-            {"level": "Rule level", "note": "categories grouped by taxonomy cite", **rep["category_rule_level_micro"]},
-            {"level": "(d)(1) family", "note": "all 2210(d)(1) content standards as one group", **rep["category_d1_family_micro"]},
-            {"level": "Broad group", "note": "the five broad groups below", **rep["category_broad_group_micro"]},
-        ],
-        "rule_cite": rep["rule_cite_micro"],
-        "broad_groups": [
-            {"group": g, "title": BROAD_GROUPS[g]["title"], "categories": BROAD_GROUPS[g]["categories"], **v}
-            for g, v in rep["broad_groups"].items()
-        ],
-        "group_titles": {g: v["title"] for g, v in BROAD_GROUPS.items()},
-        "compliant": comp,
-        "ctype": ctype,
-        "severity": sev,
-        "categories": cats,
-        "swaps": [{"missed": m, "predicted": x, "count": c} for (m, x), c in swaps.most_common(8)],
-        "axes": {k: {"n": v["n"], "accuracy": v["ok"] / v["n"]} for k, v in sorted(axes.items())},
-        "difficulty": {k: {"n": v["n"], "accuracy": v["ok"] / v["n"]} for k, v in sorted(diffs.items())},
-    }
 
 
 PAGE = r"""<!doctype html>
@@ -252,7 +133,7 @@ def main() -> None:
             rate = (recent[-1][1] - recent[0][1]) / ((recent[-1][0] - recent[0][0]) / 60)
         key = len(preds) // STEP
         if cache["key"] != key:
-            cache["key"], cache["stats"] = key, compute(preds, gold)
+            cache["key"], cache["stats"] = key, analyze(preds, gold, step=STEP)
         return {"label": label, "total": len(order), "lines": len(preds), "rate_per_min": rate, "stats": cache["stats"]}
 
     class H(BaseHTTPRequestHandler):

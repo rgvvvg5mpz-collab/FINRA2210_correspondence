@@ -1,4 +1,4 @@
-# fine-tuning / evaluation on an NVIDIA GPU (student = microsoft/Phi-4-mini-instruct); see README "NVIDIA GPU (CUDA)"
+# fine-tuning / evaluation on an NVIDIA GPU (student = microsoft/Phi-4-mini-instruct); see training/TRAINING_NVIDIA.md
 # Use a Python 3.11 or 3.12 venv; install torch first from the PyTorch index that matches your CUDA driver.
 # Tested with torch 2.14.1, transformers 5.20.1, trl 1.16.0, peft 0.21.2, datasets 5.1.0, accelerate 1.15.0.
 torch>=2.4
