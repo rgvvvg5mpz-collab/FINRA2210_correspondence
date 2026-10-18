@@ -1,0 +1,342 @@
+{
+  "tuned": {
+    "test": {
+      "n": 1186,
+      "json_parse_rate": 0.9983,
+      "compliant_accuracy": 0.9654,
+      "violation_detection": {
+        "precision": 0.9667,
+        "recall": 0.9726,
+        "f1": 0.9697
+      },
+      "communication_type_accuracy": 0.9975,
+      "severity_accuracy": 0.8954,
+      "violation_category_micro": {
+        "precision": 0.8395,
+        "recall": 0.7592,
+        "f1": 0.7973
+      },
+      "rule_cite_micro": {
+        "precision": 0.8693,
+        "recall": 0.7796,
+        "f1": 0.822
+      },
+      "category_rule_level_micro": {
+        "precision": 0.8695,
+        "recall": 0.7806,
+        "f1": 0.8227
+      },
+      "category_d1_family_micro": {
+        "precision": 0.9433,
+        "recall": 0.8662,
+        "f1": 0.9031
+      },
+      "category_broad_group_micro": {
+        "precision": 0.9497,
+        "recall": 0.8939,
+        "f1": 0.9209
+      },
+      "broad_groups": {
+        "misleading_content": {
+          "precision": 0.9596,
+          "recall": 0.9538,
+          "f1": 0.9567,
+          "support": 498,
+          "hits": 475,
+          "false_alarms": 20
+        },
+        "required_disclosures": {
+          "precision": 0.9149,
+          "recall": 0.7644,
+          "f1": 0.8329,
+          "support": 225,
+          "hits": 172,
+          "false_alarms": 16
+        },
+        "approval_and_audience": {
+          "precision": 0.9474,
+          "recall": 0.8182,
+          "f1": 0.878,
+          "support": 22,
+          "hits": 18,
+          "false_alarms": 1
+        },
+        "regulator_endorsement": {
+          "precision": 1.0,
+          "recall": 0.9189,
+          "f1": 0.9577,
+          "support": 37,
+          "hits": 34,
+          "false_alarms": 0
+        },
+        "product_rules": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 0,
+          "hits": 0,
+          "false_alarms": 0
+        }
+      }
+    },
+    "ood": {
+      "n": 5800,
+      "json_parse_rate": 0.9974,
+      "compliant_accuracy": 0.9529,
+      "violation_detection": {
+        "precision": 0.9428,
+        "recall": 0.9732,
+        "f1": 0.9578
+      },
+      "communication_type_accuracy": 0.986,
+      "severity_accuracy": 0.864,
+      "violation_category_micro": {
+        "precision": 0.6997,
+        "recall": 0.6722,
+        "f1": 0.6857
+      },
+      "rule_cite_micro": {
+        "precision": 0.7609,
+        "recall": 0.7242,
+        "f1": 0.7421
+      },
+      "category_rule_level_micro": {
+        "precision": 0.7595,
+        "recall": 0.7248,
+        "f1": 0.7417
+      },
+      "category_d1_family_micro": {
+        "precision": 0.8799,
+        "recall": 0.8488,
+        "f1": 0.8641
+      },
+      "category_broad_group_micro": {
+        "precision": 0.8874,
+        "recall": 0.8651,
+        "f1": 0.8761
+      },
+      "broad_groups": {
+        "misleading_content": {
+          "precision": 0.9238,
+          "recall": 0.9524,
+          "f1": 0.9379,
+          "support": 2584,
+          "hits": 2461,
+          "false_alarms": 203
+        },
+        "required_disclosures": {
+          "precision": 0.7842,
+          "recall": 0.6747,
+          "f1": 0.7254,
+          "support": 867,
+          "hits": 585,
+          "false_alarms": 161
+        },
+        "approval_and_audience": {
+          "precision": 0.7596,
+          "recall": 0.6556,
+          "f1": 0.7038,
+          "support": 241,
+          "hits": 158,
+          "false_alarms": 50
+        },
+        "regulator_endorsement": {
+          "precision": 0.9562,
+          "recall": 0.8912,
+          "f1": 0.9225,
+          "support": 147,
+          "hits": 131,
+          "false_alarms": 6
+        },
+        "product_rules": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 16,
+          "hits": 0,
+          "false_alarms": 0
+        }
+      }
+    }
+  },
+  "base": {
+    "test": {
+      "n": 1186,
+      "json_parse_rate": 0.6779,
+      "compliant_accuracy": 0.3921,
+      "violation_detection": {
+        "precision": 0.6104,
+        "recall": 0.3409,
+        "f1": 0.4375
+      },
+      "communication_type_accuracy": 0.0,
+      "severity_accuracy": 0.0118,
+      "violation_category_micro": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      },
+      "rule_cite_micro": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      },
+      "category_rule_level_micro": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      },
+      "category_d1_family_micro": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      },
+      "category_broad_group_micro": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      },
+      "broad_groups": {
+        "misleading_content": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 498,
+          "hits": 0,
+          "false_alarms": 0
+        },
+        "required_disclosures": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 225,
+          "hits": 0,
+          "false_alarms": 0
+        },
+        "approval_and_audience": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 22,
+          "hits": 0,
+          "false_alarms": 0
+        },
+        "regulator_endorsement": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 37,
+          "hits": 0,
+          "false_alarms": 0
+        },
+        "product_rules": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 0,
+          "hits": 0,
+          "false_alarms": 0
+        }
+      }
+    },
+    "ood": {
+      "n": 5800,
+      "json_parse_rate": 0.6545,
+      "compliant_accuracy": 0.3957,
+      "violation_detection": {
+        "precision": 0.6417,
+        "recall": 0.3895,
+        "f1": 0.4848
+      },
+      "communication_type_accuracy": 0.0003,
+      "severity_accuracy": 0.0197,
+      "violation_category_micro": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      },
+      "rule_cite_micro": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      },
+      "category_rule_level_micro": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      },
+      "category_d1_family_micro": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      },
+      "category_broad_group_micro": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      },
+      "broad_groups": {
+        "misleading_content": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 2584,
+          "hits": 0,
+          "false_alarms": 0
+        },
+        "required_disclosures": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 867,
+          "hits": 0,
+          "false_alarms": 0
+        },
+        "approval_and_audience": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 241,
+          "hits": 0,
+          "false_alarms": 0
+        },
+        "regulator_endorsement": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 147,
+          "hits": 0,
+          "false_alarms": 0
+        },
+        "product_rules": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 16,
+          "hits": 0,
+          "false_alarms": 0
+        }
+      }
+    }
+  },
+  "models": {
+    "tuned": "runs/phi4mini-2210-mlx",
+    "base": "mlx-community/Phi-4-mini-instruct-4bit"
+  },
+  "base_zero_shot_notes": {
+    "test": {
+      "n": 1186,
+      "parsed": 804,
+      "lenient_ctype": 0.3178752107925801,
+      "says_correspondence": 6,
+      "says_compliant": 0.5385572139303483
+    },
+    "ood": {
+      "n": 5800,
+      "parsed": 3796,
+      "lenient_ctype": 0.30775862068965515,
+      "says_correspondence": 29,
+      "says_compliant": 0.48788198103266595
+    }
+  }
+}
