@@ -10,7 +10,9 @@ Apple Silicon (mlx-lm, see configs/phi4mini_lora_mlx.yaml):
 
 `--model` may be a LoRA adapter directory (base is read from adapter_config; for mlx the
 "model" key) or a full model. Predictions are appended to <out>.preds.jsonl as they are
-produced; `--resume` skips ids already there, so a long run can be restarted. Reports: JSON parse rate, compliant accuracy / F1, communication_type
+produced; `--resume` skips ids already there, so a long run can be restarted.
+`--score-only` re-scores that file without loading a model (e.g. after adding a metric), even
+while an eval is still writing it. Reports: JSON parse rate, compliant accuracy / F1, communication_type
 accuracy, severity accuracy, violation-category micro P/R/F1, rule-cite F1 (the cite string
 the model wrote), the category metric at two coarser levels (category_rule_level_micro: a
 category counts as right if it maps to the gold category's taxonomy cite, e.g. promissory vs
@@ -204,7 +206,12 @@ def main() -> None:
     ap.add_argument("--max-new-tokens", type=int, default=1024)
     ap.add_argument("--backend", choices=["hf", "mlx"], default="hf")
     ap.add_argument("--resume", action="store_true", help="skip ids already in <out>.preds.jsonl")
+    ap.add_argument("--score-only", action="store_true",
+                    help="re-score <out>.preds.jsonl without loading a model; rows without a prediction are left out. "
+                         "Safe to run while another eval is still appending to the same file")
     args = ap.parse_args()
+    if args.score_only and not args.out:
+        ap.error("--score-only needs --out (the predictions are read from <out>.preds.jsonl)")
 
     rows = [json.loads(l) for l in Path(args.data).read_text().splitlines()]
     if args.limit:
@@ -214,15 +221,27 @@ def main() -> None:
     done: dict[str, dict | None] = {}
     if preds_path:
         preds_path.parent.mkdir(parents=True, exist_ok=True)
-        if args.resume and preds_path.exists():
+        if (args.resume or args.score_only) and preds_path.exists():
             for line in preds_path.read_text().splitlines():
                 if line.strip():
-                    p = json.loads(line)
+                    try:
+                        p = json.loads(line)
+                    except json.JSONDecodeError:
+                        if args.score_only:
+                            break  # last line still being written by a running eval
+                        raise
                     done[p["id"]] = p["pred"]
         elif preds_path.exists():
             preds_path.unlink()
     todo = [r for r in rows if r["id"] not in done]
-    if done:
+    if args.score_only:
+        if not done:
+            ap.error(f"--score-only: no predictions in {preds_path}")
+        if todo:
+            print(f"score-only: {len(rows) - len(todo)} of {len(rows)} rows have predictions; scoring those only")
+        rows = [r for r in rows if r["id"] in done]
+        todo = []
+    elif done:
         print(f"resuming: {len(rows) - len(todo)} of {len(rows)} already scored")
 
     overall = Scorer()
@@ -250,7 +269,7 @@ def main() -> None:
             score(r, done[r["id"]])
 
     generate = (_load_mlx if args.backend == "mlx" else _load_hf)(args.model) if todo else None
-    preds_f = preds_path.open("a") if preds_path else None
+    preds_f = preds_path.open("a") if preds_path and todo else None
     for i in range(0, len(todo), args.batch):
         batch = todo[i : i + args.batch]
         # score the first review turn only (system + first user message); follow-up turns are training-only
