@@ -1,8 +1,11 @@
-# fine-tuning / evaluation (student = microsoft/Phi-4-mini-instruct)
-# Use a Python 3.11 or 3.12 venv for this file; torch wheels lag the newest CPython.
+# fine-tuning / evaluation on an NVIDIA GPU (student = microsoft/Phi-4-mini-instruct); see README "NVIDIA GPU (CUDA)"
+# Use a Python 3.11 or 3.12 venv; install torch first from the PyTorch index that matches your CUDA driver.
+# Tested with torch 2.14.1, transformers 5.20.1, trl 1.16.0, peft 0.21.2, datasets 5.1.0, accelerate 1.15.0.
 torch>=2.4
 transformers>=4.51
 peft>=0.14
-trl>=0.19
+trl>=0.20
 datasets>=3.0
 accelerate>=1.0
+matplotlib
+# optional: bitsandbytes (--qlora, Linux only), flash-attn (--attn flash_attention_2)

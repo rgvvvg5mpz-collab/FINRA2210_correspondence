@@ -4,10 +4,18 @@
   python -m finra2210.evaluate --model runs/phi4mini-2210 --data data/splits/ood.jsonl  --out runs/phi4mini-2210/eval_ood.json
   python -m finra2210.evaluate --model microsoft/Phi-4-mini-instruct --data data/splits/test.jsonl --limit 100   # zero-shot baseline
 
-`--model` may be a LoRA adapter directory (base is read from adapter_config) or a
-full model. Reports: JSON parse rate, compliant accuracy / F1, communication_type
+Apple Silicon (mlx-lm, see configs/phi4mini_lora_mlx.yaml):
+  python -m finra2210.evaluate --backend mlx --model runs/phi4mini-2210-mlx --data data/splits/test.jsonl --out runs/phi4mini-2210-mlx/eval_test.json
+  python -m finra2210.evaluate --backend mlx --model mlx-community/Phi-4-mini-instruct-4bit --data data/splits/test.jsonl --out runs/base-mlx/eval_test.json
+
+`--model` may be a LoRA adapter directory (base is read from adapter_config; for mlx the
+"model" key) or a full model. Predictions are appended to <out>.preds.jsonl as they are
+produced; `--resume` skips ids already there, so a long run can be restarted. Reports: JSON parse rate, compliant accuracy / F1, communication_type
 accuracy, severity accuracy, violation-category micro P/R/F1, rule-cite F1, and
-breakdowns by difficulty and (for OOD) by shift axis.
+breakdowns by difficulty, by gold communication type (correspondence / retail /
+institutional), by channel, by channel group (chat = sms_text / instant_message /
+text_message_blast; chat_app = OOD WhatsApp / LinkedIn / X / Slack-Teams DMs; non_chat; and
+chat x communication type) and (for OOD) by shift axis.
 """
 
 from __future__ import annotations
@@ -18,14 +26,25 @@ import re
 from collections import Counter, defaultdict
 from pathlib import Path
 
-import torch
-from transformers import AutoModelForCausalLM, AutoTokenizer
-
 _FENCE_RE = re.compile(r"```json\s*(\{.*?\})\s*```", re.S)
 _JSON_RE = re.compile(r"\{.*\}", re.S)
 
+# the deployment target: short-form chat. Reported separately so it is not averaged away by the email/web majority.
+CHAT_CHANNELS = {"sms_text", "instant_message", "text_message_blast"}
+# OOD-only messaging-app channels: chat-shaped but kept apart so "chat" means the same thing on test and OOD
+CHAT_APP_CHANNELS = {"WhatsApp message", "LinkedIn direct message", "X/Twitter DM", "Slack/Teams message to a client"}
 
-def _load(model_path: str):
+
+def channel_group(channel: str | None) -> str:
+    if channel in CHAT_CHANNELS:
+        return "chat"
+    return "chat_app" if channel in CHAT_APP_CHANNELS else "non_chat"
+
+
+def _load_hf(model_path: str):
+    import torch
+    from transformers import AutoModelForCausalLM, AutoTokenizer
+
     p = Path(model_path)
     base = model_path
     adapter = None
@@ -45,7 +64,32 @@ def _load(model_path: str):
     if device != "cuda":
         model.to(device)
     model.eval()
-    return tok, model, device
+
+    @torch.inference_mode()
+    def generate(prompts: list[list[dict]], max_new_tokens: int) -> list[str]:
+        texts = [tok.apply_chat_template(m, tokenize=False, add_generation_prompt=True) for m in prompts]
+        enc = tok(texts, return_tensors="pt", padding=True, truncation=True, max_length=3072).to(device)
+        out = model.generate(**enc, max_new_tokens=max_new_tokens, do_sample=False, pad_token_id=tok.pad_token_id)
+        return tok.batch_decode(out[:, enc["input_ids"].shape[1]:], skip_special_tokens=True)
+
+    return generate
+
+
+def _load_mlx(model_path: str):
+    from mlx_lm import batch_generate, load
+
+    p = Path(model_path)
+    if (p / "adapter_config.json").exists():
+        base = json.loads((p / "adapter_config.json").read_text())["model"]
+        model, tok = load(base, adapter_path=model_path)
+    else:
+        model, tok = load(model_path)
+
+    def generate(prompts: list[list[dict]], max_new_tokens: int) -> list[str]:
+        ids = [tok.apply_chat_template(m, add_generation_prompt=True) for m in prompts]
+        return batch_generate(model, tok, ids, max_tokens=max_new_tokens).texts
+
+    return generate
 
 
 def _parse(text: str) -> dict | None:
@@ -119,7 +163,6 @@ class Scorer:
         }
 
 
-@torch.no_grad()
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--model", required=True)
@@ -128,39 +171,79 @@ def main() -> None:
     ap.add_argument("--limit", type=int, default=None)
     ap.add_argument("--batch", type=int, default=8)
     ap.add_argument("--max-new-tokens", type=int, default=1024)
+    ap.add_argument("--backend", choices=["hf", "mlx"], default="hf")
+    ap.add_argument("--resume", action="store_true", help="skip ids already in <out>.preds.jsonl")
     args = ap.parse_args()
 
     rows = [json.loads(l) for l in Path(args.data).read_text().splitlines()]
     if args.limit:
         rows = rows[: args.limit]
-    tok, model, device = _load(args.model)
+
+    preds_path = Path(args.out).with_suffix(".preds.jsonl") if args.out else None
+    done: dict[str, dict | None] = {}
+    if preds_path:
+        preds_path.parent.mkdir(parents=True, exist_ok=True)
+        if args.resume and preds_path.exists():
+            for line in preds_path.read_text().splitlines():
+                if line.strip():
+                    p = json.loads(line)
+                    done[p["id"]] = p["pred"]
+        elif preds_path.exists():
+            preds_path.unlink()
+    todo = [r for r in rows if r["id"] not in done]
+    if done:
+        print(f"resuming: {len(rows) - len(todo)} of {len(rows)} already scored")
 
     overall = Scorer()
     by_diff: dict[str, Scorer] = defaultdict(Scorer)
+    by_ctype: dict[str, Scorer] = defaultdict(Scorer)
     by_axis: dict[str, Scorer] = defaultdict(Scorer)
-    preds_out = []
+    by_channel: dict[str, Scorer] = defaultdict(Scorer)
+    by_group: dict[str, Scorer] = defaultdict(Scorer)
+    by_chat_ctype: dict[str, Scorer] = defaultdict(Scorer)
 
-    for i in range(0, len(rows), args.batch):
-        batch = rows[i : i + args.batch]
+    def score(r: dict, pred: dict | None) -> None:
+        overall.add(r["label"], pred)
+        by_diff[r["difficulty"]].add(r["label"], pred)
+        by_ctype[r["label"]["communication_type"]].add(r["label"], pred)
+        ch = r.get("channel") or "unknown"
+        by_channel[ch].add(r["label"], pred)
+        by_group[channel_group(ch)].add(r["label"], pred)
+        if ch in CHAT_CHANNELS:
+            by_chat_ctype[r["label"]["communication_type"]].add(r["label"], pred)
+        for ax in (r.get("ood_shifts") or {}):
+            by_axis[ax].add(r["label"], pred)
+
+    for r in rows:
+        if r["id"] in done:
+            score(r, done[r["id"]])
+
+    generate = (_load_mlx if args.backend == "mlx" else _load_hf)(args.model) if todo else None
+    preds_f = preds_path.open("a") if preds_path else None
+    for i in range(0, len(todo), args.batch):
+        batch = todo[i : i + args.batch]
         # score the first review turn only (system + first user message); follow-up turns are training-only
-        prompts = [tok.apply_chat_template(r["messages"][:2], tokenize=False, add_generation_prompt=True) for r in batch]
-        enc = tok(prompts, return_tensors="pt", padding=True, truncation=True, max_length=3072).to(device)
-        out = model.generate(**enc, max_new_tokens=args.max_new_tokens, do_sample=False, pad_token_id=tok.pad_token_id)
-        texts = tok.batch_decode(out[:, enc["input_ids"].shape[1]:], skip_special_tokens=True)
+        texts = generate([r["messages"][:2] for r in batch], args.max_new_tokens)
         for r, t in zip(batch, texts):
             pred = _parse(t)
-            overall.add(r["label"], pred)
-            by_diff[r["difficulty"]].add(r["label"], pred)
-            for ax in (r.get("ood_shifts") or {}):
-                by_axis[ax].add(r["label"], pred)
-            preds_out.append({"id": r["id"], "pred": pred, "raw": t if pred is None else None})
-        print(f"{min(i + args.batch, len(rows))}/{len(rows)}  acc={overall.compliant_correct / max(1, overall.n):.3f}")
+            score(r, pred)
+            if preds_f:
+                preds_f.write(json.dumps({"id": r["id"], "pred": pred, "raw": t if pred is None else None}) + "\n")
+        if preds_f:
+            preds_f.flush()
+        print(f"{overall.n}/{len(rows)}  acc={overall.compliant_correct / max(1, overall.n):.3f}", flush=True)
+    if preds_f:
+        preds_f.close()
 
     report = {
         "model": args.model,
         "data": args.data,
         "overall": overall.report(),
         "by_difficulty": {k: v.report() for k, v in sorted(by_diff.items())},
+        "by_communication_type": {k: v.report() for k, v in sorted(by_ctype.items())},
+        "by_channel_group": {k: v.report() for k, v in sorted(by_group.items())},
+        "chat_by_communication_type": {k: v.report() for k, v in sorted(by_chat_ctype.items())},
+        "by_channel": {k: v.report() for k, v in sorted(by_channel.items())},
     }
     if by_axis:
         report["by_ood_axis"] = {k: v.report() for k, v in sorted(by_axis.items())}
@@ -168,7 +251,6 @@ def main() -> None:
     if args.out:
         Path(args.out).parent.mkdir(parents=True, exist_ok=True)
         Path(args.out).write_text(json.dumps(report, indent=2))
-        Path(args.out).with_suffix(".preds.jsonl").write_text("\n".join(json.dumps(p) for p in preds_out))
 
 
 if __name__ == "__main__":

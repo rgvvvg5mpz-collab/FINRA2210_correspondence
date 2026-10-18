@@ -3,3 +3,5 @@ data/
 runs/
 __pycache__/
 *.pyc
+.venv-mlx/
+.venv-cuda/

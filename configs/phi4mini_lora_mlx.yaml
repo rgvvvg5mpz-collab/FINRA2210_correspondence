@@ -1,0 +1,31 @@
+# LoRA (QLoRA on the 4-bit base) for Phi-4-mini-instruct with mlx-lm.
+#   .venv-mlx/bin/python -m mlx_lm lora -c configs/phi4mini_lora_mlx.yaml
+# Data: python -m finra2210.mlx_data (train/valid.jsonl; test.jsonl is never used here).
+model: mlx-community/Phi-4-mini-instruct-4bit
+train: true
+data: data/mlx
+fine_tune_type: lora
+optimizer: adamw
+mask_prompt: true            # loss on the assistant turn only
+num_layers: -1               # all 32 blocks
+lora_parameters:
+  keys: [self_attn.qkv_proj, self_attn.o_proj, mlp.gate_up_proj, mlp.down_proj]
+  rank: 32
+  scale: 2.0                 # alpha 64 / rank 32, as in train_phi4.py
+  dropout: 0.05
+batch_size: 4
+grad_accumulation_steps: 4   # effective batch 16
+iters: 6636                  # 2 epochs of 13,271 examples at batch 4
+learning_rate: 2.0e-4
+lr_schedule:
+  name: cosine_decay
+  arguments: [2.0e-4, 1609, 2.0e-6]   # optimizer updates after warmup (6636/4 - 50)
+  warmup: 50
+max_seq_length: 2048         # longest example is 1,913 tokens
+grad_checkpoint: true
+steps_per_report: 20
+steps_per_eval: 400
+val_batches: -1
+save_every: 400
+adapter_path: runs/phi4mini-2210-mlx
+seed: 42

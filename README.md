@@ -5,6 +5,9 @@ Teachers: **Claude Fable 5.1** (`claude-fable-5-1`, pilot + first chunks) and **
 Student: **microsoft/Phi-4-mini-instruct** (3.8B) is LoRA-fine-tuned to act as a
 first-pass reviewer of broker-dealer communications under FINRA Rule 2210.
 
+One-page summary of what the model does and its classes: [MODEL_CARD.md](MODEL_CARD.md).
+Training on an NVIDIA GPU (setup, data copy, commands, troubleshooting): [TRAINING_NVIDIA.md](TRAINING_NVIDIA.md).
+
 ## Round-1 dataset + targeted top-up (ready to train)
 
 | File | Rows | Use |
@@ -40,6 +43,10 @@ first-pass reviewer of broker-dealer communications under FINRA Rule 2210.
   therefore be evaluated on this test.jsonl without contamination. Round-1 membership is stored as
   id lists in `data/splits_r1_ids/`; the earlier full-reshuffle split (only 305 round-1 test ids kept
   in test) is backed up in `data/splits_reshuffled_20261017/`. Do not use it to evaluate round-1 models.
+- Chat (sms_text / instant_message / text_message_blast) is 2,231 of 11,896 in-domain items (18.8%;
+  229 of 1,186 test). The model is meant for chat, so a 2,400-scenario chat top-up is planned but not
+  generated: [CHAT_TOPUP_PLAN.md](CHAT_TOPUP_PLAN.md) (counts per channel / type / category, cost,
+  expected effect).
 - Frozen raw copy: `data/snapshots/20261017T045434Z/` (round-1 + top-up; sha256 in `MANIFEST.json`;
   round-1 only: `20261017T044100Z/`); cleaned sets in `data/clean/`.
 
@@ -201,25 +208,155 @@ PYTHONPATH=src .venv/bin/python -m finra2210.postprocess --raw data/snapshots/<l
    lists. The round-1 id lists are reproducible: run the plain split on the first 11,560 lines of
    `data/clean/in_domain.clean.jsonl`.
 
-5. Fine-tune (CUDA box recommended; use a Python 3.11/3.12 venv for torch):
+5. Fine-tune and 6. evaluate: on an NVIDIA GPU (next section), or on Apple Silicon with mlx-lm
+   (the section after).
+
+### NVIDIA GPU (CUDA): steps 5–6
+
+Full step-by-step guide, including how to copy the gitignored `data/splits` to the GPU machine
+and check them: [TRAINING_NVIDIA.md](TRAINING_NVIDIA.md). Summary:
+
+PyTorch + TRL LoRA on the full-precision base `microsoft/Phi-4-mini-instruct`
+([train_phi4.py](src/finra2210/train_phi4.py)). The recipe matches the mlx run, so results are
+comparable:
+- **Validation:** the same stratified 5% holdout of `train.jsonl` (same 539 ids). `test.jsonl` is
+  never seen during training.
+- **Loss:** only on the reviewer's turns. Each conversation becomes one prompt/completion
+  example per assistant turn, and the prompt is masked.
+- **LoRA:** rank 32 / alpha 64 / dropout 0.05 on `qkv_proj`, `o_proj`, `gate_up_proj` and
+  `down_proj` in every block.
+- **Optimizer:** lr 2e-4 cosine with 3% warmup, effective batch 16, 2 epochs.
+- **Checkpoints:** a validation run and a checkpoint every 100 optimizer steps. The saved adapter
+  is the one with the lowest validation loss.
+
+**Hardware.** Weights are ~7.7 GB in bf16.
+
+| GPU memory | Setting |
+|---|---|
+| 24 GB+ (RTX 3090/4090, A10, L4, A100, H100) | defaults: bf16, batch 4 × grad-accum 4 |
+| 16 GB | `--batch 2 --grad-accum 8` |
+| 12–16 GB | `--qlora`: 4-bit NF4 base via bitsandbytes, Linux only |
+
+Ampere and newer GPUs train in bf16; T4 and V100 fall back to fp16 automatically.
+
+**Time:** a rough estimate (not measured) is 1.5–2 h on one A100 and 3–5 h on a 24 GB card,
+for about 1,660 optimizer steps. Evaluating one model on test + OOD (6,986 rows) is the larger
+cost.
+
+Setup, in a Python 3.11 or 3.12 venv (Linux or Windows/WSL with a recent NVIDIA driver):
 
 ```bash
-python -m finra2210.train_phi4 --train data/splits/train.jsonl --eval data/splits/test.jsonl --out runs/phi4mini-2210 --merge
-```
-
-6. Evaluate on test and OOD (and the zero-shot base as a baseline):
-
-```bash
-python -m finra2210.evaluate --model runs/phi4mini-2210 --data data/splits/test.jsonl --out runs/phi4mini-2210/eval_test.json
+python3.12 -m venv .venv-cuda && .venv-cuda/bin/pip install torch --index-url https://download.pytorch.org/whl/cu128
 ```
 
 ```bash
-python -m finra2210.evaluate --model runs/phi4mini-2210 --data data/splits/ood.jsonl --out runs/phi4mini-2210/eval_ood.json
+.venv-cuda/bin/pip install -r requirements-train.txt
+```
+
+`bitsandbytes` is only needed for `--qlora` (`.venv-cuda/bin/pip install bitsandbytes`), and
+`flash-attn` only for `--attn flash_attention_2`. Match the wheel index (`cu128` above) to your
+driver's CUDA version (`nvidia-smi`). The base model is public (MIT licence) and downloads from
+Hugging Face on first use.
+
+Everything at once (train → loss report → eval tuned → eval zero-shot base), resumable like the
+mlx script:
+
+```bash
+nohup scripts/run_cuda_pipeline.sh > runs/pipeline_cuda.log 2>&1 &
+```
+
+The [run_cuda_pipeline.sh](scripts/run_cuda_pipeline.sh) script is configured with environment
+variables:
+- `STAGES="eval_tuned eval_base"` runs a subset of the stages.
+- `TRAIN_ARGS="--qlora"` or `TRAIN_ARGS="--batch 2 --grad-accum 8"` passes extra training flags.
+- `NGPU=2` trains with DDP across 2 GPUs. The effective batch scales with the GPU count, so
+  halve `--grad-accum` to keep it at 16.
+- `EVAL_BATCH=16` sets the eval batch size.
+- `PY=...` selects the Python interpreter (default `.venv-cuda/bin/python`).
+
+Outputs in `runs/phi4mini-2210/`:
+- the adapter, `train_args.json` and `valid.ids`;
+- `trainer_state.json`, from which `loss.json`, `loss_curve.png` and `training_summary.md` are
+  built;
+- `eval_test.json` and `eval_ood.json`.
+
+The zero-shot baseline goes in `runs/base-hf/`.
+
+Or run the steps one by one:
+
+```bash
+PYTHONPATH=src .venv-cuda/bin/python -m finra2210.train_phi4 --train data/splits/train.jsonl --out runs/phi4mini-2210
 ```
 
 ```bash
-python -m finra2210.evaluate --model microsoft/Phi-4-mini-instruct --data data/splits/test.jsonl --limit 200
+PYTHONPATH=src .venv-cuda/bin/python -m finra2210.loss_report --hf-state runs/phi4mini-2210/trainer_state.json
 ```
+
+```bash
+PYTHONPATH=src .venv-cuda/bin/python -m finra2210.evaluate --backend hf --model runs/phi4mini-2210 --data data/splits/test.jsonl --batch 16 --resume --out runs/phi4mini-2210/eval_test.json
+```
+
+```bash
+PYTHONPATH=src .venv-cuda/bin/python -m finra2210.evaluate --backend hf --model runs/phi4mini-2210 --data data/splits/ood.jsonl --batch 16 --resume --out runs/phi4mini-2210/eval_ood.json
+```
+
+```bash
+PYTHONPATH=src .venv-cuda/bin/python -m finra2210.evaluate --backend hf --model microsoft/Phi-4-mini-instruct --data data/splits/test.jsonl --batch 16 --resume --out runs/base-hf/eval_test.json
+```
+
+Multi-GPU training directly:
+
+```bash
+PYTHONPATH=src .venv-cuda/bin/accelerate launch --num_processes 2 -m finra2210.train_phi4 --train data/splits/train.jsonl --out runs/phi4mini-2210 --grad-accum 2
+```
+
+Notes:
+- `evaluate.py --model` accepts the adapter directory (it reads the base model from
+  `adapter_config.json` and merges in memory) or a merged model.
+- `train_phi4.py --merge` also writes a standalone merged model to `runs/phi4mini-2210/merged`
+  for serving, e.g. with vLLM. It is skipped with `--qlora`: merge onto a bf16 base instead.
+- A quick smoke test (40 conversations, 1 epoch) checks the environment before the full run:
+  `--limit 40 --epochs 1 --eval-steps 4 --out runs/smoke`.
+- Tested end to end with torch 2.14.1, transformers 5.20.1, TRL 1.16.0 and PEFT 0.21.2, on CPU
+  with a tiny random Phi-3-architecture model and the real Phi-4-mini tokenizer. Not yet run on
+  an NVIDIA GPU.
+
+Every eval report (either backend) has overall, by-difficulty and by-communication-type metrics.
+It also has `by_channel_group`, `chat_by_communication_type` and `by_channel`, so chat
+performance is never averaged away by the email/web majority. The channel groups are:
+- `chat`: sms_text, instant_message and text_message_blast;
+- `chat_app`: the OOD-only WhatsApp, LinkedIn, X and Slack/Teams DMs;
+- `non_chat`: everything else.
+
+### Apple Silicon (mlx-lm): steps 5–6
+
+No CUDA needed; QLoRA on the 4-bit base `mlx-community/Phi-4-mini-instruct-4bit`, same LoRA targets,
+rank 32 / alpha 64, lr 2e-4 cosine, effective batch 16, 2 epochs, loss on assistant turns only.
+
+```bash
+/opt/homebrew/bin/python3.14 -m venv .venv-mlx && .venv-mlx/bin/pip install mlx-lm matplotlib
+```
+
+```bash
+caffeinate -i scripts/run_mlx_pipeline.sh
+```
+
+The script runs five stages (`STAGES="data train report eval_tuned eval_base"` selects a subset):
+- `data`: [mlx_data.py](src/finra2210/mlx_data.py) holds out a stratified 5% of `train.jsonl` as
+  validation (539 conversations; ids in `data/mlx/valid.ids`), so `test.jsonl` is only used for the
+  final eval. mlx-lm's `--mask-prompt` trains only the last assistant message, so each 5-turn
+  conversation becomes two examples (one ending at each assistant turn): 13,271 train / 705 valid.
+- `train`: `mlx_lm lora -c` [configs/phi4mini_lora_mlx.yaml](configs/phi4mini_lora_mlx.yaml) →
+  adapter in `runs/phi4mini-2210-mlx/` (checkpoint and full validation loss every 400 iterations).
+  Gradient checkpointing is required on a 24 GB M5 Pro (it runs out of GPU memory without it);
+  there it trains at ~7 s per iteration of 4 examples, ~13 h for 2 epochs.
+- `report`: [loss_report.py](src/finra2210/loss_report.py) parses `train.log` into
+  `loss.json`, `loss_curve.png` (log-scale train/validation loss, epoch boundaries, spikes, best
+  checkpoint) and `training_summary.md` (best/last validation loss, overfitting check, train/val gap,
+  epoch step-down, spikes). It can also be run by hand mid-training.
+- `eval_tuned` / `eval_base`: `evaluate.py --backend mlx` on all of test and OOD for the adapter
+  and for the zero-shot 4-bit base (`runs/base-mlx/`), ~1.4 s per row. Batch 16, retried at 8 then 4 if the GPU runs out of memory. Predictions are
+  appended as they are produced, and `--resume` continues an interrupted eval.
 
 ## Quality controls
 
@@ -235,13 +372,19 @@ src/finra2210/
   taxonomy.py    rule digest, categories→cites, difficulty guide, scenario axes
   scenarios.py   in-domain and OOD scenario sampler
   topup.py       targeted top-up scenarios for sparse categories
+  chat_topup.py  chat (SMS / IM / text blast) top-up scenarios; --stats prints the plan tables
   prompts.py     teacher prompt; student prompt/target format
   schema.py      JSON schema + label-consistency validator
   generate.py    Fable generation (live / batch, resumable)
   postprocess.py validate + dedup + stats
   split.py       stratified train/test; chat-format export
-  train_phi4.py  LoRA SFT for Phi-4-mini-instruct
-  evaluate.py    metrics by difficulty and OOD axis
+  train_phi4.py  LoRA SFT for Phi-4-mini-instruct (PyTorch / NVIDIA CUDA)
+  mlx_data.py    train/valid data for mlx-lm LoRA (Apple Silicon)
+  loss_report.py loss curve + training summary (mlx-lm train.log or PyTorch trainer_state.json)
+  evaluate.py    metrics by difficulty, comm type, channel / chat group, OOD axis (--backend hf | mlx)
+configs/phi4mini_lora_mlx.yaml   mlx-lm LoRA config
+scripts/run_mlx_pipeline.sh      data → train → report → eval tuned → eval base (mlx)
+scripts/run_cuda_pipeline.sh     train → report → eval tuned → eval base (NVIDIA / PyTorch)
 data/            generated artifacts (gitignored-worthy)
 ```
 
