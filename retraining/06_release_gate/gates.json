@@ -1,0 +1,25 @@
+{
+  "_doc": "Release thresholds for gate.py. 'min' = absolute floor for the candidate; 'max_drop' = largest allowed fall versus the baseline (0-1 scale). Floors are set a little under v0.1.0 so a new model must at least match it.",
+  "splits": ["test", "ood"],
+  "overall": {
+    "json_parse_rate": {"min": 0.99, "max_drop": 0.005},
+    "compliant_accuracy": {"min": 0.94, "max_drop": 0.01},
+    "violation_detection.recall": {"min": 0.95, "max_drop": 0.01},
+    "communication_type_accuracy": {"min": 0.97, "max_drop": 0.01},
+    "severity_accuracy": {"max_drop": 0.02},
+    "violation_category_micro.f1": {"min": 0.65, "max_drop": 0.02},
+    "category_broad_group_micro.f1": {"min": 0.85, "max_drop": 0.02}
+  },
+  "chat": {
+    "compliant_accuracy": {"min": 0.94, "max_drop": 0.01},
+    "violation_category_micro.f1": {"max_drop": 0.03}
+  },
+  "broad_group": {
+    "min_support": 30,
+    "rules": {"recall": {"max_drop": 0.05}, "f1": {"max_drop": 0.05}}
+  },
+  "difficulty": {
+    "compliant_accuracy": {"max_drop": 0.02},
+    "violation_category_micro.f1": {"max_drop": 0.04}
+  }
+}

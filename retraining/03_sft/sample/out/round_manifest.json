@@ -1,0 +1,15 @@
+{
+  "base": "retraining/03_sft/sample/in_domain.clean.sample.jsonl",
+  "base_items": 5,
+  "label_fixes": 2,
+  "duplicates_dropped": 2,
+  "added": 1,
+  "problems": 2,
+  "total": 6,
+  "label_fix_files": [
+    "retraining/02_audit/sample/out/train_label_fixes.jsonl"
+  ],
+  "added_files": [
+    "retraining/01_feedback/sample/out/corrections.jsonl"
+  ]
+}

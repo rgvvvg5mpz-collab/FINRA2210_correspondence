@@ -1,0 +1,12 @@
+{
+  "split": "train",
+  "gold": "retraining/02_audit/sample/train.sample.jsonl",
+  "preds": "retraining/02_audit/sample/preds.sample.jsonl",
+  "items": 4,
+  "chunks": 2,
+  "disagreement_kinds": {
+    "compliant": 2,
+    "categories": 4,
+    "severity": 2
+  }
+}

@@ -1,0 +1,97 @@
+{
+ "split": "train",
+ "items": [
+  {
+   "id": "fake-train-000002",
+   "split": "train",
+   "channel": "instant_message",
+   "metadata": {
+    "sender_role": "registered representative",
+    "firm": "Westfield Example Brokerage, Inc.",
+    "recipient_description": "three retail clients in a muni ladder program",
+    "recipient_count_30d": 3,
+    "recipient_type": "retail",
+    "subject": ""
+   },
+   "communication": "Quick note from Priya at the Westfield office: the muni ladder we set up is paying as scheduled and the next coupon lands June 1. Call me with any questions. - Priya Raman, Registered Representative",
+   "gold_label": {
+    "communication_type": "correspondence",
+    "compliant": true,
+    "violations": [],
+    "severity": "none",
+    "required_actions": [
+     "No action required"
+    ],
+    "rationale": "Three retail recipients: correspondence. A factual servicing update with no claims."
+   },
+   "model_verdict": {
+    "communication_type": "correspondence",
+    "compliant": false,
+    "violations": [
+     {
+      "category": "member_name_missing",
+      "rule": "2210(d)(3)",
+      "excerpt": "- Priya Raman, Registered Representative",
+      "explanation": "The member firm is never named."
+     }
+    ],
+    "severity": "low",
+    "required_actions": [
+     "Return to rep for revision"
+    ],
+    "rationale": "Correspondence must name the member firm under (d)(3); this message names only the rep and an office."
+   },
+   "disagreement": [
+    "compliant",
+    "categories: missed [], extra ['member_name_missing']",
+    "severity"
+   ]
+  },
+  {
+   "id": "fake-train-000003",
+   "split": "train",
+   "channel": "sms_text",
+   "metadata": {
+    "sender_role": "registered representative",
+    "firm": "Lakemont Example Securities LLC",
+    "recipient_description": "a retail client",
+    "recipient_count_30d": 1,
+    "recipient_type": "retail",
+    "subject": ""
+   },
+   "communication": "Hi Tom, the Lakemont Example Balanced Fund returned 14% last year, a great fit for your IRA. Let me know and I'll place the order. Sam Ortiz, Lakemont Example Securities LLC, Member FINRA/SIPC",
+   "gold_label": {
+    "communication_type": "correspondence",
+    "compliant": false,
+    "violations": [
+     {
+      "category": "fund_performance_disclosure",
+      "rule": "2210(d)(5)",
+      "excerpt": "returned 14% last year",
+      "explanation": "Fund performance without standardized returns, sales charge or expense ratio."
+     }
+    ],
+    "severity": "medium",
+    "required_actions": [
+     "Return to rep for revision"
+    ],
+    "rationale": "Correspondence quoting one-year fund performance without the (d)(5) disclosures."
+   },
+   "model_verdict": {
+    "communication_type": "correspondence",
+    "compliant": true,
+    "violations": [],
+    "severity": "none",
+    "required_actions": [
+     "No action required"
+    ],
+    "rationale": "One client, correspondence; no issue found."
+   },
+   "disagreement": [
+    "compliant",
+    "categories: missed ['fund_performance_disclosure'], extra []",
+    "severity"
+   ]
+  }
+ ]
+}

@@ -1,0 +1,113 @@
+{
+ "split": "train",
+ "items": [
+  {
+   "id": "fake-train-000001",
+   "split": "train",
+   "channel": "email",
+   "metadata": {
+    "sender_role": "registered representative",
+    "firm": "Lakemont Example Securities LLC",
+    "recipient_description": "a retail client comparing a fixed annuity with bank CDs",
+    "recipient_count_30d": 1,
+    "recipient_type": "retail",
+    "subject": ""
+   },
+   "communication": "Hi Ruth,\n\nFollowing up on our call: the Harbor Example Fixed Annuity pays 5.4% a year, locked in for seven years, and your principal is protected by the issuing insurer. It is a simple way to earn more than your bank CD.\n\nBest,\nOwen Pratt\nRegistered Representative, Lakemont Example Securities LLC, Member FINRA/SIPC",
+   "gold_label": {
+    "communication_type": "correspondence",
+    "compliant": false,
+    "violations": [
+     {
+      "category": "not_fair_and_balanced",
+      "rule": "2210(d)(1)(A)",
+      "excerpt": "It is a simple way to earn more than your bank CD.",
+      "explanation": "Benefits without risks."
+     }
+    ],
+    "severity": "medium",
+    "required_actions": [
+     "Return to rep for revision"
+    ],
+    "rationale": "Correspondence. The pitch omits the annuity's trade-offs, so it is not fair and balanced under (d)(1)(A)."
+   },
+   "model_verdict": {
+    "communication_type": "correspondence",
+    "compliant": false,
+    "violations": [
+     {
+      "category": "product_specific_omission",
+      "rule": "2210(d)(1)(A)",
+      "excerpt": "the Harbor Example Fixed Annuity pays 5.4% a year, locked in for seven years",
+      "explanation": "No surrender charges or claims-paying caveat for a seven-year annuity."
+     }
+    ],
+    "severity": "medium",
+    "required_actions": [
+     "Return to rep for revision"
+    ],
+    "rationale": "Correspondence. The omitted items are features of this product, a product-specific omission under (d)(1)(A)."
+   },
+   "disagreement": [
+    "categories: missed ['not_fair_and_balanced'], extra ['product_specific_omission']"
+   ]
+  },
+  {
+   "id": "fake-train-000004",
+   "split": "train",
+   "channel": "email",
+   "metadata": {
+    "sender_role": "registered representative",
+    "firm": "Lakemont Example Securities LLC",
+    "recipient_description": "a retail client",
+    "recipient_count_30d": 2,
+    "recipient_type": "retail",
+    "subject": ""
+   },
+   "communication": "Hi Lee, this income fund is a can't-lose way to get 6% a year. Happy to set it up today. Ana Ruiz, Lakemont Example Securities LLC, Member FINRA/SIPC",
+   "gold_label": {
+    "communication_type": "correspondence",
+    "compliant": false,
+    "violations": [
+     {
+      "category": "promissory_or_guarantee",
+      "rule": "2210(d)(1)(B)",
+      "excerpt": "this income fund is a can't-lose way to get 6% a year",
+      "explanation": "Promises a result for a fund with market risk."
+     }
+    ],
+    "severity": "high",
+    "required_actions": [
+     "Return to rep for revision"
+    ],
+    "rationale": "Correspondence. 'Can't-lose' is promissory under (d)(1)(B)."
+   },
+   "model_verdict": {
+    "communication_type": "correspondence",
+    "compliant": false,
+    "violations": [
+     {
+      "category": "promissory_or_guarantee",
+      "rule": "2210(d)(1)(B)",
+      "excerpt": "this income fund is a can't-lose way to get 6% a year",
+      "explanation": "Promissory."
+     },
+     {
+      "category": "not_fair_and_balanced",
+      "rule": "2210(d)(1)(A)",
+      "excerpt": "Happy to set it up today.",
+      "explanation": "No risks mentioned before urging a purchase."
+     }
+    ],
+    "severity": "high",
+    "required_actions": [
+     "Return to rep for revision"
+    ],
+    "rationale": "Correspondence. Promissory and unbalanced."
+   },
+   "disagreement": [
+    "categories: missed [], extra ['not_fair_and_balanced']"
+   ]
+  }
+ ]
+}

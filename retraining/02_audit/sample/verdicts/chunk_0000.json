@@ -1,0 +1,17 @@
+{
+ "_note": "FAKE SAMPLE DATA: what an auditor agent writes for tasks/chunk_0000.json",
+ "verdicts": [
+  {
+   "id": "fake-train-000002",
+   "decision": "model",
+   "auditor": "claude-opus-5-5",
+   "reason": "The signature names a rep and an office but never the member firm; (d)(3) applies to correspondence. The dataset label missed it."
+  },
+  {
+   "id": "fake-train-000003",
+   "decision": "gold",
+   "auditor": "claude-opus-5-5",
+   "reason": "A one-year fund return in correspondence needs the (d)(5) disclosures; the model wrongly passed it."
+  }
+ ]
+}

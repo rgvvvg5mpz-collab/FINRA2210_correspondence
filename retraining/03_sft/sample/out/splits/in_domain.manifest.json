@@ -1,0 +1,28 @@
+{
+  "train": 5,
+  "test": 1,
+  "test_frac": 0.1,
+  "seed": 42,
+  "train_difficulty": {
+    "medium": 2,
+    "easy": 2,
+    "unrated": 1
+  },
+  "test_difficulty": {
+    "easy": 1
+  },
+  "train_compliant": {
+    "False": 4,
+    "True": 1
+  },
+  "test_compliant": {
+    "False": 1
+  },
+  "strata": 6,
+  "keep_test": "retraining/03_sft/sample/test.ids",
+  "keep_train": "retraining/03_sft/sample/train.ids",
+  "kept_test": 1,
+  "kept_train": 4,
+  "new_test": 0,
+  "new_train": 1
+}

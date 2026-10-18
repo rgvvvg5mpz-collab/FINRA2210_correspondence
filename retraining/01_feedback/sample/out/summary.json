@@ -1,0 +1,13 @@
+{
+  "decisions": {
+    "accept": 1,
+    "edit": 2,
+    "reject": 1,
+    "thumbs_down": 1,
+    "thumbs_up": 1
+  },
+  "corrections": 3,
+  "preference_pairs": 2,
+  "kto_examples": 6,
+  "invalid": 1
+}

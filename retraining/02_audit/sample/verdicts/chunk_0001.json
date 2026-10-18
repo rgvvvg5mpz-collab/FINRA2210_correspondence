@@ -1,0 +1,41 @@
+{
+ "_note": "FAKE SAMPLE DATA: what an auditor agent writes for tasks/chunk_0001.json",
+ "verdicts": [
+  {
+   "id": "fake-train-000001",
+   "decision": "neither",
+   "auditor": "claude-opus-5-5",
+   "reason": "Both problems are present: the product-specific omission (surrender charges, insurer backing) and the unbalanced CD comparison. One entry per category.",
+   "label": {
+    "communication_type": "correspondence",
+    "compliant": false,
+    "violations": [
+     {
+      "category": "product_specific_omission",
+      "rule": "2210(d)(1)(A)",
+      "excerpt": "the Harbor Example Fixed Annuity pays 5.4% a year, locked in for seven years",
+      "explanation": "A seven-year fixed annuity has surrender charges and its guarantee depends on the insurer's claims-paying ability; neither is disclosed."
+     },
+     {
+      "category": "not_fair_and_balanced",
+      "rule": "2210(d)(1)(A)",
+      "excerpt": "It is a simple way to earn more than your bank CD.",
+      "explanation": "Compares favorably with a CD without the trade-offs (liquidity, FDIC insurance)."
+     }
+    ],
+    "severity": "medium",
+    "required_actions": [
+     "Return to rep for revision",
+     "Add the surrender schedule and the claims-paying caveat"
+    ],
+    "rationale": "Correspondence to one retail client. It omits the annuity's product-specific features and presents the CD comparison without its trade-offs, both under 2210(d)(1)(A)."
+   }
+  },
+  {
+   "id": "fake-train-000004",
+   "decision": "both_ok",
+   "auditor": "claude-opus-5-5",
+   "reason": "The promissory finding is the core issue; the extra not_fair_and_balanced entry is defensible either way."
+  }
+ ]
+}
