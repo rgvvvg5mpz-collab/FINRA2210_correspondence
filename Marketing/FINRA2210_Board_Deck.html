@@ -258,12 +258,12 @@ svg text { font-family: var(--mono); }
 <section class="slide navy s1" data-title="A first-pass reviewer for Rule 2210" data-sec="Executive summary">
   <div class="stamp">v0.1.0 · OCTOBER 2026</div>
   <p class="eyebrow">Board briefing · Compliance technology</p>
-  <h1>A first-pass reviewer for FINRA Rule 2210 that runs on a laptop</h1>
+  <h1>A first-pass reviewer for FINRA Rule 2210 that runs inside the firm</h1>
   <p class="lede">A fine-tuned 3.8-billion-parameter model reads a broker-dealer email, text, post or web page and returns what a principal needs first: the communication type, a compliant or not-compliant verdict, each violation with its rule and the exact words, the severity, and next steps.</p>
   <div class="io">
     <div class="io-box"><div class="label">In</div><p>One message as sent, plus who receives it: channel, sender, recipient type and the number of recipients in the last 30 days.</p></div>
     <div class="io-arrow">→</div>
-    <div class="io-box io-model"><div class="label">Reviewer</div><p>Phi-4-mini-instruct 3.8B with a 185 MB LoRA adapter, on the firm’s own laptop.</p></div>
+    <div class="io-box io-model"><div class="label">Reviewer</div><p>Phi-4-mini-instruct 3.8B with a 185 MB LoRA adapter, on the firm’s own GPUs. No message leaves.</p></div>
     <div class="io-arrow">→</div>
     <div class="io-box"><div class="label">Out</div><p><span class="cite">correspondence</span> · <span class="cite">not compliant</span> · <span class="cite">2210(d)(1)(B)</span> with the quoted words, severity and next steps.</p></div>
   </div>
@@ -271,7 +271,7 @@ svg text { font-family: var(--mono); }
     <div role="button" tabindex="0" class="tap kpi" data-detail="kpi-test"><b>96.5%</b><span>verdicts correct on 1,186 held-out messages</span></div>
     <div role="button" tabindex="0" class="tap kpi" data-detail="kpi-ood"><b>95.3%</b><span>verdicts correct on 5,800 deliberately unfamiliar messages</span></div>
     <div role="button" tabindex="0" class="tap kpi" data-detail="kpi-type"><b>99.8%</b><span>correct correspondence / retail / institutional call</span></div>
-    <div role="button" tabindex="0" class="tap kpi" data-detail="kpi-local"><b>1–2 s</b><span>per message on one H100 GPU, estimated; 9 s measured on a laptop</span></div>
+    <div role="button" tabindex="0" class="tap kpi" data-detail="kpi-local"><b>1–2 s</b><span>per message on one H100 GPU, estimated; under 1 s on a B200</span></div>
   </div>
   <div class="foot"><span class="sec">Executive summary</span><span>1 / 12</span></div>
 </section>
@@ -327,7 +327,7 @@ svg text { font-family: var(--mono); }
       <div role="button" tabindex="0" class="tap card" data-detail="next" style="flex:1;"><h3>Proposed next steps</h3><ul class="list">
         <li><b>Expert label review</b> on a sample, starting with the disagreements.</li>
         <li><b>v0.2 data round:</b> 2,400 chat messages and targeted examples for weak categories.</li>
-        <li><b>Supervised pilot</b> with principals, logging every accept, edit and reject.</li>
+        <li><b>Supervised pilot</b> on AWS with principals (about $1k a month w/o enterprise discount), logging every accept, edit and reject.</li>
         <li><b>Release gate:</b> no version ships unless it beats the last one.</li></ul>
         <p class="ask"><b>Decisions needed:</b> pilot scope, who reviews the labels, repository access and licensing.</p></div>
     </div>
@@ -336,7 +336,7 @@ svg text { font-family: var(--mono); }
 </section>
 
 <!-- ============ 4 · ARCHITECTURE ============ -->
-<section class="slide" data-title="System architecture" data-sec="Architecture and implementation">
+<section class="slide" data-title="System architecture" data-sec="Architecture and data">
   <p class="eyebrow">Architecture</p>
   <h2>A data factory with checks at every step, feeding a small model and a release gate</h2>
   <div class="body" style="flex-direction:column; gap:22px; margin-top:28px;">
@@ -358,32 +358,32 @@ svg text { font-family: var(--mono); }
     </div>
     <div class="handoff">train.jsonl · 10,710 chat conversations &nbsp;→&nbsp; model</div>
     <div class="lane">
-      <div class="lane-title"><span class="label">Model · runs and trains on one laptop</span><span class="label">Phi-4-mini-instruct 3.8B + LoRA</span></div>
+      <div class="lane-title"><span class="label">Model · one GPU to run, one to train</span><span class="label">Phi-4-mini-instruct 3.8B + LoRA</span></div>
       <div class="flow">
-        <div role="button" tabindex="0" class="tap node model" data-detail="n-train"><div class="k">07</div><h4>LoRA fine-tune</h4><p>mlx-lm, 2 epochs, 13 h on an M5 Pro</p></div>
+        <div role="button" tabindex="0" class="tap node model" data-detail="n-train"><div class="k">07</div><h4>LoRA fine-tune</h4><p>2 epochs; about 2 h per retrain on one H100 (est.)</p></div>
         <div class="arrow">→</div>
         <div role="button" tabindex="0" class="tap node model" data-detail="n-eval"><div class="k">08</div><h4>Evaluation</h4><p>1,186 test + 5,800 OOD, vs the untrained base</p></div>
         <div class="arrow">→</div>
         <div role="button" tabindex="0" class="tap node gate" data-detail="n-gate"><div class="k">09</div><h4>Release gate</h4><p>44 checks against the current version</p></div>
         <div class="arrow">→</div>
-        <div role="button" tabindex="0" class="tap node model" data-detail="n-serve"><div class="k">10</div><h4>Review on demand</h4><p>Laptop today; 1–2 s per message on a GPU server (est.)</p></div>
+        <div role="button" tabindex="0" class="tap node model" data-detail="n-serve"><div class="k">10</div><h4>Review on demand</h4><p>1–2 s per message on one H100 (est.)</p></div>
         <div class="arrow">↺</div>
         <div role="button" tabindex="0" class="tap node" data-detail="n-loop"><div class="k">11</div><h4>Feedback loop</h4><p>Reviewer decisions and audits feed the next round</p></div>
       </div>
     </div>
     <div class="facts">
       <div><b>0 / 0</b><span>validation rejects / near-duplicates</span></div>
-      <div><b>~13 h</b><span>training on one 24 GB laptop</span></div>
+      <div><b>2 epochs</b><span>6,636 iterations; ~2 h to retrain (est.)</span></div>
       <div><b>6,986</b><span>evaluation messages per model</span></div>
       <div><b>44</b><span>release-gate checks per version</span></div>
       <div><b>No API</b><span>at review time; data stays local</span></div>
     </div>
   </div>
-  <div class="foot"><span class="sec">Architecture and implementation</span><span>4 / 12</span></div>
+  <div class="foot"><span class="sec">Architecture and data</span><span>4 / 12</span></div>
 </section>
 
 <!-- ============ 5 · DATA ============ -->
-<section class="slide" data-title="The dataset" data-sec="Architecture and implementation">
+<section class="slide" data-title="The dataset" data-sec="Architecture and data">
   <p class="eyebrow">Data</p>
   <h2>17,696 synthetic messages, balanced by design and checked line by line</h2>
   <div class="body">
@@ -432,35 +432,35 @@ svg text { font-family: var(--mono); }
       </div>
     </div>
   </div>
-  <div class="foot"><span class="sec">Architecture and implementation</span><span>5 / 12</span></div>
+  <div class="foot"><span class="sec">Architecture and data</span><span>5 / 12</span></div>
 </section>
 
 <!-- ============ 6 · TAXONOMY ============ -->
-<section class="slide" data-title="What it looks for" data-sec="Architecture and implementation">
+<section class="slide" data-title="What it looks for" data-sec="Architecture and data">
   <p class="eyebrow">Taxonomy</p>
   <h2>23 violation types in 5 groups, each pinned to one rule paragraph</h2>
   <div class="body" style="margin-top:20px;"><div class="groups" id="groups"></div></div>
-  <div class="foot"><span class="sec">Architecture and implementation</span><span>6 / 12</span></div>
+  <div class="foot"><span class="sec">Architecture and data</span><span>6 / 12</span></div>
 </section>
 
 <!-- ============ 7 · MODEL & TRAINING ============ -->
-<section class="slide" data-title="Model and training" data-sec="Architecture and implementation">
+<section class="slide" data-title="Model and training" data-sec="Architecture and data">
   <p class="eyebrow">Model and training</p>
-  <h2>A 3.8B model adapted with LoRA: 2 epochs, 13 hours, no overfitting</h2>
+  <h2>A 3.8B model adapted with LoRA: 2 epochs, no overfitting</h2>
   <div class="body">
     <div class="col" style="flex:1;">
       <div role="button" tabindex="0" class="tap card" data-detail="t-recipe">
         <div class="label">Recipe</div>
         <table class="tbl" style="margin-top:8px;">
-          <tr><td>Base model</td><td>Phi-4-mini-instruct, 4-bit</td></tr>
+          <tr><td>Base model</td><td>Phi-4-mini-instruct</td></tr>
           <tr><td>Adapter</td><td>LoRA rank 32, alpha 64</td></tr>
           <tr><td>Where</td><td>all 32 blocks, attn + MLP</td></tr>
           <tr><td>Optimizer</td><td>AdamW 2e-4, cosine</td></tr>
           <tr><td>Batch</td><td>16 effective</td></tr>
           <tr><td>Loss on</td><td>reviewer turns only</td></tr>
           <tr><td>Examples</td><td>13,271 train · 705 val</td></tr>
-          <tr><td>Hardware</td><td>Apple M5 Pro, 24 GB</td></tr>
-          <tr><td>Training time</td><td>~13 h, 6,636 iterations</td></tr>
+          <tr><td>Iterations</td><td>6,636 (2 epochs)</td></tr>
+          <tr><td>Retrain, 1 × H100</td><td>~2 h, estimated</td></tr>
           <tr><td>Adapter size</td><td>185 MB</td></tr>
         </table>
       </div>
@@ -473,11 +473,11 @@ svg text { font-family: var(--mono); }
       </div>
     </div>
   </div>
-  <div class="foot"><span class="sec">Architecture and implementation</span><span>7 / 12</span></div>
+  <div class="foot"><span class="sec">Architecture and data</span><span>7 / 12</span></div>
 </section>
 
 <!-- ============ 8 · EVALUATION ============ -->
-<section class="slide s8" data-title="Evaluation results" data-sec="Architecture and implementation">
+<section class="slide s8" data-title="Evaluation results" data-sec="Evaluation">
   <p class="eyebrow">Evaluation</p>
   <h2>Fine-tuning turns an unusable base model into a dependable first reader</h2>
   <div class="body">
@@ -494,11 +494,11 @@ svg text { font-family: var(--mono); }
       </div>
     </div>
   </div>
-  <div class="foot"><span class="sec">Architecture and implementation</span><span>8 / 12</span></div>
+  <div class="foot"><span class="sec">Evaluation</span><span>8 / 12</span></div>
 </section>
 
 <!-- ============ 9 · ROBUSTNESS ============ -->
-<section class="slide" data-title="Robustness and failure modes" data-sec="Architecture and implementation">
+<section class="slide" data-title="Robustness and failure modes" data-sec="Evaluation">
   <p class="eyebrow">Robustness</p>
   <h2>The verdict survives unfamiliar inputs; specific categories need work</h2>
   <div class="body">
@@ -527,11 +527,11 @@ svg text { font-family: var(--mono); }
       </div>
     </div>
   </div>
-  <div class="foot"><span class="sec">Architecture and implementation</span><span>9 / 12</span></div>
+  <div class="foot"><span class="sec">Evaluation</span><span>9 / 12</span></div>
 </section>
 
 <!-- ============ 10 · SERVING ============ -->
-<section class="slide s11" data-title="Latency, concurrency and cost" data-sec="Architecture and implementation">
+<section class="slide s11" data-title="Latency, concurrency and cost" data-sec="Deployment">
   <p class="eyebrow">Serving · two modes</p>
   <h2>Real time for the review desk, batched for look-backs: both run on one GPU</h2>
   <div class="body" style="flex-direction:column; gap:16px; margin-top:24px;">
@@ -539,38 +539,36 @@ svg text { font-family: var(--mono); }
       <div role="button" tabindex="0" class="tap card" data-detail="sv-realtime">
         <div class="mode"><span class="label">Real time</span><span>A rep or principal submits one message and waits for the verdict. Latency and how many can wait at once are what matter.</span></div>
         <table class="tbl" style="margin-top:12px;">
-          <tr><th>Hardware</th><th>One message</th><th>Concurrent at that latency</th><th>Always on, / month</th></tr>
-          <tr><td>M5 Pro laptop <span class="basis">measured</span></td><td>~9 s</td><td>1</td><td>owned</td></tr>
-          <tr><td>1 × A10G / L4 <span class="basis">est.</span></td><td>~3–5 s</td><td>~8–12</td><td>~$600–800</td></tr>
-          <tr><td>1 × H100 (P5) <span class="basis">est.</span></td><td>~1–2 s</td><td>~30–50</td><td>~$5–9k</td></tr>
-          <tr><td>1 × B200 (P6) <span class="basis">est.</span></td><td>~0.5–1 s</td><td>~60–100</td><td>~$9–11k</td></tr>
+          <tr><th>Hardware</th><th>One message</th><th>Concurrent</th><th>Always on, $ / month (w/o enterprise discount)</th></tr>
+          <tr><td>1 × A10G / L4</td><td>~3–5 s</td><td>~8–12</td><td>~$600–800</td></tr>
+          <tr><td>1 × H100 (P5)</td><td>~1–2 s</td><td>~30–50</td><td>~$5–9k</td></tr>
+          <tr><td>1 × B200 (P6)</td><td>~0.5–1 s</td><td>~60–100</td><td>~$9–11k</td></tr>
         </table>
-        <p style="margin-top:14px;">A review desk of 50 principals never has 50 messages in flight at once; one A10G-class GPU covers most firms, one H100 covers any.</p>
+        <p style="margin-top:14px;">A review desk of 50 principals rarely has more than a handful of messages in flight at once; one A10G-class GPU covers most firms, one H100 covers any.</p>
       </div>
       <div role="button" tabindex="0" class="tap card" data-detail="sv-batch">
         <div class="mode"><span class="label">Batched</span><span>A backlog or a look-back over the archive, run overnight. Throughput and cost per message are what matter; nobody waits.</span></div>
         <table class="tbl" style="margin-top:12px;">
-          <tr><th>Hardware</th><th>Messages / hour</th><th>1 million takes</th><th>$ per million</th></tr>
-          <tr><td>M5 Pro laptop <span class="basis">measured</span></td><td>~2,500</td><td>~17 days</td><td>~0</td></tr>
-          <tr><td>1 × A10G / L4 <span class="basis">est.</span></td><td>~20–30k</td><td>~1.5–2 days</td><td>~$40–50</td></tr>
-          <tr><td>1 × H100 (P5) <span class="basis">est.</span></td><td>~100–200k</td><td>~5–10 h</td><td>~$40–120</td></tr>
-          <tr><td>P5 node, 8 × H100 <span class="basis">est.</span></td><td>~1–1.5M</td><td>~45 min</td><td>~$40–120</td></tr>
+          <tr><th>Hardware</th><th>Messages / hour</th><th>1 million takes</th><th>$ / million (w/o enterprise discount)</th></tr>
+          <tr><td>1 × A10G / L4</td><td>~20–30k</td><td>~1.5–2 days</td><td>~$40–50</td></tr>
+          <tr><td>1 × H100 (P5)</td><td>~100–200k</td><td>~5–10 h</td><td>~$40–120</td></tr>
+          <tr><td>P5 node, 8 × H100</td><td>~1–1.5M</td><td>~45 min</td><td>~$40–120</td></tr>
         </table>
         <p style="margin-top:14px;">A quarter of a mid-size firm’s traffic (a few million messages) is an overnight job on one H100, for the price of a dinner.</p>
       </div>
     </div>
-    <p class="assume">Only the laptop rows are measured. Estimates assume ~460 generated tokens per answer (p90 740, measured), vLLM with continuous batching, bf16 or FP8 weights, and GPU memory bandwidth as the limit. Prices are 2025–26 on-demand list ranges across major clouds; commitments and spot pricing cut them 30–60%. Verify before budgeting.</p>
+    <p class="assume">All figures are estimates, not measurements. They assume ~460 generated tokens per answer (p90 740, measured on the test set), vLLM with continuous batching, bf16 or FP8 weights, and GPU memory bandwidth as the limit. Prices are 2025–26 on-demand list ranges across major clouds w/o enterprise discount; commitments and spot pricing cut them 30–60%. Verify before budgeting.</p>
   </div>
-  <div class="foot"><span class="sec">Architecture and implementation</span><span>10 / 12</span></div>
+  <div class="foot"><span class="sec">Deployment</span><span>10 / 12</span></div>
 </section>
 
 <!-- ============ 11 · AWS DEPLOYMENT ============ -->
-<section class="slide s12" data-title="Potential deployment on AWS" data-sec="Architecture and implementation">
+<section class="slide s12" data-title="Potential deployment on AWS" data-sec="Deployment">
   <p class="eyebrow">Deployment · AWS reference design</p>
   <h2>Inside the firm’s own VPC: nothing leaves, every verdict is kept to 17a-4</h2>
   <div class="body" style="flex-direction:column; gap:14px; margin-top:24px;">
     <div class="lane">
-      <div class="lane-title"><span class="label">Real-time path · seconds</span><span class="label">ml.g6 (L4) to start · ml.p5 (H100) at scale</span></div>
+      <div class="lane-title"><span class="label">Real-time path · 1–5 seconds</span><span class="label">ml.g6 (L4) to start · ml.p5 (H100) at scale</span></div>
       <div class="flow">
         <div role="button" tabindex="0" class="tap node" data-detail="aws-desk"><div class="k">A1</div><h4>Review desk and rep tools</h4><p>Internal web app, SSO via IAM Identity Center</p></div>
         <div class="arrow">→</div>
@@ -607,15 +605,15 @@ svg text { font-family: var(--mono); }
     </div>
     <div role="button" tabindex="0" class="tap guard" data-detail="aws-guardrails">
       <span><b>Guardrails</b></span>
-      <span>Private VPC, no egress</span><span>Firm-held KMS keys</span><span>S3 Object Lock for 17a-4</span><span>Least privilege, CloudTrail</span><span>Model version on every verdict</span><span>Starter ≈ $1k / month</span>
+      <span>Private VPC, no egress</span><span>Firm-held KMS keys</span><span>S3 Object Lock for 17a-4</span><span>Least privilege, CloudTrail</span><span>Model version on every verdict</span><span>Starter ≈ $1k / month w/o enterprise discount</span>
     </div>
   </div>
-  <div class="foot"><span class="sec">Architecture and implementation</span><span>11 / 12</span></div>
+  <div class="foot"><span class="sec">Deployment</span><span>11 / 12</span></div>
 </section>
 
 <!-- ============ 12 · IMPROVEMENT & GOVERNANCE ============ -->
-<section class="slide s10" data-title="Improvement loop and governance" data-sec="Architecture and implementation">
-  <p class="eyebrow">Improvement and governance</p>
+<section class="slide s10" data-title="Improvement loop and governance" data-sec="Governance and roadmap">
+  <p class="eyebrow">Governance and roadmap</p>
   <h2>Every new version earns its release against a fixed yardstick</h2>
   <div class="body" style="flex-direction:column; gap:22px;">
     <div class="flow">
@@ -636,7 +634,7 @@ svg text { font-family: var(--mono); }
         <li>A registered principal makes every decision.</li>
         <li>Each review records the model version.</li>
         <li>Test and OOD sets never enter training.</li>
-        <li>Review runs locally; messages stay on firm hardware.</li></ul></div>
+        <li>Review runs on the firm’s own GPUs; no message leaves.</li></ul></div>
       <div role="button" tabindex="0" class="tap card" data-detail="g-roadmap"><h3>Roadmap</h3><ul class="list">
         <li><b>v0.2</b> audited labels, chat top-up, targeted examples</li>
         <li><b>v0.3</b> preference training on v0.2’s errors</li>
@@ -649,7 +647,7 @@ svg text { font-family: var(--mono); }
         <li>Exact-category naming is the main accuracy gap.</li></ul></div>
     </div>
   </div>
-  <div class="foot"><span class="sec">Architecture and implementation</span><span>12 / 12</span></div>
+  <div class="foot"><span class="sec">Governance and roadmap</span><span>12 / 12</span></div>
 </section>
 
     </div>
@@ -672,7 +670,7 @@ svg text { font-family: var(--mono); }
 <aside class="panel left" id="idxpanel" aria-label="Slide index">
   <header><div><div class="label">FINRA Rule 2210 reviewer</div><h3>Slides</h3></div><button class="x" data-close aria-label="Close">×</button></header>
   <ol class="idx" id="idx"></ol>
-  <p class="note-mini">Slides 1–3 are the executive summary; 4–12 cover architecture and implementation.</p>
+  <p class="note-mini">Slides 1–3 are the executive summary. Slides 4–12 cover how it is built, how it was measured, how it would be deployed, and how it is governed.</p>
 </aside>
 <aside class="panel right" id="detail" aria-label="Detail" role="dialog" aria-modal="true">
   <header><div><div class="label" id="dlabel">Detail</div><h3 id="dtitle"></h3></div><button class="x" data-close aria-label="Close">×</button></header>
@@ -684,7 +682,7 @@ svg text { font-family: var(--mono); }
 <template data-key="kpi-test" data-title="96.5% on the held-out test set"><p>The test set is 1,186 messages the model never saw in training: a 10% split stratified by difficulty, communication type and primary violation, held fixed across versions.</p><h4>Verdict outcomes</h4><div class="tblwrap"><table class="tbl"><tr><th>Actual</th><th>Said violation</th><th>Said compliant</th><th>No answer</th></tr><tr><td>Violation (657)</td><td>639</td><td>17</td><td>1</td></tr><tr><td>Compliant (529)</td><td>22</td><td>506</td><td>1</td></tr></table></div><p>Violation detection: precision 0.967, recall 0.973. The model is slightly more likely to raise a false alarm (22) than to pass a violation (17), which is the safer direction for a first-pass reviewer.</p><p>By difficulty: easy 96.6%, medium 97.1%, hard 95.8%.</p></template>
 <template data-key="kpi-ood" data-title="95.3% on unfamiliar messages"><p>The out-of-distribution (OOD) set has 5,800 messages built to be unlike the training data. Each one changes 1–3 things: the channel (WhatsApp, LinkedIn, voicemail transcripts, OCR’d handwriting, chatbot transcripts), the product (options, crypto ETFs, Reg D, structured notes, leveraged ETFs), the audience, the writing style, the firm type, or a regulatory twist such as 2210(f) public appearances, Reg BI or AI-written text under Regulatory Notice 24-09.</p><h4>Verdict outcomes</h4><div class="tblwrap"><table class="tbl"><tr><th>Actual</th><th>Said violation</th><th>Said compliant</th><th>No answer</th></tr><tr><td>Violation (3,168)</td><td>3,083</td><td>71</td><td>14</td></tr><tr><td>Compliant (2,632)</td><td>187</td><td>2,444</td><td>1</td></tr></table></div><p>Recall on violations stays at 97.3%; false alarms rise to 7% of compliant messages. The OOD set is never trained on.</p></template>
 <template data-key="kpi-type" data-title="Communication type"><p>Under Rule 2210 the type decides the process: <b>correspondence</b> (25 or fewer retail investors in 30 days) needs supervisory review but no pre-approval; a <b>retail communication</b> (more than 25) needs a principal’s approval before use and may need filing; an <b>institutional communication</b> goes only to institutional investors.</p><p>Accuracy: 99.8% on test (3 errors in 1,186) and 98.6% on OOD. Most OOD errors call correspondence institutional (44 of 5,800).</p></template>
-<template data-key="kpi-local" data-title="Latency: measured and estimated"><p>The reviewer is Microsoft’s Phi-4-mini-instruct (3.8 billion parameters) with a 185 MB LoRA adapter. An answer averages about 460 generated tokens (p90 740), and a model this size is limited by memory bandwidth when it generates, so GPU latency can be estimated from the hardware. Only the laptop row is measured.</p><div class="tblwrap"><table class="tbl"><tr><th>Hardware</th><th>One message</th><th>Batched throughput</th><th>Basis</th></tr><tr><td>Apple M5 Pro laptop, 4-bit, MLX</td><td>~9 s</td><td>~2,500 / hour (1.4 s each at batch 16)</td><td>measured</td></tr><tr><td>1 × NVIDIA H100 (AWS P5), bf16 or FP8, vLLM</td><td>~1–2 s</td><td>~100–200k / hour</td><td>estimate</td></tr><tr><td>P5 node, 8 × H100</td><td>~1–2 s</td><td>~1–1.5 million / hour</td><td>estimate</td></tr><tr><td>1 × NVIDIA B200 (AWS P6)</td><td>~0.5–1 s</td><td>~2 × H100</td><td>estimate</td></tr></table></div><p>The estimates assume a serving engine such as vLLM, decoding at roughly 200–450 tokens per second for a single request and 15–25k tokens per second aggregate on an H100; B200 memory bandwidth is about 2.4 × H100. Speculative decoding or returning only the JSON verdict (roughly half the tokens) would cut latency further. The 9 s laptop figure includes loading the model; a warm process generates in about 5 s.</p><p>At review time no message leaves the machine or the firm’s own GPU server; there is no API call. The base model is MIT-licensed.</p></template>
+<template data-key="kpi-local" data-title="Latency, and where it runs"><p>The reviewer is Microsoft’s Phi-4-mini-instruct (3.8 billion parameters) with a 185 MB LoRA adapter. An answer averages about 460 generated tokens (p90 740, measured on the test set), and a model this size is limited by memory bandwidth when it generates, so latency follows from the GPU. These are estimates, not measurements.</p><div class="tblwrap"><table class="tbl"><tr><th>Hardware</th><th>One message</th><th>Batched throughput</th><th>$ / hour, w/o enterprise discount</th></tr><tr><td>1 × NVIDIA A10G or L4 (g5 / g6)</td><td>~3–5 s</td><td>~20–30k / hour</td><td>~$0.8–1.1</td></tr><tr><td>1 × NVIDIA H100 (P5)</td><td>~1–2 s</td><td>~100–200k / hour</td><td>~$7–12</td></tr><tr><td>P5 node, 8 × H100</td><td>~1–2 s</td><td>~1–1.5 million / hour</td><td>~$55–98</td></tr><tr><td>1 × NVIDIA B200 (P6)</td><td>~0.5–1 s</td><td>~200–400k / hour</td><td>~$12–15</td></tr></table></div><p>Assumptions: a serving engine such as vLLM, bf16 or FP8 weights, roughly 200–450 tokens per second for a single request and 15–25k tokens per second aggregate on an H100; B200 memory bandwidth about 2.4 × H100. Speculative decoding or returning only the JSON verdict (about half the tokens) would cut latency further. Slide 10 has the full real-time and batched comparison.</p><p>At review time no message leaves the firm’s own GPUs; there is no API call. The base model is MIT-licensed.</p></template>
 <template data-key="verdict" data-title="The full verdict"><p>The model writes a short review in prose and ends with a machine-readable verdict:</p><div class="tblwrap"><table class="tbl"><tr><td>communication_type</td><td>correspondence</td></tr><tr><td>compliant</td><td>false</td></tr><tr><td>violation</td><td>promissory_or_guarantee · 2210(d)(1)(B)</td></tr><tr><td>excerpt</td><td>the Atlas Income Fund is a can’t-lose 7% a year</td></tr><tr><td>severity</td><td>high</td></tr><tr><td>next steps</td><td>escalate to the supervising principal under Rule 3110(b); send a corrective text withdrawing the claim</td></tr></table></div><p>Every excerpt must be a verbatim quote, so a reviewer can find it in the message at once. 99.8% of answers on test produce a valid verdict.</p><p>This is a real output of v0.1.0 on an invented message. The model missed the absent firm name (2210(d)(3)); a principal would add it.</p></template>
 <template data-key="classify" data-title="Classification rules"><ul><li><b>Correspondence:</b> written communication to 25 or fewer retail investors within any 30 calendar days. Reviewed under Rule 3110(b); no pre-approval or filing.</li><li><b>Retail communication:</b> more than 25 retail investors, or public (web pages, social posts, seminars, mass email). A registered principal approves it before use; some must be filed with FINRA.</li><li><b>Institutional communication:</b> only institutional investors. Not institutional if the firm has reason to believe it will be forwarded to retail investors.</li></ul><p>The model reads the recipient count and type from the message metadata, as a reviewer would from the distribution list.</p></template>
 <template data-key="flag" data-title="Flag and cite"><p>The model chooses from 23 categories, each tied to one rule paragraph, grouped into five families: misleading content (2210(d)(1)), missing required disclosures ((d)(2)–(d)(8), Rule 2212), approval and audience ((a), (b)), implied FINRA endorsement ((e)) and options rules (2220).</p><p>Each finding carries the category, the rule, a verbatim excerpt of up to 200 characters and a one-sentence explanation. The full taxonomy is on slide 6.</p></template>
@@ -698,15 +696,15 @@ svg text { font-family: var(--mono); }
 <template data-key="n-agents" data-title="Writing with 20 parallel agents"><p>Claude Code subagents, acting as a senior FINRA Advertising Regulation examiner, wrote the messages in chunks of 24, up to 20 at a time, each following the same brief. Claude Opus 5.5 wrote 98% of the data; Claude Fable 5.1 wrote the pilot. No API key was needed.</p></template>
 <template data-key="n-checker" data-title="Checker loop"><p>Each agent ran the checker on its own output and fixed problems until none remained. The checker requires:</p><ul><li>every excerpt to be a verbatim substring of the message;</li><li>every rule citation to be the one its category requires;</li><li>no category on a communication type it cannot apply to;</li><li>the type to agree with the recipient metadata;</li><li>compliant, violations and severity to agree;</li><li>the message to match its specification.</li></ul></template>
 <template data-key="n-clean" data-title="Validate, de-duplicate, split"><ul><li>Validated output is frozen in a checksummed, append-only snapshot.</li><li>Everything is validated again and de-duplicated on 6-word sequences (more than 50% overlap is dropped); OOD is de-duplicated against in-domain. Result: 0 rejects, 0 duplicates.</li><li>The test split is incremental: when data is added, earlier items keep their side, so every version is measured on the same test set.</li><li>Each message becomes a chat conversation; 30% add a follow-up question such as who must approve it.</li></ul></template>
-<template data-key="n-train" data-title="LoRA fine-tune"><p>LoRA trains a small set of extra weights (185 MB) on top of the frozen 4-bit base, in all 32 transformer blocks. Two epochs over 13,271 training examples took 6,636 iterations and about 13 hours on a 24 GB M5 Pro. The loss counts only the reviewer’s turns.</p></template>
+<template data-key="n-train" data-title="LoRA fine-tune"><p>LoRA trains a small set of extra weights (185 MB) on top of the frozen base, in all 32 transformer blocks. Two epochs over 13,271 training examples take 6,636 iterations; on one H100 a full retrain is about 2 hours (estimate), on the order of $100–200 w/o enterprise discount. The loss counts only the reviewer’s turns, so the model learns to answer, not to repeat the message.</p></template>
 <template data-key="n-eval" data-title="Evaluation"><p>Both the fine-tuned model and the untrained base are run on the full test (1,186) and OOD (5,800) sets with the same prompt and greedy decoding. Scores cover the verdict, type, severity, violation detection, and categories at four levels of strictness, broken down by difficulty, type, channel and OOD axis. Every prediction is published so any number can be re-scored.</p></template>
 <template data-key="n-gate" data-title="Release gate"><p>An automated comparison of a candidate with the version in production: 44 checks covering overall metrics with absolute floors (for example verdict accuracy at least 94%, valid answers at least 99%), the chat slice, each broad group and each difficulty level. Any check that gets worse beyond a small tolerance fails the release.</p></template>
-<template data-key="n-serve" data-title="Review on demand"><p>One command reviews a message: the text, the channel, the sender and the recipient count go in; the prose review and JSON verdict come out. It runs on the laptop that trained it today (about 9 s per message, measured). Served from a GPU with vLLM, the same model should answer in about 1–2 s on an H100 and under 1 s on a B200, at 100–200k messages per GPU-hour when batched; these are estimates from the model size and GPU memory bandwidth, not measurements. Either way client communications stay on firm hardware.</p></template>
+<template data-key="n-serve" data-title="Review on demand"><p>One request reviews a message: the text, the channel, the sender and the recipient count go in; the prose review and JSON verdict come out. Served with vLLM, the model answers in about 1–2 s on an H100 and under 1 s on a B200, and handles 100–200k messages per GPU-hour when batched; these are estimates from the model size and GPU memory bandwidth. Client communications stay on the firm’s own hardware throughout.</p></template>
 <template data-key="n-loop" data-title="Feedback loop"><p>Reviewer decisions and model-vs-label audits become corrected labels and preference pairs for the next training round. Slide 10 shows the six stages.</p></template>
 <template data-key="d-indomain" data-title="In-domain data"><div class="tblwrap"><table class="tbl"><tr><th>Item</th><th>Count</th></tr><tr><td>Train</td><td>10,710</td></tr><tr><td>Held-out test</td><td>1,186</td></tr><tr><td>Correspondence</td><td>5,870</td></tr><tr><td>Retail communication</td><td>4,567</td></tr><tr><td>Institutional</td><td>1,459</td></tr><tr><td>Compliant</td><td>5,283</td></tr><tr><td>One violation</td><td>4,175</td></tr><tr><td>Two violations</td><td>1,922</td></tr><tr><td>Three or four</td><td>516</td></tr></table></div><h4>Channels (17)</h4><p>Email 4,246 · letter 1,112 · SMS 1,074 · instant message 896 · mass email 843 · social post 687 · web page 626 · newsletter 445 · blog 340 · seminar invitation 322 · seminar script 306 · form letter 284 · text blast 261 · radio or podcast script 208 · print ad 141 · video script 102 · mass-email template 3.</p><p>336 extra messages topped up the three rarest categories (BrokerCheck link, institutional forwarding, unapproved retail use).</p></template>
 <template data-key="d-ood" data-title="Out-of-distribution set"><p>The OOD set exists to show how the model behaves on what it has not seen. Its messages come from a different sampler seed, shift 1–3 axes each, include two violation categories absent from training, and were de-duplicated against the training data.</p><p>Shift counts add to more than 5,800 because a message can shift several axes.</p></template>
 <template data-key="d-quality" data-title="Quality controls"><ul><li>Specifications are sampled before any text is written, so the balance of difficulty, type, compliance and category is set in code.</li><li>Every label passes the same checks twice: once in the writing loop and once before the split.</li><li>Every reference answer was parsed back to JSON and compared with its label: no mismatches.</li><li>The longest training conversation is 1,913 tokens, under the 2,048-token limit.</li></ul><p>Limit: the labels are model judgments checked for consistency, not for regulatory correctness by a human expert.</p></template>
-<template data-key="t-recipe" data-title="Training recipe"><div class="tblwrap"><table class="tbl"><tr><td>Base</td><td>mlx-community/Phi-4-mini-instruct-4bit</td></tr><tr><td>LoRA</td><td>rank 32, scale 2 (alpha 64), dropout 0.05</td></tr><tr><td>Targets</td><td>qkv_proj, o_proj, gate_up_proj, down_proj</td></tr><tr><td>Schedule</td><td>50 warmup steps, cosine 2e-4 → 2e-6</td></tr><tr><td>Batch</td><td>4 × gradient accumulation 4</td></tr><tr><td>Iterations</td><td>6,636 (2 epochs)</td></tr><tr><td>Max length</td><td>2,048 tokens</td></tr><tr><td>Validation</td><td>stratified 5% of train (539 conversations)</td></tr></table></div><p>An NVIDIA path (PyTorch + TRL, bf16 base) uses the same recipe; it is tested on CPU with a tiny model but not yet run on a GPU.</p></template>
+<template data-key="t-recipe" data-title="Training recipe"><div class="tblwrap"><table class="tbl"><tr><td>Base</td><td>microsoft/Phi-4-mini-instruct (4-bit during training)</td></tr><tr><td>LoRA</td><td>rank 32, scale 2 (alpha 64), dropout 0.05</td></tr><tr><td>Targets</td><td>qkv_proj, o_proj, gate_up_proj, down_proj</td></tr><tr><td>Schedule</td><td>50 warmup steps, cosine 2e-4 → 2e-6</td></tr><tr><td>Batch</td><td>4 × gradient accumulation 4</td></tr><tr><td>Iterations</td><td>6,636 (2 epochs)</td></tr><tr><td>Max length</td><td>2,048 tokens</td></tr><tr><td>Validation</td><td>stratified 5% of train (539 conversations)</td></tr></table></div><p>The repository ships the recipe for NVIDIA GPUs (PyTorch + TRL on the bf16 base); a full retrain is about 2 hours on one H100, estimated.</p></template>
 <template data-key="t-loss" data-title="Loss curve"><p>Validation loss fell fastest in the first 800 iterations (2.185 → 0.393) and kept improving slowly to 0.287 at the final iteration, which is also the best checkpoint. The train loss in the last reports averaged 0.248, a gap of +0.039 to validation, so the model is not memorizing the training set.</p><p>One brief loss spike at iteration 320 recovered within the next report.</p></template>
 <template data-key="e-table" data-title="All headline metrics"><div class="tblwrap"><table class="tbl" id="evalfull"></table></div><p>The untrained base gets the same system prompt. It writes labels in its own words (“Retail Communication”, “Moderate”), so exact-match type, severity and category scores are near zero; matched case-insensitively, its type accuracy is 32% on test.</p></template>
 <template data-key="e-levels" data-title="Four levels of category matching"><ul><li><b>Exact:</b> the category must match.</li><li><b>Rule level:</b> categories with the same rule paragraph count as a match.</li><li><b>(d)(1) family:</b> all general content standards count as one.</li><li><b>Broad group:</b> any category in the right one of the five groups.</li></ul><p>Most common swaps on OOD: product-specific omission read as not fair and balanced (178), misleading in context read as not fair and balanced (62) or as a false statement (50).</p></template>
@@ -714,28 +712,28 @@ svg text { font-family: var(--mono); }
 <template data-key="r-weak" data-title="Per-category F1"><div class="tblwrap"><table class="tbl" id="catfull"></table></div><p>A dash means the category does not occur in that set.</p></template>
 <template data-key="r-unseen" data-title="Categories it never saw"><p><code>options_communication</code> (Rule 2220) and <code>third_party_content_adoption</code> (Regulatory Notice 17-18) appear only in the OOD set. The model never uses either label, but it still flags 16 of 16 and 78 of 79 of those messages as not compliant, usually under a general 2210(d)(1) category such as not fair and balanced or promissory.</p><p>So the verdict generalizes even where the vocabulary does not. Adding these categories to training is part of the roadmap.</p></template>
 <template data-key="r-chat" data-title="Chat performance"><div class="tblwrap"><table class="tbl"><tr><th>Slice</th><th>Items</th><th>Verdict</th><th>Cat. F1</th></tr><tr><td>Test: SMS, IM, text blast</td><td>229</td><td>97.4%</td><td>0.79</td></tr><tr><td>OOD: SMS, IM, text blast</td><td>605</td><td>96.4%</td><td>0.69</td></tr><tr><td>OOD: WhatsApp, LinkedIn, X, Slack/Teams</td><td>893</td><td>96.0%</td><td>0.72</td></tr></table></div><p>Chat is 18.8% of the training data; a 2,400-message chat top-up is planned for v0.2. The untrained base gets 38.4% on test chat.</p></template>
-<template data-key="sv-realtime" data-title="Real-time mode"><p>A registered representative checks a draft before sending, or a principal reviews a flagged message at their desk. One message goes in, the verdict comes back while they wait. Two numbers matter: how long one answer takes, and how many people can be waiting at once before answers slow down.</p><h4>Why these numbers</h4><p>Generating an answer is limited by how fast the GPU reads its own weights for every token: time ≈ (weights ÷ memory bandwidth) × tokens, plus overhead. An answer averages about 460 tokens (p90 740, measured on the test set).</p><div class="tblwrap"><table class="tbl"><tr><th>Hardware</th><th>Bandwidth</th><th>Per token</th><th>One message</th><th>Concurrent</th><th>Basis</th></tr><tr><td>M5 Pro laptop, 4-bit MLX</td><td>~270 GB/s</td><td>~11 ms</td><td>~5 s warm, ~9 s incl. load</td><td>1</td><td>measured</td></tr><tr><td>A10G / L4, 4-bit or FP8</td><td>300–600 GB/s</td><td>~7–10 ms</td><td>~3–5 s</td><td>~8–12</td><td>estimate</td></tr><tr><td>H100, bf16 or FP8</td><td>3.35 TB/s</td><td>~2.5–4.5 ms</td><td>~1–2 s</td><td>~30–50</td><td>estimate</td></tr><tr><td>B200, FP8</td><td>~8 TB/s</td><td>~1–2 ms</td><td>~0.5–1 s</td><td>~60–100</td><td>estimate</td></tr></table></div><p>“Concurrent” is how many requests the serving engine can interleave before each one slows by more than about a third. Beyond that, requests queue; a second GPU doubles the number and nothing in the model needs the GPUs to talk to each other.</p><h4>Shortening every row</h4><ul><li>Return only the JSON verdict (no prose): about half the tokens, so about half the time.</li><li>Speculative decoding: typically 1.5–2.5 × faster at the same quality.</li><li>Prompt processing (about 600 input tokens) is under 100 ms on any GPU and is not the bottleneck.</li></ul><p>Always-on monthly cost is the hourly on-demand list price × 730 hours: an A10G or L4 at about $0.8–1.1 an hour, an H100 at about $7–12, a B200 at about $12–15. One-year commitments or spot capacity cut these 30–60%.</p></template>
-<template data-key="sv-batch" data-title="Batched mode"><p>A look-back over the archive, a backlog after an outage, or a nightly sweep of the day’s traffic. The GPU generates for many messages at once with continuous batching, so throughput is far higher than the one-at-a-time figures suggest, and nobody is waiting on any single answer.</p><div class="tblwrap"><table class="tbl"><tr><th>Hardware</th><th>Aggregate tokens / s</th><th>Messages / s</th><th>Messages / hour</th><th>1 million takes</th><th>$ / hour</th><th>$ per million</th></tr><tr><td>M5 Pro laptop (batch 16)</td><td>~330</td><td>~0.7</td><td>~2,500 (measured)</td><td>~17 days</td><td>owned</td><td>~0</td></tr><tr><td>1 × A10G / L4</td><td>~3–4k</td><td>~6–8</td><td>~20–30k</td><td>~1.5–2 days</td><td>~$0.8–1.1</td><td>~$40–50</td></tr><tr><td>1 × H100</td><td>~15–25k</td><td>~30–55</td><td>~100–200k</td><td>~5–10 h</td><td>~$7–12</td><td>~$40–120</td></tr><tr><td>P5 node, 8 × H100</td><td>~120–200k</td><td>~260–430</td><td>~1–1.5M</td><td>~45 min</td><td>~$55–98</td><td>~$40–120</td></tr><tr><td>1 × B200</td><td>~30–50k</td><td>~65–110</td><td>~200–400k</td><td>~2.5–5 h</td><td>~$12–15</td><td>~$30–75</td></tr></table></div><h4>Sizing examples</h4><ul><li>100k messages a day: about 1.2 a second on average. One A10G-class GPU, running a few hours a night.</li><li>A million messages a day: about 12 a second. One H100 for 5–10 hours, or a P5 node for under an hour.</li><li>A one-off look-back over 10 million messages: a P5 node for about 7–10 hours, roughly $500–1,000.</li></ul><p>For scale: at typical frontier-model API list prices of a few dollars per million tokens, the same million reviews (about a billion tokens in and out) cost on the order of $5,000–10,000, and the messages leave the firm. Self-hosting is roughly a hundred times cheaper per message once a GPU is busy. All prices are approximate 2025–26 list ranges; verify before budgeting.</p></template>
+<template data-key="sv-realtime" data-title="Real-time mode"><p>A registered representative checks a draft before sending, or a principal reviews a flagged message at their desk. One message goes in, the verdict comes back while they wait. Two numbers matter: how long one answer takes, and how many people can be waiting at once before answers slow down. All rows are estimates.</p><h4>Why these numbers</h4><p>Generating an answer is limited by how fast the GPU reads its own weights for every token: time ≈ (weights ÷ memory bandwidth) × tokens, plus overhead. An answer averages about 460 tokens (p90 740, measured on the test set).</p><div class="tblwrap"><table class="tbl"><tr><th>Hardware</th><th>Bandwidth</th><th>Per token</th><th>One message</th><th>Concurrent</th></tr><tr><td>A10G / L4, 4-bit or FP8</td><td>300–600 GB/s</td><td>~7–10 ms</td><td>~3–5 s</td><td>~8–12</td></tr><tr><td>H100, bf16 or FP8</td><td>3.35 TB/s</td><td>~2.5–4.5 ms</td><td>~1–2 s</td><td>~30–50</td></tr><tr><td>B200, FP8</td><td>~8 TB/s</td><td>~1–2 ms</td><td>~0.5–1 s</td><td>~60–100</td></tr></table></div><p>“Concurrent” is how many requests the serving engine can interleave before each one slows by more than about a third. Beyond that, requests queue; a second GPU doubles the number and nothing in the model needs the GPUs to talk to each other.</p><h4>Shortening every row</h4><ul><li>Return only the JSON verdict (no prose): about half the tokens, so about half the time.</li><li>Speculative decoding: typically 1.5–2.5 × faster at the same quality.</li><li>Prompt processing (about 600 input tokens) is under 100 ms on any GPU and is not the bottleneck.</li></ul><p>Always-on monthly cost is the hourly on-demand list price × 730 hours, w/o enterprise discount: an A10G or L4 at about $0.8–1.1 an hour, an H100 at about $7–12, a B200 at about $12–15. One-year commitments or spot capacity cut these 30–60%.</p></template>
+<template data-key="sv-batch" data-title="Batched mode"><p>A look-back over the archive, a backlog after an outage, or a nightly sweep of the day’s traffic. The GPU generates for many messages at once with continuous batching, so throughput is far higher than the one-at-a-time figures suggest, and nobody is waiting on any single answer. All rows are estimates.</p><div class="tblwrap"><table class="tbl"><tr><th>Hardware</th><th>Aggregate tokens / s</th><th>Messages / s</th><th>Messages / hour</th><th>1 million takes</th><th>$ / hour, w/o enterprise discount</th><th>$ per million</th></tr><tr><td>1 × A10G / L4</td><td>~3–4k</td><td>~6–8</td><td>~20–30k</td><td>~1.5–2 days</td><td>~$0.8–1.1</td><td>~$40–50</td></tr><tr><td>1 × H100</td><td>~15–25k</td><td>~30–55</td><td>~100–200k</td><td>~5–10 h</td><td>~$7–12</td><td>~$40–120</td></tr><tr><td>P5 node, 8 × H100</td><td>~120–200k</td><td>~260–430</td><td>~1–1.5M</td><td>~45 min</td><td>~$55–98</td><td>~$40–120</td></tr><tr><td>1 × B200</td><td>~30–50k</td><td>~65–110</td><td>~200–400k</td><td>~2.5–5 h</td><td>~$12–15</td><td>~$30–75</td></tr></table></div><h4>Sizing examples</h4><ul><li>100k messages a day: about 1.2 a second on average. One A10G-class GPU, running a few hours a night.</li><li>A million messages a day: about 12 a second. One H100 for 5–10 hours, or a P5 node for under an hour.</li><li>A one-off look-back over 10 million messages: a P5 node for about 7–10 hours, roughly $500–1,000 w/o enterprise discount.</li></ul><p>For scale: at typical frontier-model API list prices of a few dollars per million tokens, the same million reviews (about a billion tokens in and out) cost on the order of $5,000–10,000, and the messages leave the firm. Self-hosting is roughly a hundred times cheaper per message once a GPU is busy. All prices are approximate 2025–26 list ranges w/o enterprise discount; verify before budgeting.</p></template>
 <template data-key="aws-desk" data-title="A1 · Review desk and rep tools"><p>The principal’s review desk and the rep-facing “check before you send” button are an internal web application (for example on ECS Fargate behind an internal Application Load Balancer), signed in through the firm’s identity provider with IAM Identity Center or Cognito. The app sends the message text plus channel, sender, recipient type and 30-day recipient count, exactly the inputs the model was trained on.</p><p>Only registered principals can accept, edit or reject a verdict; every decision is written to the feedback log (C1) with the model version that produced the draft.</p></template>
 <template data-key="aws-api" data-title="A2 · Private API Gateway"><p>A private REST API reachable only through an interface VPC endpoint, so there is no public hostname. IAM or the identity provider authorises each call; WAF and throttling protect the endpoint; CloudTrail records every request. The API forwards to the SageMaker endpoint and writes the verdict to the store (A4). Latency added: a few milliseconds.</p></template>
-<template data-key="aws-endpoint" data-title="A3 · SageMaker real-time endpoint"><p>The model is served from a SageMaker endpoint running the Large Model Inference container with vLLM: the Phi-4-mini base weights plus the LoRA adapter, stored in the firm’s own S3 and ECR. Starter instance <code>ml.g6.xlarge</code> (one L4, about $1 an hour, ~3–5 s per message) or <code>ml.g5.xlarge</code> (A10G); for the 1–2 s tier, <code>ml.p5.48xlarge</code> (8 × H100), shared across workloads. Auto-scaling adds instances on queue depth and removes them at night.</p><p>The endpoint sits in private subnets with no internet gateway; model downloads come from the firm’s S3 through a gateway endpoint. The same container runs on EKS if the firm prefers Kubernetes.</p></template>
+<template data-key="aws-endpoint" data-title="A3 · SageMaker real-time endpoint"><p>The model is served from a SageMaker endpoint running the Large Model Inference container with vLLM: the Phi-4-mini base weights plus the LoRA adapter, stored in the firm’s own S3 and ECR. Starter instance <code>ml.g6.xlarge</code> (one L4, about $1 an hour w/o enterprise discount, ~3–5 s per message) or <code>ml.g5.xlarge</code> (A10G); for the 1–2 s tier, <code>ml.p5.48xlarge</code> (8 × H100), shared across workloads. Auto-scaling adds instances on queue depth and removes them at night.</p><p>The endpoint sits in private subnets with no internet gateway; model downloads come from the firm’s S3 through a gateway endpoint. The same container runs on EKS if the firm prefers Kubernetes.</p></template>
 <template data-key="aws-store" data-title="A4 · Verdict store"><p>Two copies, for two purposes. DynamoDB holds the verdict, the excerpt, the model version and the reviewer’s decision for the desk application (millisecond reads, point-in-time recovery). S3 with Object Lock in compliance mode holds the immutable record of the message, the verdict and the decision for the retention period: write-once storage of the kind firms use to meet SEC Rule 17a-4(f) and FINRA 4511. Both are encrypted with KMS keys the firm controls.</p></template>
 <template data-key="aws-archive" data-title="B1 · Archive exports"><p>Email journaling, chat and text-message captures from the firm’s archiving platform are exported on a schedule (nightly, or hourly for same-day sweeps) in the same JSON shape the model reads: text plus distribution metadata. Nothing about the model changes between real-time and batch; only the way messages arrive.</p></template>
 <template data-key="aws-s3" data-title="B2 · S3 landing bucket"><p>Exports land in a KMS-encrypted bucket with versioning and a lifecycle rule. An S3 event (or an EventBridge schedule) starts the batch job. Access is limited to the job role and the archiving system’s role; CloudTrail data events record every read and write.</p></template>
-<template data-key="aws-batch" data-title="B3 · Batch transform"><p>SageMaker Batch Transform (or AWS Batch on GPU instances) runs the same vLLM container over the landed files with large batch sizes. On one <code>ml.p5.48xlarge</code> the eight H100s process about a million messages an hour (estimate), so a night covers the day’s traffic for any firm and a quarter’s look-back in a weekend. Spot capacity, where available, roughly halves the cost. Output: one verdict per message, written back to S3.</p></template>
+<template data-key="aws-batch" data-title="B3 · Batch transform"><p>SageMaker Batch Transform (or AWS Batch on GPU instances) runs the same vLLM container over the landed files with large batch sizes. On one <code>ml.p5.48xlarge</code> the eight H100s process about a million messages an hour (estimate), so a night covers the day’s traffic for any firm and a quarter’s look-back in a weekend. Spot capacity, where available, roughly halves the list cost. Output: one verdict per message, written back to S3.</p></template>
 <template data-key="aws-results" data-title="B4 · Results and reporting"><p>Verdicts flow to three places: not-compliant and high-severity items into the surveillance review queue (A1) for a principal’s decision; everything into the Object Lock record (A4); and aggregates into Amazon QuickSight (or the deck’s own live dashboard) for trend lines by category, channel, branch and severity.</p></template>
 <template data-key="aws-feedback" data-title="C1 · Feedback log"><p>The desk writes each accept, edit and reject with the message, the model’s answer and the model version to the feedback log (a DynamoDB stream into S3). The retraining kit’s first stage turns this log into corrected labels and preference pairs. Real client communications stay in the firm’s account throughout.</p></template>
-<template data-key="aws-train" data-title="C2 · Training job"><p>The NVIDIA recipe (<code>train_phi4.py</code>, PyTorch + TRL) runs as a SageMaker training job on <code>ml.p5.48xlarge</code> or <code>ml.p4d.24xlarge</code>: about 2 hours for a full supervised round, about $100–200 at list prices. DPO and GRPO stages run the same way. Inputs come from S3 (the dataset plus the corrected labels), outputs are the new adapter and its evaluation reports.</p></template>
+<template data-key="aws-train" data-title="C2 · Training job"><p>The NVIDIA recipe (<code>train_phi4.py</code>, PyTorch + TRL) runs as a SageMaker training job on <code>ml.p5.48xlarge</code> or <code>ml.p4d.24xlarge</code>: about 2 hours for a full supervised round, about $100–200 at list prices w/o enterprise discount. DPO and GRPO stages run the same way. Inputs come from S3 (the dataset plus the corrected labels), outputs are the new adapter and its evaluation reports.</p></template>
 <template data-key="aws-gate" data-title="C3 · Release gate"><p>A Step Functions workflow evaluates the candidate on the fixed test and OOD sets and runs <code>retraining/06_release_gate/gate.py</code>: 44 checks against the version in production, covering overall metrics, the chat slice, every broad group and every difficulty level. A failing gate stops the workflow and posts the report; a passing one registers the model.</p></template>
 <template data-key="aws-registry" data-title="C4 · Model Registry"><p>SageMaker Model Registry holds every adapter version with its evaluation report and gate result. Approval (a human step for compliance and technology owners) triggers a blue/green update of the real-time endpoint; the previous version stays available for rollback, and the version id travels with every verdict so any past decision can be traced to the exact model that drafted it.</p></template>
-<template data-key="aws-guardrails" data-title="Guardrails and starter cost"><ul><li><b>Private VPC:</b> no internet gateway; S3, ECR, SageMaker and DynamoDB are reached through VPC endpoints. No message leaves the firm’s AWS account.</li><li><b>Encryption:</b> KMS customer-managed keys for S3, DynamoDB, EBS and the endpoint; TLS everywhere.</li><li><b>Records:</b> S3 Object Lock in compliance mode for the retention period, the storage pattern used for SEC 17a-4(f) and FINRA 4511 obligations.</li><li><b>Access:</b> IAM least privilege, SSO through the firm’s identity provider, CloudTrail for every API call, GuardDuty and Config for drift.</li><li><b>Traceability:</b> the model version is stamped on every verdict and every reviewer decision.</li><li><b>Human decision:</b> the model drafts; a registered principal decides. Nothing is sent or filed automatically.</li></ul><h4>Starter cost, estimate</h4><p>One <code>ml.g6.xlarge</code> endpoint around the clock (about $600–800), DynamoDB and S3 for a few million verdicts (tens of dollars), API Gateway and the desk app (about $100), and occasional <code>ml.p5</code> hours for look-backs and retraining: roughly $1,000 a month at 2025–26 list prices before any commitment discount. The 1–2 s tier replaces the g6 with p5 capacity at about $5–9k a month per H100.</p></template>
+<template data-key="aws-guardrails" data-title="Guardrails and starter cost"><ul><li><b>Private VPC:</b> no internet gateway; S3, ECR, SageMaker and DynamoDB are reached through VPC endpoints. No message leaves the firm’s AWS account.</li><li><b>Encryption:</b> KMS customer-managed keys for S3, DynamoDB, EBS and the endpoint; TLS everywhere.</li><li><b>Records:</b> S3 Object Lock in compliance mode for the retention period, the storage pattern used for SEC 17a-4(f) and FINRA 4511 obligations.</li><li><b>Access:</b> IAM least privilege, SSO through the firm’s identity provider, CloudTrail for every API call, GuardDuty and Config for drift.</li><li><b>Traceability:</b> the model version is stamped on every verdict and every reviewer decision.</li><li><b>Human decision:</b> the model drafts; a registered principal decides. Nothing is sent or filed automatically.</li></ul><h4>Starter cost, estimate</h4><p>One <code>ml.g6.xlarge</code> endpoint around the clock (about $600–800), DynamoDB and S3 for a few million verdicts (tens of dollars), API Gateway and the desk app (about $100), and occasional <code>ml.p5</code> hours for look-backs and retraining: roughly $1,000 a month at 2025–26 list prices w/o enterprise discount. The 1–2 s tier replaces the g6 with p5 capacity at about $5–9k a month per H100.</p></template>
 <template data-key="g-feedback" data-title="Stage 1 · Reviewer feedback"><p>Each review logs the message, the model’s answer, the model version and the principal’s decision: accept, edit, reject or a thumbs signal. Accepted and corrected verdicts become labeled training examples; a correction next to the model’s answer becomes a preference pair. Every correction passes the same label checks as the dataset.</p></template>
 <template data-key="g-audit" data-title="Stage 2 · Label audit"><p>The current model runs over the training set; the disagreements with the labels are ranked by importance and given to audit agents, who decide whether the label, the model, neither or both are right. Fixes to training labels feed the next round; fixes to test or OOD labels create a new, published version of the evaluation set and never enter training.</p></template>
 <template data-key="g-sft" data-title="Stage 3 · Supervised round"><p>Label fixes and new examples (reviewer corrections, the chat top-up, paired examples) are checked, de-duplicated and added. The split keeps every earlier test item in test. The model is retrained from the base, not on top of the last adapter, so earlier skills are not lost.</p></template>
 <template data-key="g-dpo" data-title="Stage 4 · Preference training (DPO)"><p>The model is shown its own wrong answers next to the correct ones and learns to prefer the correct verdict, which targets specific confusions such as product-specific omission vs not fair and balanced. No reviewer data is needed to start, and a strength setting keeps it close to the supervised model.</p></template>
 <template data-key="g-grpo" data-title="Stage 5 · Reinforcement (GRPO)"><p>The model writes several answers per message and code scores each against the label: verdict 0.30, category 0.20, broad group 0.10, type 0.10, severity 0.10, grounded excerpts 0.15, correct cite 0.05, and a 0.50 penalty for calling a high-severity violation compliant. Because the verdict is structured, no learned reward model is needed.</p></template>
 <template data-key="g-gate" data-title="Stage 6 · Release gate"><p>44 checks on the fixed test and OOD sets: absolute floors for verdict accuracy, violation recall, type accuracy and valid answers, plus maximum allowed drops for every broad group, difficulty level and the chat slice. v0.1.0 passes all 44 against the untrained base; the reverse fails.</p></template>
-<template data-key="g-controls" data-title="Controls"><ul><li>The model drafts; a registered principal decides.</li><li>Every review records the model version, so outputs can be traced.</li><li>Test and OOD sets are frozen and never trained on, so versions are comparable.</li><li>Release requires passing the gate.</li><li>Inference is local: client communications stay on firm hardware.</li></ul></template>
+<template data-key="g-controls" data-title="Controls"><ul><li>The model drafts; a registered principal decides.</li><li>Every review records the model version, so outputs can be traced.</li><li>Test and OOD sets are frozen and never trained on, so versions are comparable.</li><li>Release requires passing the gate.</li><li>Inference runs on the firm’s own GPUs: client communications never leave.</li></ul></template>
 <template data-key="g-roadmap" data-title="Roadmap"><div class="tblwrap"><table class="tbl"><tr><th>Version</th><th>Change</th></tr><tr><td>v0.2</td><td>Audited labels; chat top-up; firm-name and product-omission pairs; retrain from base</td></tr><tr><td>v0.3</td><td>DPO on v0.2’s mistakes (trained on NVIDIA)</td></tr><tr><td>v0.4</td><td>GRPO with the label-based reward, if needed</td></tr><tr><td>Ongoing</td><td>Reviewer feedback from the pilot feeds each round</td></tr></table></div></template>
 <template data-key="g-risks" data-title="Open risks"><ul><li><b>Synthetic labels:</b> regulatory judgments by a model, checked for consistency, not yet by experts.</li><li><b>Rule changes:</b> FINRA amends 2210 and its guidance; the digest reflects rule text retrieved in October 2026.</li><li><b>Scope:</b> text and metadata only; filing deadlines (2210(c)), recordkeeping and supervisory workflow stay with people and existing systems.</li><li><b>Category naming:</b> exact-category accuracy is the main gap and the focus of v0.2.</li></ul></template>
 </div>
